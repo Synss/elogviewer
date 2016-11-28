@@ -12,7 +12,7 @@ inherit python-single-r1 eutils readme.gentoo-r1
 
 DESCRIPTION="Elog viewer for Gentoo"
 HOMEPAGE="https://sourceforge.net/projects/elogviewer"
-SRC_URI="mirror://sourceforge/${PN}/${P}.tar.gz"
+SRC_URI="https://github.com/Synss/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -43,6 +43,10 @@ More information on the elog system can be found in /etc/make.conf.example
 To operate properly this software needs the directory
 ${PORT_LOGDIR:-/var/log/portage}/elog created, belonging to group portage.
 To start the software as a user, add yourself to the portage group."
+
+src_compile() {
+	rm -f Makefile
+}
 
 src_install() {
 	python_newscript elogviewer.py elogviewer
