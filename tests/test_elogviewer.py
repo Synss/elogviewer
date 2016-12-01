@@ -16,7 +16,7 @@ import tests.fuzz as _fuzz
 
 def randomElogContent(eclass, stage):
     return "\n".join(
-        ("{}: {}".format(eclass.name[1:].upper(), stage), _fuzz.randomText(5, 10, 10))
+        ("{}: {}".format(eclass.value, stage), _fuzz.randomText(5, 10, 10))
     )
 
 
@@ -94,17 +94,30 @@ def testUnsupportedFormat(getHTMLs):
 
 
 class TestElogClassUnit:
+    @pytest.mark.parametrize("eclass", _ev.EClass)
+    def testGetClassValue(self, eclass):
+        content = "{}: xxx\n".format(eclass.value)
+        assert _ev.Elog.getClass(content) is eclass
+
+    @pytest.mark.parametrize("eclass", _ev.EClass)
+    def testGetClassWrongCaseDoesNotMatch(self, eclass):
+        content = "QA: xxx\n{}: xxx".format(eclass.value.lower())
+        assert _ev.Elog.getClass(content) is _ev.EClass.QA
+
+    def testGetClassDefaultsToLog(self):
+        content = "XXX: xxx\nXXX: xxx"
+        assert _ev.Elog.getClass(content) is _ev.EClass.Log
+
     @pytest.mark.parametrize(
         "content, eclass",
         [
-            ("ERROR: xxx\n", _ev.EClass.eerror),
-            ("WARN: xxx\n", _ev.EClass.ewarn),
-            ("LOG: xxx\n", _ev.EClass.elog),
-            ("WARN: xxx\nERROR: xxx\n", _ev.EClass.eerror),
-            ("WARN: xxx\nLOG: xxx\n", _ev.EClass.ewarn),
+            ("LOG: xxx\nWARN: xxx\n", _ev.EClass.Warning),
+            ("QA: xxx\nWARN: xxx\nERROR: xxx\n", _ev.EClass.Error),
+            ("QA: xxx\nWARN: xxx\nError: xxx\n", _ev.EClass.Warning),
+            ("QA: xxx\nINFO: xxx\nINFO: xxx", _ev.EClass.Info),
         ],
     )
-    def testGetClass(self, content, eclass):
+    def testGetClassMisc(self, content, eclass):
         assert _ev.Elog.getClass(content) is eclass
 
 
@@ -139,11 +152,7 @@ class TestElogClass:
         assert elogClassInstance.contents == elogContents
 
     def testEClass(self, elogClassInstance, eclass, elogFile):
-        assert elogClassInstance.eclass is {
-            _ev.EClass.eerror: _ev.EClass.eerror,
-            _ev.EClass.ewarn: _ev.EClass.ewarn,
-            _ev.EClass.elog: _ev.EClass.elog,
-        }.get(eclass, _ev.EClass.einfo)
+        assert elogClassInstance.eclass is eclass
 
     @pytest.mark.parametrize(
         "elogText, elogHtml",
@@ -154,40 +163,40 @@ class TestElogClass:
                 "<h2>\n"
                 "Error:  error_stage\n\n"
                 "</h2>\n"
-                '<p style="color: #FF0000">\n'
+                '<p style="color: #ff0000">\n'
                 "text <br />\n"
                 "</p>",
             ),
             # Bugs
             (
                 "bug #42",
-                '<p style="color: #FFFFFF">\n'
+                '<p style="color: #008000">\n'
                 '<a href="https://bugs.gentoo.org/42">bug #42</a> <br />\n'
                 "</p>",
             ),
             (
                 "Bug #42",
-                '<p style="color: #FFFFFF">\n'
+                '<p style="color: #008000">\n'
                 '<a href="https://bugs.gentoo.org/42">Bug #42</a> <br />\n'
                 "</p>",
             ),
             (
                 "text bug #42 text",
-                '<p style="color: #FFFFFF">\n'
+                '<p style="color: #008000">\n'
                 'text <a href="https://bugs.gentoo.org/42">bug #42</a> text <br />\n'
                 "</p>",
             ),
             # Hyperlinks
             (
                 "text http://example.com/url text",
-                '<p style="color: #FFFFFF">\n'
+                '<p style="color: #008000">\n'
                 'text <a href="http://example.com/url">http://example.com/url</a> text <br />\n'
                 "</p>",
             ),
             # Packages
             (
                 "text dev-portage/elogviewer-3.0 text",
-                '<p style="color: #FFFFFF">\n'
+                '<p style="color: #008000">\n'
                 'text <a href="http://packages.gentoo.org/packages/dev-portage/elogviewer">dev-portage/elogviewer-3.0</a> text <br />\n'
                 "</p>",
             ),

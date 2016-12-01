@@ -32,6 +32,7 @@ Read /etc/make.conf.example for more information.
 import abc
 import argparse
 import bz2
+import enum
 import glob
 import gzip
 import io
@@ -45,7 +46,6 @@ import time
 import weakref
 from collections import namedtuple
 from contextlib import closing, suppress
-from enum import IntEnum
 from functools import partial
 from math import cos, sin
 
@@ -64,12 +64,12 @@ Qt = QtCore.Qt
 _LOGGER = logging.getLogger("elogviewer")
 
 
-class Role(IntEnum):
+class Role(enum.IntEnum):
 
     SortRole = Qt.UserRole + 1
 
 
-class Column(IntEnum):
+class Column(enum.IntEnum):
 
     ImportantState = 0
     Category = 1
@@ -79,29 +79,30 @@ class Column(IntEnum):
     Date = 5
 
 
-class EClass(IntEnum):
+class EClass(str, enum.Enum):
 
-    eerror = 50
-    ewarn = 40
-    einfo = 30
-    elog = 10
-    eqa = 0
+    Error = "ERROR"
+    Warning = "WARN"
+    Log = "LOG"
+    Info = "INFO"
+    QA = "QA"
 
     def color(self):
-        return dict(
-            eerror=QtGui.QColor(Qt.red),
-            ewarn=QtGui.QColor(229, 103, 23),
-            einfo=QtGui.QColor(Qt.darkGreen),
-        ).get(self.name, QtGui.QPalette().color(QtGui.QPalette.Text))
+        return {
+            "Error": QtGui.QColor(Qt.red),
+            "Warning": QtGui.QColor(229, 103, 23),
+            "Log": QtGui.QColor(Qt.darkGreen),
+            "Info": QtGui.QColor(Qt.darkGreen),
+            "QA": QtGui.QColor(Qt.darkGreen),
+        }[self.name]
 
     def htmlColor(self):
-        color = self.color()
-        return "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+        return self.color().name()
 
 
 class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclass"])):
     HeaderPattern = re.compile(
-        r"({}):\s+(\S+)".format("|".join(_.name[1:].upper() for _ in EClass))
+        r"({}):\s+(\S+)".format("|".join(_.value for _ in EClass))
     )
     AnsiColorPattern = re.compile(r"\x1b\[[0-9;]+m")
     LinkPattern = re.compile(r"((https?|ftp)://\S+)", re.IGNORECASE)
@@ -173,15 +174,11 @@ class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclas
     def getClass(cls, elogBody):
         # Get the highest elog class. Adapted from Luca Marturana's elogv.
         eClasses = frozenset(_[0] for _ in cls.HeaderPattern.findall(elogBody))
-        if "ERROR" in eClasses:
-            eclass = EClass.eerror
-        elif "WARN" in eClasses:
-            eclass = EClass.ewarn
-        elif "LOG" in eClasses:
-            eclass = EClass.elog
-        else:
-            eclass = EClass.einfo
-        return eclass
+        for eClass in EClass:
+            if eClass.value in eClasses:
+                return eClass
+        _LOGGER.error("elog has no identifiable eclass")
+        return EClass.Log
 
     @property
     def contents(self):
@@ -259,8 +256,14 @@ class HeaderState(AbstractState):
 
     def parse(self, line):
         eclass, stage = line.split(":")
-        self.context.eclass = EClass["e{}".format(eclass.lower())]
-        return "{}: {}".format(eclass.capitalize(), stage)
+        self.context.eclass = {
+            "ERROR": EClass.Error,
+            "WARN": EClass.Warning,
+            "LOG": EClass.Log,
+            "INFO": EClass.Info,
+            "QA": EClass.QA,
+        }[eclass]
+        return "{}: {}".format(self.context.eclass.name, stage)
 
 
 class BodyState(AbstractState):
@@ -292,7 +295,7 @@ class BodyState(AbstractState):
 
 class ParserFSM:
     def __init__(self, results):
-        self.eclass = EClass.elog
+        self.eclass = EClass.Log
         self._results = results
         self._noopState = NoopState(self)
         self._headerState = HeaderState(self)
