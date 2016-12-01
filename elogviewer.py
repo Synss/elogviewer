@@ -42,7 +42,6 @@ from glob import glob
 from functools import partial
 from collections import namedtuple
 from contextlib import closing
-import errno
 
 from enum import IntEnum
 from io import BytesIO
@@ -97,34 +96,38 @@ class Role(IntEnum):
     SortRole = Qt.UserRole + 1
 
 
+# [Fonic] Reorder/rename columns, add column 'Logfile'
 class Column(IntEnum):
 
     ImportantState = 0
-    Category = 1
-    Package = 2
-    ReadState = 3
-    Eclass = 4
-    Date = 5
+    ReadState      = 1
+    Category       = 2
+    Package        = 3
+    Eclass         = 4
+    Date           = 5
+    LogFile        = 6
 
 
+# [Fonic] Reorder/rename eclasses, add colors, change htmlColor()
 class EClass(IntEnum):
 
-    eerror = 50
-    ewarn = 40
-    einfo = 30
-    elog = 10
-    eqa = 0
+    Error   = 4
+    Warning = 3
+    Log     = 2
+    Info    = 1
+    QA      = 0
 
     def color(self):
         return dict(
-            eerror=QtGui.QColor(Qt.red),
-            ewarn=QtGui.QColor(229, 103, 23),
-            einfo=QtGui.QColor(Qt.darkGreen),
+            Error   = QtGui.QColor(Qt.red),
+            Warning = QtGui.QColor(229, 103, 23),
+            Info    = QtGui.QColor(Qt.darkGreen),
+            Log     = QtGui.QColor(Qt.darkGreen),
+            QA      = QtGui.QColor(Qt.darkGreen)
         ).get(self.name, QtGui.QPalette().color(QtGui.QPalette.Text))
 
     def htmlColor(self):
-        color = self.color()
-        return "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+        return self.color().name()
 
 
 def _sourceIndex(index):
@@ -147,7 +150,7 @@ def _itemFromIndex(index):
 def _file(filename):
         root, ext = os.path.splitext(filename)
         try:
-            return {".gz": gzip.open,
+            return {".gz":  gzip.open,
                     ".bz2": bz2.BZ2File,
                     ".log": open}[ext](filename, "rb")
         except KeyError:
@@ -155,7 +158,7 @@ def _file(filename):
             return closing(BytesIO(
                 b"""
                 <!-- set eclass: ERROR: -->
-                <h2>Unsupported format</h2>
+                <h3>Unsupported format</h3>
                 The selected elog is in an unsupported format.
                 """
             ))
@@ -164,7 +167,7 @@ def _file(filename):
             return closing(BytesIO(
                 b"""
                 <!-- set eclass: ERROR: -->
-                <h2>File does not open</h2>
+                <h3>File does not open</h3>
                 The selected elog could not be opened.
                 """
             ))
@@ -176,19 +179,33 @@ def _html(filename):
         for line in elogfile:
             line = _(line.strip())
             try:
+                # Identify section headers
                 eclass, stage = line.split(":")
-                eclass = EClass["e%s" % eclass.lower()]
-            except (ValueError, KeyError):
-                # Not a section header: write line
+                if eclass == "ERROR":
+                    eclass = EClass.Error
+                elif eclass == "WARN":
+                    eclass = EClass.Warning
+                elif eclass == "LOG":
+                    eclass = EClass.Log
+                elif eclass == "INFO":
+                    eclass = EClass.Info
+                elif eclass == "QA":
+                    eclass = EClass.QA
+                else:
+                    raise ValueError
+            except ValueError:
+                # Not a section header, just write line
                 lines.append("{} <br />".format(line))
             else:
                 # Format section header
                 sectionHeader = "".join((
-                    "<h2>{eclass}: {stage}</h2>".format(
-                        eclass=eclass.name[1:].capitalize(),
-                        stage=stage,
+                    "<h3 style=\"color: {color}\">{eclass}: {stage}</h3>".format(
+                        color=eclass.htmlColor(),
+                        #eclass=eclass.name[1:].capitalize(),
+                        eclass=eclass.name,
+                        stage=stage
                     ),
-                    '<p style="color: {}">'.format(eclass.htmlColor())))
+                    "<p style=\"color: {}\">".format(eclass.htmlColor())))
                 # Close previous section if exists and open new section
                 if lines:
                     lines.append("</p>")
@@ -228,16 +245,19 @@ class Elog(namedtuple("Elog", ["filename", "category", "package",
         date = time.strptime(date, "%Y%m%d-%H%M%S")
         # Get the highest elog class. Adapted from Luca Marturana's elogv.
         with _file(filename) as elogfile:
-            eClasses = re.findall("LOG:|INFO:|WARN:|ERROR:",
-                                  _(elogfile.read()))
+            eClasses = re.findall("ERROR:|WARN:|LOG:|INFO:|QA:", _(elogfile.read()))
             if "ERROR:" in eClasses:
-                eclass = EClass.eerror
+                eclass = EClass.Error
             elif "WARN:" in eClasses:
-                eclass = EClass.ewarn
+                eclass = EClass.Warning
             elif "LOG:" in eClasses:
-                eclass = EClass.elog
+                eclass = EClass.Log
+            elif "INFO:" in eClasses:
+                eclass = EClass.Info
+            elif "QA:" in eClasses:
+                eclass = EClass.QA
             else:
-                eclass = EClass.einfo
+                eclass = EClass.Info
         return cls(filename, category, package, date, eclass)
 
     @property
@@ -406,7 +426,7 @@ class ElogRowItem(QtGui.QStandardItem):
     def __init__(self, filename="", parent=None):
         super(ElogRowItem, self).__init__(parent)
         self._elog = Elog.fromFilename(filename) if filename else Elog(
-            "", None, None, time.localtime(), EClass.einfo)
+            "", None, None, time.localtime(), EClass.Info)
         self._readState = Qt.Unchecked
         self._importantState = Qt.Unchecked
 
@@ -420,7 +440,7 @@ class ElogRowItem(QtGui.QStandardItem):
         return self._elog.filename
 
     def html(self):
-        header = "<h1>{category}/{package}</h1>".format(
+        header = "<h2>{category}/{package}</h2>".format(
             category=self._elog.category,
             package=self._elog.package,
         )
@@ -488,8 +508,11 @@ class ElogItem(QtGui.QStandardItem):
             return {
                 Column.Category: elog.category,
                 Column.Package: elog.package,
+                #
                 Column.Eclass: elog.eclass.name,
                 Column.Date: elog.localeTime,
+                # [Fonic] Add column 'Logfile'
+                Column.LogFile: os.path.basename(elog.filename)
             }.get(self.column(), "")
         elif role == Qt.CheckStateRole:
             return {
@@ -568,8 +591,9 @@ class Elogviewer(ElogviewerUi):
 
         self.model = QtGui.QStandardItemModel(self.tableView)
         # Use QStandardItem for horizontal headers
+        # [Fonic] Reorder/rename columns, add column 'Logfile'
         self.model.setHorizontalHeaderLabels(
-            ["!!", "Category", "Package", "Read", "Highest\neclass", "Date"])
+            ["!!", "Read", "Category", "Package", "Type", "Date", "Logfile"])
         # Then default to ElogItem -- else, the labels are not displayed
         self.model.setItemPrototype(ElogItem())
 
@@ -674,13 +698,12 @@ class Elogviewer(ElogviewerUi):
             self, "About (k)elogviewer", " ".join((
                 """
                 <h1>(k)elogviewer %s</h1>
-                <center><small>(k)elogviewer, copyright (c) 2007, 2011, 2013,
+                (k)elogviewer, copyright (c) 2007, 2011, 2013,
                 2015 Mathias Laurin<br>
                 kelogviewer, copyright (c) 2007 Jeremy Wickersheimer<br>
-                GNU General Public License (GPL) version 2</small><br>
+                GNU General Public License (GPL) version 2<br>
                 <a href=http://sourceforge.net/projects/elogviewer>
                 http://sourceforge.net/projects/elogviewer</a>
-                </center>
 
                 <h2>Written by</h2>
                 Mathias Laurin <a href="mailto:mathias_laurin@users.sourceforge.net?Subject=elogviewer">
@@ -741,12 +764,20 @@ class Elogviewer(ElogviewerUi):
         self.statusLabel.setText(text)
 
     def updateUnreadCount(self):
-        text = "%i unread" % self.unreadCount()
+        text = "[%i unread]" % self.unreadCount()
         self.unreadLabel.setText(text)
         self.setWindowTitle("Elogviewer (%s)" % text)
 
     def currentRow(self):
         return self.tableView.selectionModel().currentIndex().row()
+
+    # [Fonic] Set current row
+    def setCurrentRow(self, index):
+        self.tableView.selectionModel().setCurrentIndex(index, QtCore.QItemSelectionModel.Select)
+
+    # [Fonic] Remove row
+    def removeRow(self, index):
+        self.model.removeRow(index.row())
 
     def rowCount(self):
         return self.proxyModel.rowCount()
@@ -781,30 +812,71 @@ class Elogviewer(ElogviewerUi):
                 Column.ImportantState):
             _itemFromIndex(index).toggleImportantState()
 
-    def deleteSelected(self):
-        selection = [self.proxyModel.mapToSource(idx) for idx in
-                     self.tableView.selectionModel().selectedRows()]
-        selection.sort(key=lambda idx: idx.row())
-        # Avoid call to onCurrentRowChanged() by clearing
-        # selection with reset().
-        currentRow = self.currentRow()
-        self.tableView.selectionModel().reset()
 
-        try:
-            for index in reversed(selection):
-                filename = self.model.itemFromIndex(index).filename()
+    # [Fonic] Reworked delete logic
+    def deleteSelected(self):
+
+        # Remember row after the one that was added last to the selection
+        # (which isn't necessarily the bottommost one, e.g. when selecting
+        # using CTRL)
+        selection = self.tableView.selectionModel().selectedRows()
+        savedrow = selection[len(selection)-1].row() + 1
+
+        # Keep processing selected rows:
+        #   - get index of first non-skipped selected row
+        #   - map index to source
+        #   - get item from index, get associated filename
+        #   - set current row (-> scroll to current item and display it in reading pane)
+        #   - try:
+        #     - delete logfile (if existing; if not, don't care)
+        #     - decrease savedrow if deleted row is located above (since table is about to shrink)
+        #     - remove row from table
+        #   - except:
+        #     - increase number of skipped rows
+        #     - open messagebox displaying error, user may continue or abort
+        # until there are no non-skipped selected rows left
+        skipped = 0
+        selection = self.tableView.selectionModel().selectedRows()
+        while (len(selection) > skipped):
+            index = selection[0+skipped]
+            mapped = self.proxyModel.mapToSource(index)
+            filename = self.model.itemFromIndex(mapped).filename()
+
+            self.setCurrentRow(mapped)
+            self.tableView.scrollTo(index, QtWidgets.QAbstractItemView.PositionAtCenter)
+
+            try:
                 if os.path.exists(filename):
                     os.remove(filename)
-                self.model.removeRow(index.row())
-        except OSError as exc:
-            QtWidgets.QMessageBox.critical(
-                    self, "Error",
-                    "Error while trying to delete"
-                    "'%s':<br><b>%s</b>" % (
-                filename, exc.strerror))
+                if (index.row() < savedrow):
+                    savedrow -= 1
+                self.removeRow(mapped)
+                selection = self.tableView.selectionModel().selectedRows()
 
-        self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
-        self.updateStatus()
+            except IOError as ioerr:
+                skipped += 1
+                messagebox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", "Error while trying to delete '%s':<br><b>%s</b>" % (filename, ioerr.strerror), QtWidgets.QMessageBox.NoButton, self)
+                button1 = messagebox.addButton("Continue", QtWidgets.QMessageBox.AcceptRole)
+                button2 = messagebox.addButton("Abort", QtWidgets.QMessageBox.RejectRole)
+                if (len(selection) - skipped == 0):
+                    button1.setText("Close")
+                    button2.setEnabled(False)
+                if (messagebox.exec() == QtWidgets.QMessageBox.RejectRole):
+                    break
+
+        # Check selection
+        if (len(selection) > 0):
+            # Still items selected, i.e. at least one deletion failed.
+            # Keep selection, set current row to the one that was last
+            # added to the selection
+            self.setCurrentRow(selection[len(selection)-1])
+        else:
+            # Nothing selected, i.e. all previously selected items were
+            # deleted. Set current row to remembered row (see beginning
+            # of method)
+            self.tableView.selectionModel().reset()
+            self.tableView.selectRow(min(savedrow, self.rowCount()-1))
+
 
     def refresh(self):
         self.saveSettings()
