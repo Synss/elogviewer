@@ -42,6 +42,7 @@ from glob import glob
 from functools import partial
 from collections import namedtuple
 from contextlib import closing
+import errno
 
 from enum import IntEnum
 from io import BytesIO
@@ -790,10 +791,6 @@ class Elogviewer(ElogviewerUi):
         self.tableView.selectionModel().reset()
 
         for index in reversed(selection):
-            # [Fonic] Check for errors when removing logfile. This is
-            #         important if elogviewer is run by an unprivileged
-            #         user who lacks proper permissions. Also, don't care
-            #         if logfile already got deleted
             try:
                 if os.path.exists(filename):
                     os.remove(self.model.itemFromIndex(index).filename())
