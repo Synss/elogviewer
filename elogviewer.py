@@ -795,8 +795,8 @@ class Elogviewer(ElogviewerUi):
                 if os.path.exists(filename):
                     os.remove(self.model.itemFromIndex(index).filename())
                 self.model.removeRow(index.row())
-            except IOError as ioerr:
-                QtWidgets.QMessageBox.critical(self, "Error", "Error while trying to delete '%s':<br><b>%s</b>" % (self.model.itemFromIndex(index).filename(), ioerr.strerror))
+            except OSError as exc:
+                QtWidgets.QMessageBox.critical(self, "Error", "Error while trying to delete '%s':<br><b>%s</b>" % (self.model.itemFromIndex(index).filename(), exc.strerror))
 
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
         self.updateStatus()
