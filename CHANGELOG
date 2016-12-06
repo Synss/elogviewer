@@ -1,0 +1,8 @@
+Version 2.7
+-----------
+
+Contributions from Fonic (github.com/fonic):
+- Misc. UI and usability improvements
+- The location of the configuration file was changed to
+  ~/.config/elogviewer
+- Bugfix: Do not mark first selected item as read on application start
