@@ -674,8 +674,8 @@ class Elogviewer(ElogviewerUi):
             self, "About (k)elogviewer", " ".join((
                 """
                 <h1>(k)elogviewer %s</h1>
-                <center><small>(k)elogviewer, copyright (c) 2007, 2011, 2013,
-                2015 Mathias Laurin<br>
+                <center><small>
+                (k)elogviewer, copyright (c) 2007-2016 Mathias Laurin<br>
                 kelogviewer, copyright (c) 2007 Jeremy Wickersheimer<br>
                 GNU General Public License (GPL) version 2</small><br>
                 <a href=http://sourceforge.net/projects/elogviewer>
@@ -683,14 +683,13 @@ class Elogviewer(ElogviewerUi):
                 </center>
 
                 <h2>Written by</h2>
-                Mathias Laurin <a href="mailto:mathias_laurin@users.sourceforge.net?Subject=elogviewer">
-                &lt;mathias_laurin@users.sourceforge.net&gt;</a><br>
+                Mathias Laurin (current maintainer)<br>
                 Timothy Kilbourn (initial author)<br>
-                Jeremy Wickersheimer (qt3/KDE port)
-
-                <h2>With contributions from</h2>
-                Radice David, gentoo bug #187595<br>
-                Christian Faulhammer, gentoo bug #192701
+                Jeremy Wickersheimer (qt3/KDE port)<br>
+                David Radice, gentoo bug #187595<br>
+                Christian Faulhammer, gentoo bug #192701<br>
+                Fonic (<a href=https://github.com/fonic>github.com/fonic</a>),
+                github issues 2-3, 6-8<br>
 
                 <h2>Documented by</h2>
                 Christian Faulhammer
