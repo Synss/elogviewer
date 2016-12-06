@@ -687,7 +687,8 @@ class Elogviewer(ElogviewerUi):
                 Jeremy Wickersheimer (qt3/KDE port)<br>
                 David Radice, gentoo bug #187595<br>
                 Christian Faulhammer, gentoo bug #192701<br>
-                Andreas A&szlig;mann, github issues 2 and 3<br>
+                Fonic (<a href=https://github.com/fonic>github.com/fonic</a>),
+                github issues 2-3, 6-8<br>
 
                 <h2>Documented by</h2>
                 Christian Faulhammer
