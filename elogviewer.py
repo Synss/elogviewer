@@ -36,7 +36,6 @@ import argparse
 import bz2
 from collections import namedtuple
 from contextlib import closing
-import errno
 from enum import IntEnum
 from functools import partial
 from glob import glob
@@ -49,10 +48,6 @@ import os
 import re
 import sys
 import time
-try:
-    import liblzma as lzma
-except ImportError:
-    lzma = None
 
 try:
     import sip
