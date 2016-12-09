@@ -198,17 +198,17 @@ def _html(filename):
     lines.append("")
     text = os.linesep.join(lines)
     # Strip ANSI colors
-    text = re.sub("\x1b\[[0-9;]+m", "", text)
+    text = re.sub(r"\x1b\[[0-9;]+m", "", text)
     # Hyperlink
-    text = re.sub("((https?|ftp)://\S+)", r'<a href="\1">\1</a>', text)
+    text = re.sub(r"((https?|ftp)://\S+)", r'<a href="\1">\1</a>', text)
     # Hyperlink bugs
     text = re.sub(
-        "bug\s+#([0-9]+)",
+        r"bug\s+#([0-9]+)",
         r'<a href="https://bugs.gentoo.org/\1">bug #\1</a>',
         text)
     # Hyperlink packages
     text = re.sub(
-        "(\s)([a-z1]+[-][a-z0-9]+/[a-z0-9-]+)([\s,.:;!?])",
+        r"(\s)([a-z1]+[-][a-z0-9]+/[a-z0-9-]+)([\s,.:;!?])",
         r'\1<a href="http://packages.gentoo.org/package/\2">\2</a>\3',
         text)
     return text
