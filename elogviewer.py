@@ -148,29 +148,27 @@ def _itemFromIndex(index):
 
 
 def _file(filename):
-        root, ext = os.path.splitext(filename)
-        try:
-            return {".gz": gzip.open,
-                    ".bz2": bz2.BZ2File,
-                    ".log": open}[ext](filename, "rb")
-        except KeyError:
-            logger.error("%s: unsupported format" % filename)
-            return closing(BytesIO(
-                b"""
-                <!-- set eclass: ERROR: -->
-                <h2>Unsupported format</h2>
-                The selected elog is in an unsupported format.
-                """
-            ))
-        except IOError:
-            logger.error("%s: could not open file" % filename)
-            return closing(BytesIO(
-                b"""
-                <!-- set eclass: ERROR: -->
-                <h2>File does not open</h2>
-                The selected elog could not be opened.
-                """
-            ))
+    root, ext = os.path.splitext(filename)
+    try:
+        return {".gz": gzip.open,
+                ".bz2": bz2.BZ2File,
+                ".log": open}[ext](filename, "rb")
+    except KeyError:
+        logger.error("%s: unsupported format" % filename)
+        return closing(BytesIO(
+            b"""
+            <!-- set eclass: ERROR: -->
+            <h2>Unsupported format</h2>
+            The selected elog is in an unsupported format.
+            """))
+    except IOError:
+        logger.error("%s: could not open file" % filename)
+        return closing(BytesIO(
+            b"""
+            <!-- set eclass: ERROR: -->
+            <h2>File does not open</h2>
+            The selected elog could not be opened.
+            """))
 
 
 def _html(filename):
@@ -335,8 +333,7 @@ class Star(QtWidgets.QAbstractButton):
         for i in range(5):
             self._starPolygon.append(QtCore.QPointF(
                 0.5 + 0.5 * cos(0.8 * i * 3.14),
-                0.5 + 0.5 * sin(0.8 * i * 3.14))
-            )
+                0.5 + 0.5 * sin(0.8 * i * 3.14)))
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -392,15 +389,15 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
 
     def editorEvent(self, event, model, option, index):
         if (int(index.flags()) & Qt.ItemIsEditable and
-            (event.type() in (QtCore.QEvent.MouseButtonRelease,
-                              QtCore.QEvent.MouseButtonDblClick) and
-             event.button() == Qt.LeftButton) or
-            (event.type() == QtCore.QEvent.KeyPress and
-             event.key() in (Qt.Key_Space, Qt.Key_Select))):
-                self._btn.toggle()
-                self.setModelData(self._btn, model, index)
-                self.commitData.emit(self._btn)
-                return True
+                (event.type() in (QtCore.QEvent.MouseButtonRelease,
+                                  QtCore.QEvent.MouseButtonDblClick) and
+                 event.button() == Qt.LeftButton) or
+                (event.type() == QtCore.QEvent.KeyPress and
+                 event.key() in (Qt.Key_Space, Qt.Key_Select))):
+            self._btn.toggle()
+            self.setModelData(self._btn, model, index)
+            self.commitData.emit(self._btn)
+            return True
         return False
 
 
@@ -618,9 +615,9 @@ class Elogviewer(ElogviewerUi):
 
     def __setupTableColumnDelegates(self):
         for column, delegate in (
-            (Column.ImportantState, ButtonDelegate(Star(), self.tableView)),
-            (Column.ReadState, ButtonDelegate(Bullet(), self.tableView)),
-            (Column.Eclass, SeverityColorDelegate(self.tableView)),
+                (Column.ImportantState, ButtonDelegate(Star(), self.tableView)),
+                (Column.ReadState, ButtonDelegate(Bullet(), self.tableView)),
+                (Column.Eclass, SeverityColorDelegate(self.tableView)),
         ):
             self.tableView.setItemDelegateForColumn(column, delegate)
 
@@ -800,10 +797,9 @@ class Elogviewer(ElogviewerUi):
                 self.model.removeRow(index.row())
         except OSError as exc:
             QtWidgets.QMessageBox.critical(
-                    self, "Error",
-                    "Error while trying to delete"
-                    "'%s':<br><b>%s</b>" % (
-                filename, exc.strerror))
+                self, "Error",
+                "Error while trying to delete"
+                "'%s':<br><b>%s</b>" % (filename, exc.strerror))
 
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
         self.updateStatus()
