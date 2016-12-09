@@ -561,7 +561,8 @@ class Elogviewer(ElogviewerUi):
         if not self.settings.contains("importantFlag"):
             self.settings.setValue("importantFlag", set())
         if self.settings.contains("windowWidth") and self.settings.contains("windowHeight"):
-            self.resize(int(self.settings.value("windowWidth")), int(self.settings.value("windowHeight")))
+            self.resize(int(self.settings.value("windowWidth")),
+                        int(self.settings.value("windowHeight")))
         else:
             screenSize = QtWidgets.QApplication.desktop().screenGeometry()
             self.resize(screenSize.width() / 2, screenSize.height() / 2)
@@ -608,7 +609,8 @@ class Elogviewer(ElogviewerUi):
 
         self.populate()
         if self.settings.contains("sortColumn") and self.settings.contains("sortOrder"):
-            self.tableView.sortByColumn(int(self.settings.value("sortColumn")), int(self.settings.value("sortOrder")))
+            self.tableView.sortByColumn(int(self.settings.value("sortColumn")),
+                                        int(self.settings.value("sortOrder")))
         else:
             self.tableView.sortByColumn(Column.Date, Qt.DescendingOrder)
         self.tableView.selectRow(0)
