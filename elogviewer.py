@@ -154,7 +154,7 @@ def _file(filename):
                 ".bz2": bz2.BZ2File,
                 ".log": open}[ext](filename, "rb")
     except KeyError:
-        logger.error("%s: unsupported format" % filename)
+        logger.error("%s: unsupported format", filename)
         return closing(BytesIO(
             b"""
             <!-- set eclass: ERROR: -->
@@ -162,7 +162,7 @@ def _file(filename):
             The selected elog is in an unsupported format.
             """))
     except IOError:
-        logger.error("%s: could not open file" % filename)
+        logger.error("%s: could not open file", filename)
         return closing(BytesIO(
             b"""
             <!-- set eclass: ERROR: -->
