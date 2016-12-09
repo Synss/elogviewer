@@ -64,12 +64,12 @@ else:
     try:
         from PyQt5 import QtGui, QtWidgets, QtCore
     except ImportError:
-        for __type in "QDate QDateTime QString QVariant".split():
+        for __type in ("QDate", "QDateTime", "QString", "QVariant"):
             sip.setapi(__type, 2)
         from PyQt4 import QtGui, QtCore
         QtCore.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
         QtWidgets = QtGui
-        del __type
+        del __type  # pylint: disable=undefined-loop-variable
     finally:
         del sip
 
