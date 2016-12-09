@@ -466,7 +466,7 @@ class ElogItem(QtGui.QStandardItem):
             try:
                 item = self.model().verticalHeaderItem(self.row())
             except AttributeError:
-                assert(self.model() is None)
+                assert self.model() is None
                 item = None
             return item if item else ElogRowItem()
 
@@ -726,7 +726,7 @@ class Elogviewer(ElogviewerUi):
         super(Elogviewer, self).closeEvent(closeEvent)
 
     def onCurrentRowChanged(self, current, previous):
-        if (previous.row() != -1):
+        if previous.row() != -1:
             currentItem, previousItem = map(_itemFromIndex, (current, previous))
             if currentItem.readState() is Qt.Unchecked:
                 currentItem.setReadState(Qt.PartiallyChecked)
