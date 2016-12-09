@@ -64,16 +64,14 @@ else:
     try:
         from PyQt5 import QtGui, QtWidgets, QtCore
     except ImportError:
-        for type in "QDate QDateTime QString QVariant".split():
-            sip.setapi(type, 2)
+        for __type in "QDate QDateTime QString QVariant".split():
+            sip.setapi(__type, 2)
         from PyQt4 import QtGui, QtCore
         QtCore.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
         QtWidgets = QtGui
-        del type
+        del __type
     finally:
         del sip
-
-Qt = QtCore.Qt
 
 try:
     import portage
@@ -84,24 +82,29 @@ except ImportError:
 __version__ = "2.7"
 
 
+# pylint: disable=invalid-name
+Qt = QtCore.Qt
 logger = logging.getLogger(__name__)
+# pylint: disable=invalid-name
 
 
-def _(bytes):
+def _(bytestr):
     """This helper changes `bytes` to `str` on python3 and does nothing
     under python2.
 
     """
-    return bytes.decode(locale.getpreferredencoding(), "replace")
+    return bytestr.decode(locale.getpreferredencoding(), "replace")
 
 
 class Role(IntEnum):
 
+    # pylint: disable=invalid-name
     SortRole = Qt.UserRole + 1
 
 
 class Column(IntEnum):
 
+    # pylint: disable=invalid-name
     ImportantState = 0
     Category = 1
     Package = 2
@@ -112,11 +115,13 @@ class Column(IntEnum):
 
 class EClass(IntEnum):
 
+    # pylint: disable=invalid-name
     eerror = 50
     ewarn = 40
     einfo = 30
     elog = 10
     eqa = 0
+    # pylint: enable=invalid-name
 
     def color(self):
         return dict(
@@ -148,7 +153,7 @@ def _itemFromIndex(index):
 
 
 def _file(filename):
-    root, ext = os.path.splitext(filename)
+    _, ext = os.path.splitext(filename)
     try:
         return {".gz": gzip.open,
                 ".bz2": bz2.BZ2File,
