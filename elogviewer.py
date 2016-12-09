@@ -29,30 +29,25 @@ without privileges.
 Read /etc/make.conf.example for more information.
 """
 
-import sys
-import os
-import logging
-logger = logging.getLogger(__name__)
+# pylint: disable=no-member
+# pylint: disable=missing-docstring
+
 import argparse
-import locale
-import time
-import re
-from math import cos, sin
-from glob import glob
-from functools import partial
+import bz2
 from collections import namedtuple
 from contextlib import closing
-import errno
-
 from enum import IntEnum
-from io import BytesIO
-
+from functools import partial
+from glob import glob
 import gzip
-import bz2
-try:
-    import liblzma as lzma
-except ImportError:
-    lzma = None
+from io import BytesIO
+import locale
+import logging
+from math import cos, sin
+import os
+import re
+import sys
+import time
 
 try:
     import sip
@@ -64,16 +59,14 @@ else:
     try:
         from PyQt5 import QtGui, QtWidgets, QtCore
     except ImportError:
-        for type in "QDate QDateTime QString QVariant".split():
-            sip.setapi(type, 2)
+        for __type in ("QDate", "QDateTime", "QString", "QVariant"):
+            sip.setapi(__type, 2)
         from PyQt4 import QtGui, QtCore
         QtCore.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
         QtWidgets = QtGui
-        del type
+        del __type  # pylint: disable=undefined-loop-variable
     finally:
         del sip
-
-Qt = QtCore.Qt
 
 try:
     import portage
@@ -84,21 +77,29 @@ except ImportError:
 __version__ = "2.7"
 
 
-def _(bytes):
+# pylint: disable=invalid-name
+Qt = QtCore.Qt
+logger = logging.getLogger(__name__)
+# pylint: disable=invalid-name
+
+
+def _(bytestr):
     """This helper changes `bytes` to `str` on python3 and does nothing
     under python2.
 
     """
-    return bytes.decode(locale.getpreferredencoding(), "replace")
+    return bytestr.decode(locale.getpreferredencoding(), "replace")
 
 
 class Role(IntEnum):
 
+    # pylint: disable=invalid-name
     SortRole = Qt.UserRole + 1
 
 
 class Column(IntEnum):
 
+    # pylint: disable=invalid-name
     ImportantState = 0
     Category = 1
     Package = 2
@@ -109,11 +110,13 @@ class Column(IntEnum):
 
 class EClass(IntEnum):
 
+    # pylint: disable=invalid-name
     eerror = 50
     ewarn = 40
     einfo = 30
     elog = 10
     eqa = 0
+    # pylint: enable=invalid-name
 
     def color(self):
         return dict(
@@ -145,29 +148,27 @@ def _itemFromIndex(index):
 
 
 def _file(filename):
-        root, ext = os.path.splitext(filename)
-        try:
-            return {".gz": gzip.open,
-                    ".bz2": bz2.BZ2File,
-                    ".log": open}[ext](filename, "rb")
-        except KeyError:
-            logger.error("%s: unsupported format" % filename)
-            return closing(BytesIO(
-                b"""
-                <!-- set eclass: ERROR: -->
-                <h2>Unsupported format</h2>
-                The selected elog is in an unsupported format.
-                """
-            ))
-        except IOError:
-            logger.error("%s: could not open file" % filename)
-            return closing(BytesIO(
-                b"""
-                <!-- set eclass: ERROR: -->
-                <h2>File does not open</h2>
-                The selected elog could not be opened.
-                """
-            ))
+    _, ext = os.path.splitext(filename)
+    try:
+        return {".gz": gzip.open,
+                ".bz2": bz2.BZ2File,
+                ".log": open}[ext](filename, "rb")
+    except KeyError:
+        logger.error("%s: unsupported format", filename)
+        return closing(BytesIO(
+            b"""
+            <!-- set eclass: ERROR: -->
+            <h2>Unsupported format</h2>
+            The selected elog is in an unsupported format.
+            """))
+    except IOError:
+        logger.error("%s: could not open file", filename)
+        return closing(BytesIO(
+            b"""
+            <!-- set eclass: ERROR: -->
+            <h2>File does not open</h2>
+            The selected elog could not be opened.
+            """))
 
 
 def _html(filename):
@@ -197,17 +198,17 @@ def _html(filename):
     lines.append("")
     text = os.linesep.join(lines)
     # Strip ANSI colors
-    text = re.sub("\x1b\[[0-9;]+m", "", text)
+    text = re.sub(r"\x1b\[[0-9;]+m", "", text)
     # Hyperlink
-    text = re.sub("((https?|ftp)://\S+)", r'<a href="\1">\1</a>', text)
+    text = re.sub(r"((https?|ftp)://\S+)", r'<a href="\1">\1</a>', text)
     # Hyperlink bugs
     text = re.sub(
-        "bug\s+#([0-9]+)",
+        r"bug\s+#([0-9]+)",
         r'<a href="https://bugs.gentoo.org/\1">bug #\1</a>',
         text)
     # Hyperlink packages
     text = re.sub(
-        "(\s)([a-z1]+[-][a-z0-9]+/[a-z0-9-]+)([\s,.:;!?])",
+        r"(\s)([a-z1]+[-][a-z0-9]+/[a-z0-9-]+)([\s,.:;!?])",
         r'\1<a href="http://packages.gentoo.org/package/\2">\2</a>\3',
         text)
     return text
@@ -332,8 +333,7 @@ class Star(QtWidgets.QAbstractButton):
         for i in range(5):
             self._starPolygon.append(QtCore.QPointF(
                 0.5 + 0.5 * cos(0.8 * i * 3.14),
-                0.5 + 0.5 * sin(0.8 * i * 3.14))
-            )
+                0.5 + 0.5 * sin(0.8 * i * 3.14)))
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -389,15 +389,15 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
 
     def editorEvent(self, event, model, option, index):
         if (int(index.flags()) & Qt.ItemIsEditable and
-            (event.type() in (QtCore.QEvent.MouseButtonRelease,
-                              QtCore.QEvent.MouseButtonDblClick) and
-             event.button() == Qt.LeftButton) or
-            (event.type() == QtCore.QEvent.KeyPress and
-             event.key() in (Qt.Key_Space, Qt.Key_Select))):
-                self._btn.toggle()
-                self.setModelData(self._btn, model, index)
-                self.commitData.emit(self._btn)
-                return True
+                (event.type() in (QtCore.QEvent.MouseButtonRelease,
+                                  QtCore.QEvent.MouseButtonDblClick) and
+                 event.button() == Qt.LeftButton) or
+                (event.type() == QtCore.QEvent.KeyPress and
+                 event.key() in (Qt.Key_Space, Qt.Key_Select))):
+            self._btn.toggle()
+            self.setModelData(self._btn, model, index)
+            self.commitData.emit(self._btn)
+            return True
         return False
 
 
@@ -466,7 +466,7 @@ class ElogItem(QtGui.QStandardItem):
             try:
                 item = self.model().verticalHeaderItem(self.row())
             except AttributeError:
-                assert(self.model() is None)
+                assert self.model() is None
                 item = None
             return item if item else ElogRowItem()
 
@@ -561,7 +561,8 @@ class Elogviewer(ElogviewerUi):
         if not self.settings.contains("importantFlag"):
             self.settings.setValue("importantFlag", set())
         if self.settings.contains("windowWidth") and self.settings.contains("windowHeight"):
-            self.resize(int(self.settings.value("windowWidth")), int(self.settings.value("windowHeight")))
+            self.resize(int(self.settings.value("windowWidth")),
+                        int(self.settings.value("windowHeight")))
         else:
             screenSize = QtWidgets.QApplication.desktop().screenGeometry()
             self.resize(screenSize.width() / 2, screenSize.height() / 2)
@@ -608,16 +609,17 @@ class Elogviewer(ElogviewerUi):
 
         self.populate()
         if self.settings.contains("sortColumn") and self.settings.contains("sortOrder"):
-            self.tableView.sortByColumn(int(self.settings.value("sortColumn")), int(self.settings.value("sortOrder")))
+            self.tableView.sortByColumn(int(self.settings.value("sortColumn")),
+                                        int(self.settings.value("sortOrder")))
         else:
             self.tableView.sortByColumn(Column.Date, Qt.DescendingOrder)
         self.tableView.selectRow(0)
 
     def __setupTableColumnDelegates(self):
         for column, delegate in (
-            (Column.ImportantState, ButtonDelegate(Star(), self.tableView)),
-            (Column.ReadState, ButtonDelegate(Bullet(), self.tableView)),
-            (Column.Eclass, SeverityColorDelegate(self.tableView)),
+                (Column.ImportantState, ButtonDelegate(Star(), self.tableView)),
+                (Column.ReadState, ButtonDelegate(Bullet(), self.tableView)),
+                (Column.Eclass, SeverityColorDelegate(self.tableView)),
         ):
             self.tableView.setItemDelegateForColumn(column, delegate)
 
@@ -726,7 +728,7 @@ class Elogviewer(ElogviewerUi):
         super(Elogviewer, self).closeEvent(closeEvent)
 
     def onCurrentRowChanged(self, current, previous):
-        if (previous.row() != -1):
+        if previous.row() != -1:
             currentItem, previousItem = map(_itemFromIndex, (current, previous))
             if currentItem.readState() is Qt.Unchecked:
                 currentItem.setReadState(Qt.PartiallyChecked)
@@ -797,10 +799,9 @@ class Elogviewer(ElogviewerUi):
                 self.model.removeRow(index.row())
         except OSError as exc:
             QtWidgets.QMessageBox.critical(
-                    self, "Error",
-                    "Error while trying to delete"
-                    "'%s':<br><b>%s</b>" % (
-                filename, exc.strerror))
+                self, "Error",
+                "Error while trying to delete"
+                "'%s':<br><b>%s</b>" % (filename, exc.strerror))
 
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
         self.updateStatus()
