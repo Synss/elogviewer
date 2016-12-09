@@ -29,6 +29,9 @@ without privileges.
 Read /etc/make.conf.example for more information.
 """
 
+# pylint: disable=no-member
+# pylint: disable=missing-docstring
+
 import sys
 import os
 import logging
