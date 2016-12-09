@@ -32,26 +32,23 @@ Read /etc/make.conf.example for more information.
 # pylint: disable=no-member
 # pylint: disable=missing-docstring
 
-import sys
-import os
-import logging
-logger = logging.getLogger(__name__)
 import argparse
-import locale
-import time
-import re
-from math import cos, sin
-from glob import glob
-from functools import partial
+import bz2
 from collections import namedtuple
 from contextlib import closing
 import errno
-
 from enum import IntEnum
-from io import BytesIO
-
+from functools import partial
+from glob import glob
 import gzip
-import bz2
+from io import BytesIO
+import locale
+import logging
+from math import cos, sin
+import os
+import re
+import sys
+import time
 try:
     import liblzma as lzma
 except ImportError:
@@ -85,6 +82,9 @@ except ImportError:
 
 
 __version__ = "2.7"
+
+
+logger = logging.getLogger(__name__)
 
 
 def _(bytes):
