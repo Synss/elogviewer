@@ -657,24 +657,24 @@ class Elogviewer(ElogviewerUi):
 
     def __initActions(self):
         Icon = QtGui.QIcon.fromTheme
-        self.refreshAction = QtWidgets.QAction(
+        self.toolBar.addAction(QtWidgets.QAction(
             Icon("view-refresh"), "Refresh", self.toolBar,
             shortcut=QtGui.QKeySequence.Refresh,
-            triggered=self.refresh)
-        self.markReadAction = QtWidgets.QAction(
+            triggered=self.refresh))
+        self.toolBar.addAction(QtWidgets.QAction(
             Icon("mail-mark-read"), "Mark read", self.toolBar,
-            triggered=partial(self.setSelectedReadState, Qt.Checked))
-        self.markUnreadAction = QtWidgets.QAction(
+            triggered=partial(self.setSelectedReadState, Qt.Checked)))
+        self.toolBar.addAction(QtWidgets.QAction(
             Icon("mail-mark-unread"), "Mark unread", self.toolBar,
-            triggered=partial(self.setSelectedReadState, Qt.Unchecked))
-        self.markImportantAction = QtWidgets.QAction(
+            triggered=partial(self.setSelectedReadState, Qt.Unchecked)))
+        self.toolBar.addAction(QtWidgets.QAction(
             Icon("mail-mark-important"), "Important", self.toolBar,
-            triggered=self.toggleSelectedImportantState)
-        self.deleteAction = QtWidgets.QAction(
+            triggered=self.toggleSelectedImportantState))
+        self.toolBar.addAction(QtWidgets.QAction(
             Icon("edit-delete"), "Delete", self.toolBar,
             shortcut=QtGui.QKeySequence.Delete,
-            triggered=self.deleteSelected)
-        self.aboutAction = QtWidgets.QAction(
+            triggered=self.deleteSelected))
+        self.toolBar.addAction(QtWidgets.QAction(
             Icon("help-about"), "About", self.toolBar,
             shortcut=QtGui.QKeySequence.HelpContents,
             triggered=partial(
@@ -699,19 +699,11 @@ class Elogviewer(ElogviewerUi):
                 "<h2>Documented by</h2>"
                 "Christian Faulhammer"
                 '<a href="mailto:opfer@gentoo.org">&lt;opfer@gentoo.org&gt;</a>' %
-                __version__))
-        self.quitAction = QtWidgets.QAction(
+                __version__)))
+        self.toolBar.addAction(QtWidgets.QAction(
             Icon("application-exit"), "Quit", self.toolBar,
             shortcut=QtGui.QKeySequence.Quit,
-            triggered=self.close)
-
-        self.toolBar.addAction(self.refreshAction)
-        self.toolBar.addAction(self.markReadAction)
-        self.toolBar.addAction(self.markUnreadAction)
-        self.toolBar.addAction(self.markImportantAction)
-        self.toolBar.addAction(self.deleteAction)
-        self.toolBar.addAction(self.aboutAction)
-        self.toolBar.addAction(self.quitAction)
+            triggered=self.close))
 
     def saveSettings(self):
         readFlag = set()
