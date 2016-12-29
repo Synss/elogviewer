@@ -58,7 +58,7 @@ parser.add_argument("--log", choices="DEBUG INFO WARNING ERROR".split(),
 config = parser.parse_args()
 
 logging.basicConfig()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("elogviewer")
 logger.setLevel(getattr(logging, config.log))
 
 logger.debug("running on python %s", sys.version)
