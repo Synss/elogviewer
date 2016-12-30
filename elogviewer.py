@@ -51,7 +51,8 @@ import time
 
 # pylint: disable=invalid-name
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("-p", "--elogpath", help="path to the elog directory")
+parser.add_argument("-p", "--elogpath", help="path to the elog directory",
+                    default="")
 parser.add_argument("--log", choices="DEBUG INFO WARNING ERROR".split(),
                     default="WARNING", help="set logging level")
 
@@ -87,10 +88,22 @@ else:
     finally:
         del sip
 
-try:
-    import portage
-except ImportError:
-    portage = None
+
+if not config.elogpath:
+    try:
+        import portage
+        logdir = portage.settings["PORT_LOGDIR"]
+        if not logdir:
+            logdir = os.path.join(
+                    portage.settings["EPREFIX"] if portage.settings["EPREFIX"] else os.sep,
+                    "var", "log", "portage")
+        config.elogpath = os.path.join(logdir, "elog")
+        del logdir
+        del portage
+    except ImportError:
+        pass
+
+logger.debug("elogpath is set to %r", config.elogpath)
 # pylint: enable=wrong-import-position
 
 
@@ -858,15 +871,6 @@ class Elogviewer(ElogviewerUi):
 
 
 def main():
-    if portage and not config.elogpath:
-        logdir = portage.settings.get(
-            "PORT_LOGDIR",
-            os.path.join(os.sep, portage.settings["EPREFIX"],
-                         *"var/log/portage".split("/")))
-        config.elogpath = os.path.join(logdir, "elog")
-    else:
-        config.elogpath = ""
-
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon.fromTheme("applications-system"))
 
