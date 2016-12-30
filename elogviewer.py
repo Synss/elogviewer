@@ -870,7 +870,7 @@ class Elogviewer(ElogviewerUi):
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
 
 
-def main():
+if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon.fromTheme("applications-system"))
 
@@ -878,6 +878,3 @@ def main():
     elogviewer.show()
 
     sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main()
