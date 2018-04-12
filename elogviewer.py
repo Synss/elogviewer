@@ -49,29 +49,62 @@ import re
 import sys
 import time
 
+# pylint: disable=invalid-name
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("-p", "--elogpath", help="path to the elog directory",
+                    default="")
+parser.add_argument("--log", choices="DEBUG INFO WARNING ERROR".split(),
+                    default="WARNING", help="set logging level")
+
+config = parser.parse_args()
+
+logging.basicConfig()
+logger = logging.getLogger("elogviewer")
+logger.setLevel(getattr(logging, config.log))
+
+logger.debug("running on python %s", sys.version)
+# pylint: enable=invalid-name
+
+# pylint: disable=wrong-import-position
 try:
     import sip
 except ImportError:
     from PySide import QtGui, QtCore
     QtCore.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
     QtWidgets = QtGui
+    logger.debug("selected PySide")
 else:
     try:
         from PyQt5 import QtGui, QtWidgets, QtCore
+        logger.debug("selected PyQt5")
     except ImportError:
         for __type in ("QDate", "QDateTime", "QString", "QVariant"):
             sip.setapi(__type, 2)
         from PyQt4 import QtGui, QtCore
         QtCore.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
         QtWidgets = QtGui
+        logger.debug("selected PyQt4")
         del __type  # pylint: disable=undefined-loop-variable
     finally:
         del sip
 
-try:
-    import portage
-except ImportError:
-    portage = None
+
+if not config.elogpath:
+    try:
+        import portage
+        logdir = portage.settings["PORT_LOGDIR"]
+        if not logdir:
+            logdir = os.path.join(
+                    portage.settings["EPREFIX"] if portage.settings["EPREFIX"] else os.sep,
+                    "var", "log", "portage")
+        config.elogpath = os.path.join(logdir, "elog")
+        del logdir
+        del portage
+    except ImportError:
+        pass
+
+logger.debug("elogpath is set to %r", config.elogpath)
+# pylint: enable=wrong-import-position
 
 
 __version__ = "2.7"
@@ -79,7 +112,6 @@ __version__ = "2.7"
 
 # pylint: disable=invalid-name
 Qt = QtCore.Qt
-logger = logging.getLogger(__name__)
 # pylint: disable=invalid-name
 
 
@@ -838,22 +870,7 @@ class Elogviewer(ElogviewerUi):
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("-p", "--elogpath", help="path to the elog directory")
-    parser.add_argument("--log", choices="DEBUG INFO WARNING ERROR".split(),
-                        default="WARNING", help="set logging level")
-    config = parser.parse_args()
-    if portage and not config.elogpath:
-        logdir = portage.settings.get(
-            "PORT_LOGDIR",
-            os.path.join(os.sep, portage.settings["EPREFIX"],
-                         *"var/log/portage".split("/")))
-        config.elogpath = os.path.join(logdir, "elog")
-    else:
-        config.elogpath = ""
-    logger.setLevel(getattr(logging, config.log))
-
+if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon.fromTheme("applications-system"))
 
@@ -861,6 +878,3 @@ def main():
     elogviewer.show()
 
     sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main()
