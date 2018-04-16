@@ -1,3 +1,12 @@
+Version 2.8
+-----------
+
+Bugfix and significant speed improvements.
+
+- Fix issue #7 reported on github by fonic and lyallp.
+- Misc. linting and merged old changes.
+
+
 Version 2.7
 -----------
 
