@@ -38,8 +38,9 @@ from collections import namedtuple
 from contextlib import closing
 from enum import IntEnum
 from functools import partial
-from glob import glob
+import glob
 import gzip
+import itertools
 from io import BytesIO
 import locale
 import logging
@@ -107,7 +108,7 @@ logger.debug("elogpath is set to %r", config.elogpath)
 # pylint: enable=wrong-import-position
 
 
-__version__ = "2.7"
+__version__ = "2.8"
 
 
 # pylint: disable=invalid-name
@@ -176,7 +177,7 @@ def _itemFromIndex(index):
         index = _sourceIndex(index)
         return index.model().itemFromIndex(index)
     else:
-        return ElogItem()
+        return QtGui.QStandardItem()
 
 
 def _file(filename):
@@ -251,6 +252,7 @@ class Elog(namedtuple("Elog", ["filename", "category", "package",
 
     @classmethod
     def fromFilename(cls, filename):
+        logger.debug(filename)
         basename = os.path.basename(filename)
         try:
             category, package, rest = basename.split(":")
@@ -259,6 +261,11 @@ class Elog(namedtuple("Elog", ["filename", "category", "package",
             package, rest = basename.split(":")
         date = rest.split(".")[0]
         date = time.strptime(date, "%Y%m%d-%H%M%S")
+        eclass = cls._getClass(filename)
+        return cls(filename, category, package, date, eclass)
+
+    @staticmethod
+    def _getClass(filename):
         # Get the highest elog class. Adapted from Luca Marturana's elogv.
         with _file(filename) as elogfile:
             eClasses = re.findall("LOG:|INFO:|WARN:|ERROR:",
@@ -271,15 +278,7 @@ class Elog(namedtuple("Elog", ["filename", "category", "package",
                 eclass = EClass.elog
             else:
                 eclass = EClass.einfo
-        return cls(filename, category, package, date, eclass)
-
-    @property
-    def isoTime(self):
-        return time.strftime("%Y-%m-%d %H:%M:%S", self.date)
-
-    @property
-    def localeTime(self):
-        return time.strftime("%x %X", self.date)
+        return eclass
 
 
 class TextToHtmlDelegate(QtWidgets.QItemDelegate):
@@ -324,7 +323,7 @@ class ReadFontStyleDelegate(QtWidgets.QStyledItemDelegate):
         if not index.isValid():
             return
         self.initStyleOption(option, index)
-        option.font.setBold(_itemFromIndex(index).readState() is Qt.Unchecked)
+        option.font.setBold(_itemFromIndex(index).readState() == Qt.Unchecked)
         super(ReadFontStyleDelegate, self).paint(painter, option, index)
 
 
@@ -433,112 +432,162 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         return False
 
 
-class ElogRowItem(QtGui.QStandardItem):
+class ElogItem(object):
 
-    def __init__(self, filename="", parent=None):
-        super(ElogRowItem, self).__init__(parent)
-        self._elog = Elog.fromFilename(filename) if filename else Elog(
-            "", None, None, time.localtime(), EClass.einfo)
-        self._readState = Qt.Unchecked
-        self._importantState = Qt.Unchecked
-
-    def type(self):
-        return self.UserType + 1
-
-    def clone(self):
-        return self.__class__()
+    def __init__(self, elog, readState=Qt.Unchecked, importantState=Qt.Unchecked):
+        self._elog = elog
+        self._readState = readState
+        self._importantState = importantState
 
     def filename(self):
         return self._elog.filename
 
-    def html(self):
-        header = "<h1>{category}/{package}</h1>".format(
-            category=self._elog.category,
-            package=self._elog.package,
-        )
-        text = _html(self._elog.filename)
-        return header + text
+    def category(self):
+        return self._elog.category
 
-    def setReadState(self, state):
-        self._readState = state
-        self.emitDataChanged()
+    def package(self):
+        return self._elog.package
+
+    def isoTime(self):
+        return time.strftime("%Y-%m-%d %H:%M:%S", self._elog.date)
+
+    def localeTime(self):
+        return time.strftime("%x %X", self._elog.date)
+
+    def eclass(self):
+        return self._elog.eclass
 
     def readState(self):
         return self._readState
 
-    def setImportantState(self, state):
-        self._importantState = state
-        self.emitDataChanged()
+    def setReadState(self, state):
+        self._readState = state
+
+    def isReadState(self):
+        return self.readState() == Qt.Checked
+
+    def toggleReadState(self):
+        self.setReadState(Qt.Unchecked if self.isReadState() else
+                          Qt.Checked)
 
     def importantState(self):
         return self._importantState
 
+    def setImportantState(self, state):
+        self._importantState = state
+
     def isImportantState(self):
-        return self.importantState() is Qt.Checked
+        return self.importantState() == Qt.Checked
 
     def toggleImportantState(self):
         self.setImportantState(Qt.Unchecked if self.isImportantState() else
                                Qt.Checked)
 
+    def html(self):
+        header = "<h1>{category}/{package}</h1>".format(
+            category=self.category(),
+            package=self.package(),
+        )
+        text = _html(self.filename())
+        return header + text
 
-class ElogItem(QtGui.QStandardItem):
+
+class Model(QtCore.QAbstractTableModel):
 
     def __init__(self, parent=None):
-        super(ElogItem, self).__init__(parent)
+        super(Model, self).__init__(parent)
+        self._data = []  # A list of ElogItem.
 
-    def type(self):
-        return self.UserType + 2
+    def toggleImportantState(self, index):
+        if index.column() != Column.ImportantState:
+            return False
+        self._data[index.row()].toggleImportantState()
+        self.dataChanged.emit(index, index)
+        return True
 
-    def clone(self):
-        return self.__class__()
+    def setReadState(self, index, state):
+        if index.column() != Column.ReadState:
+            return False
+        self._data[index.row()].setReadState(state)
+        self.dataChanged.emit(index, index)
+        return True
 
-    def __getattr__(self, name):
+    def toggleReadState(self, index):
+        if index.column() != Column.ReadState:
+            return False
+        self._data[index.row()].toggleReadState()
+        self.dataChanged.emit(index, index)
+        return True
 
-        def verticalHeaderItem():
-            try:
-                item = self.model().verticalHeaderItem(self.row())
-            except AttributeError:
-                assert self.model() is None
-                item = None
-            return item if item else ElogRowItem()
+    def itemFromIndex(self, index):
+        return self._data[index.row()]
 
-        return getattr(verticalHeaderItem(), name)
+    def item(self, row, column=0):
+        return self._data[row]
 
-    def setData(self, value, role=Qt.UserRole + 1):
-        if role == Qt.CheckStateRole:
-            return {
-                Column.ImportantState: self.setImportantState,
-                Column.ReadState: self.setReadState,
-            }.get(self.column(), lambda: None)(value)
-        super(ElogItem, self).setData(value, role)
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return len(self._data)
 
-    def data(self, role=Qt.UserRole + 1):
-        elog = self._elog
-        if not elog:
-            return super(ElogItem, self).data(role)
+    def columnCount(self, parent=QtCore.QModelIndex()):
+        return len(Column)
+
+    def removeRows(self, row, count, parent=QtCore.QModelIndex()):
+        last = min(self.rowCount(), row + count)
+        self.beginRemoveRows(parent, row, max(row, last - 1))
+        idx = -1
+        for idx in range(row, row + count):
+            self._data.pop(row)
+        self.endRemoveRows()
+        return idx > -1
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation != Qt.Horizontal or role != Qt.DisplayRole:
+            return super(Model, self).headerData(section, orientation, role)
+        return {
+            Column.ImportantState: "!!",
+            Column.ReadState: "Read",
+            Column.Eclass: "Highest\neclass"
+        }.pop(section, Column(section).name)
+
+    def flags(self, index):
+        if index.column() in (Column.ImportantState, Column.ReadState):
+            return super(Model, self).flags(index) | Qt.ItemIsEditable
+        return super(Model, self).flags(index)
+
+    def data(self, index, role=Qt.DisplayRole):
+        item = self._data[index.row()]
         if role in (Qt.DisplayRole, Qt.EditRole):
-            return {
-                Column.Category: elog.category,
-                Column.Package: elog.package,
-                Column.Eclass: elog.eclass.name,
-                Column.Date: elog.localeTime,
-            }.get(self.column(), "")
-        elif role == Qt.CheckStateRole:
-            return {
-                Column.ImportantState: self.importantState,
-                Column.ReadState: self.readState,
-            }.get(self.column(), lambda: None)()
-        elif role == Role.SortRole:
-            if self.column() in (Column.ImportantState, Column.ReadState):
-                return self.data(Qt.CheckStateRole)
-            elif self.column() == Column.Date:
-                return elog.isoTime
-            elif self.column() == Column.Eclass:
-                return elog.eclass.value
+            if index.column() == Column.Category:
+                return item.category()
+            elif index.column() == Column.Package:
+                return item.package()
+            elif index.column() == Column.Eclass:
+                return item.eclass().name
+            elif index.column() == Column.Date:
+                return item.localeTime()
             else:
-                return self.data(Qt.DisplayRole)
-        else:
-            return super(ElogItem, self).data(role)
+                return ""
+        elif role == Qt.CheckStateRole:
+            if index.column() == Column.ImportantState:
+                return item.importantState()
+            elif index.column() == Column.ReadState:
+                return item.readState()
+        elif role == Role.SortRole:
+            if index.column() in (Column.ImportantState, Column.ReadState):
+                return item.data(Qt.CheckStateRole)
+            elif index.column() == Column.Date:
+                return item.isoTime()
+            elif index.column() == Column.Eclass:
+                return item.eclass().value
+            else:
+                return self.data(index, Qt.DisplayRole)
+
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.column() == Column.ImportantState:
+            return self.toggleImportantState(index)
+        elif index.column() == Column.ReadState:
+            return self.toggleReadState(index)
+        return super(Model, self).setData(index, value, role)
 
 
 class ElogviewerUi(QtWidgets.QMainWindow):
@@ -570,7 +619,7 @@ class ElogviewerUi(QtWidgets.QMainWindow):
 
         self.textEdit = QtWidgets.QTextBrowser(centralWidget)
         self.textEdit.setOpenExternalLinks(True)
-        self.textEdit.setText("""No elogs!""")
+        self.textEdit.setText("""No elog selected.""")
         centralLayout.addWidget(self.textEdit)
 
         self.toolBar = QtWidgets.QToolBar(self)
@@ -599,13 +648,7 @@ class Elogviewer(ElogviewerUi):
             screenSize = QtWidgets.QApplication.desktop().screenGeometry()
             self.resize(screenSize.width() / 2, screenSize.height() / 2)
 
-        self.model = QtGui.QStandardItemModel(self.tableView)
-        # Use QStandardItem for horizontal headers
-        self.model.setHorizontalHeaderLabels(
-            ["!!", "Category", "Package", "Read", "Highest\neclass", "Date"])
-        # Then default to ElogItem -- else, the labels are not displayed
-        self.model.setItemPrototype(ElogItem())
-
+        self.model = Model(self.tableView)
         self.proxyModel = QtCore.QSortFilterProxyModel(self.tableView)
         self.proxyModel.setFilterKeyColumn(-1)
         self.proxyModel.setSourceModel(self.model)
@@ -639,7 +682,7 @@ class Elogviewer(ElogviewerUi):
             self.proxyModel.setFilterRegExp)
         self.toolBar.addWidget(self.searchLineEdit)
 
-        self.populate()
+        QtCore.QTimer.singleShot(100, self.populate)
         if self.settings.contains("sortColumn") and self.settings.contains("sortOrder"):
             self.tableView.sortByColumn(int(self.settings.value("sortColumn")),
                                         int(self.settings.value("sortOrder")))
@@ -710,9 +753,9 @@ class Elogviewer(ElogviewerUi):
         importantFlag = set()
         for row in range(self.model.rowCount()):
             item = self.model.item(row, Column.ReadState)
-            if item.readState() is Qt.Checked:
+            if item.readState() == Qt.Checked:
                 readFlag.add(item.filename())
-            if item.importantState() is Qt.Checked:
+            if item.importantState() == Qt.Checked:
                 importantFlag.add(item.filename())
         self.settings.setValue("readFlag", readFlag)
         self.settings.setValue("importantFlag", importantFlag)
@@ -728,9 +771,9 @@ class Elogviewer(ElogviewerUi):
     def onCurrentRowChanged(self, current, previous):
         if previous.row() != -1:
             currentItem, previousItem = map(_itemFromIndex, (current, previous))
-            if currentItem.readState() is Qt.Unchecked:
+            if currentItem.readState() == Qt.Unchecked:
                 currentItem.setReadState(Qt.PartiallyChecked)
-            if previousItem.readState() is Qt.PartiallyChecked:
+            if previousItem.readState() == Qt.PartiallyChecked:
                 previousItem.setReadState(Qt.Checked)
         self.updateStatus()
         self.updateUnreadCount()
@@ -756,29 +799,29 @@ class Elogviewer(ElogviewerUi):
     def readCount(self):
         count = 0
         for row in range(self.model.rowCount()):
-            if self.model.item(row, 0).readState() is not Qt.Unchecked:
+            if self.model.item(row, 0).readState() != Qt.Unchecked:
                 count += 1
         return count
 
     def unreadCount(self):
         return self.elogCount() - self.readCount()
 
-    def setSelectedReadState(self, state):
-        for index in self.tableView.selectionModel().selectedIndexes():
-            _itemFromIndex(index).setReadState(state)
-        self.updateUnreadCount()
-
     def importantCount(self):
         count = 0
         for row in range(self.model.rowCount()):
-            if self.model.item(row, 0).importantState() is Qt.Checked:
+            if self.model.item(row, 0).importantState() == Qt.Checked:
                 count += 1
         return count
+
+    def setSelectedReadState(self, state):
+        for index in self.tableView.selectionModel().selectedIndexes():
+            self.model.setReadState(_sourceIndex(index), state)
+        self.updateUnreadCount()
 
     def toggleSelectedImportantState(self):
         for index in self.tableView.selectionModel().selectedRows(
                 Column.ImportantState):
-            _itemFromIndex(index).toggleImportantState()
+            self.model.toggleImportantState(_sourceIndex(index))
 
     def deleteSelected(self):
         selection = [self.proxyModel.mapToSource(idx) for idx in
@@ -811,27 +854,21 @@ class Elogviewer(ElogviewerUi):
     def populate(self):
         currentRow = self.currentRow()
         self.tableView.selectionModel().reset()
-        self.model.beginResetModel()
-        # Clear
         self.model.removeRows(0, self.model.rowCount())
-        # Populate
-        for row, filename in enumerate(
-                glob(os.path.join(self.config.elogpath, "*:*:*.log*")) +
-                glob(os.path.join(self.config.elogpath, "*", "*:*.log*"))):
-            elogRowItem = ElogRowItem(filename)
-            elogRowItem.setReadState(
+        self.model.beginResetModel()
+        for filename in itertools.chain(
+                glob.iglob(os.path.join(self.config.elogpath, "*:*:*.log*")),
+                glob.iglob(os.path.join(self.config.elogpath, "*", "*:*.log*"))):
+            item = ElogItem(Elog.fromFilename(filename))
+            item.setReadState(
                 Qt.Checked
                 if filename in self.settings.value("readFlag")
                 else Qt.Unchecked)
-            elogRowItem.setImportantState(
+            item.setImportantState(
                 Qt.Checked
                 if filename in self.settings.value("importantFlag")
                 else Qt.Unchecked)
-            self.model.setVerticalHeaderItem(row, elogRowItem)
-            for column in range(self.model.columnCount()):
-                item = ElogItem()
-                item.setEditable(column == Column.ImportantState)
-                self.model.setItem(row, column, item)
+            self.model._data.append(item)
         self.model.endResetModel()
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
 
