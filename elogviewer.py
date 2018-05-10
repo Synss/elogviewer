@@ -108,7 +108,7 @@ logger.debug("elogpath is set to %r", config.elogpath)
 # pylint: enable=wrong-import-position
 
 
-__version__ = "2.8"
+__version__ = "2.9"
 
 
 # pylint: disable=invalid-name

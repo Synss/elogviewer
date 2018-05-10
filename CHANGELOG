@@ -1,3 +1,13 @@
+Version 2.9
+-----------
+
+Bugfix release.
+
+- Fix issue #6 reported on github by fonic.
+- Fix ordering of rows with identical keys by concatenating the
+  date to the name of the key.
+
+
 Version 2.8
 -----------
 
