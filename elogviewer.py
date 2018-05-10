@@ -498,26 +498,33 @@ class Model(QtCore.QAbstractTableModel):
         super(Model, self).__init__(parent)
         self._data = []  # A list of ElogItem.
 
-    def toggleImportantState(self, index):
+    def importantState(self, index):
+        return self.itemFromIndex(index).importantState()
+
+    def setImportantState(self, index, state):
         if index.column() != Column.ImportantState:
             return False
-        self._data[index.row()].toggleImportantState()
+        self.itemFromIndex(index).setImportantState(state)
         self.dataChanged.emit(index, index)
         return True
+
+    def toggleImportantState(self, index):
+        return self.setImportantState(index, not self.importantState(index))
+
+    def readState(self, index):
+        return self.itemFromIndex(index).readState()
 
     def setReadState(self, index, state):
         if index.column() != Column.ReadState:
             return False
-        self._data[index.row()].setReadState(state)
-        self.dataChanged.emit(index, index)
+        self.itemFromIndex(index).setReadState(state)
+        self.dataChanged.emit(
+            self.index(index.row(), 0, index.parent()),
+            self.index(index.row(), self.columnCount() - 1, index.parent()))
         return True
 
     def toggleReadState(self, index):
-        if index.column() != Column.ReadState:
-            return False
-        self._data[index.row()].toggleReadState()
-        self.dataChanged.emit(index, index)
-        return True
+        return self.setReadState(index, not self.readState(index))
 
     def itemFromIndex(self, index):
         return self._data[index.row()]
@@ -574,13 +581,13 @@ class Model(QtCore.QAbstractTableModel):
                 return item.readState()
         elif role == Role.SortRole:
             if index.column() in (Column.ImportantState, Column.ReadState):
-                return item.data(Qt.CheckStateRole)
+                return "%r%r" % (item.data(Qt.CheckStateRole), item.isoTime())
             elif index.column() == Column.Date:
                 return item.isoTime()
             elif index.column() == Column.Eclass:
-                return item.eclass().value
+                return "%r%r" % (item.eclass().value, item.isoTime())
             else:
-                return self.data(index, Qt.DisplayRole)
+                return "%r%r" % (self.data(index, Qt.DisplayRole), item.isoTime())
 
     def setData(self, index, value, role=Qt.EditRole):
         if index.column() == Column.ImportantState:
@@ -649,12 +656,13 @@ class Elogviewer(ElogviewerUi):
             self.resize(screenSize.width() / 2, screenSize.height() / 2)
 
         self.model = Model(self.tableView)
+        self.model.dataChanged.connect(self.saveSettings)
         self.proxyModel = QtCore.QSortFilterProxyModel(self.tableView)
-        self.proxyModel.setFilterKeyColumn(-1)
+        self.proxyModel.setFilterKeyColumn(Column.Package)
+        self.proxyModel.setSortRole(Role.SortRole)
         self.proxyModel.setSourceModel(self.model)
         self.tableView.setModel(self.proxyModel)
 
-        self.proxyModel.setSortRole(Role.SortRole)
         horizontalHeader = self.tableView.horizontalHeader()
         horizontalHeader.sortIndicatorChanged.connect(self.proxyModel.sort)
 
@@ -703,7 +711,7 @@ class Elogviewer(ElogviewerUi):
         self.toolBar.addAction(QtWidgets.QAction(
             Icon("view-refresh"), "Refresh", self.toolBar,
             shortcut=QtGui.QKeySequence.Refresh,
-            triggered=self.refresh))
+            triggered=self.populate))
         self.toolBar.addAction(QtWidgets.QAction(
             Icon("mail-mark-read"), "Mark read", self.toolBar,
             triggered=partial(self.setSelectedReadState, Qt.Checked)))
@@ -764,17 +772,11 @@ class Elogviewer(ElogviewerUi):
         self.settings.setValue("windowWidth", self.width())
         self.settings.setValue("windowHeight", self.height())
 
-    def closeEvent(self, closeEvent):
-        self.saveSettings()
-        super(Elogviewer, self).closeEvent(closeEvent)
-
     def onCurrentRowChanged(self, current, previous):
         if previous.row() != -1:
-            currentItem, previousItem = map(_itemFromIndex, (current, previous))
-            if currentItem.readState() == Qt.Unchecked:
-                currentItem.setReadState(Qt.PartiallyChecked)
-            if previousItem.readState() == Qt.PartiallyChecked:
-                previousItem.setReadState(Qt.Checked)
+            index = self.model.index(
+                _sourceIndex(current).row(), Column.ReadState, current.parent())
+            self.model.setReadState(index, Qt.Checked)
         self.updateStatus()
         self.updateUnreadCount()
 
@@ -846,10 +848,6 @@ class Elogviewer(ElogviewerUi):
 
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
         self.updateStatus()
-
-    def refresh(self):
-        self.saveSettings()
-        self.populate()
 
     def populate(self):
         currentRow = self.currentRow()
