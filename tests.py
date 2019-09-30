@@ -17,9 +17,14 @@ from elogviewer import _file, _itemFromIndex, _html
 
 config = namedtuple("Config", "elogpath")
 config.elogpath = "data"
-app = QtWidgets.QApplication(sys.argv)
 
 TEST_SET_SIZE = 5
+
+
+class TestQtBase(unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+        self.app = QtWidgets.QApplication([])
 
 
 class TestRepr(unittest.TestCase):
@@ -27,7 +32,7 @@ class TestRepr(unittest.TestCase):
         self.assertIsInstance(eval(repr(obj)), type(obj))
 
 
-class TestDelegateRepr(TestRepr):
+class TestDelegateRepr(TestQtBase, TestRepr):
     def test_TextToHtmlDelegate(self):
         self.assert_well_formatted_repr(elogviewer.TextToHtmlDelegate())
 
@@ -38,8 +43,9 @@ class TestDelegateRepr(TestRepr):
         self.assert_well_formatted_repr(elogviewer.ButtonDelegate(button))
 
 
-class TestBase(unittest.TestCase):
+class TestBase(TestQtBase):
     def setUp(self):
+        super().setUp()
         self.reset_test_set()
 
     @property
@@ -81,6 +87,7 @@ class TestEnvironment(TestBase):
         self.elogviewer = elogviewer.Elogviewer(config)
 
     def tearDown(self):
+        super().tearDown()
         assert self.elogviewer.close()
         del self.elogviewer
 
@@ -118,6 +125,7 @@ class TestGui(TestBase):
         self.select_first()
 
     def tearDown(self):
+        super().tearDown()
         assert self.elogviewer.close()
         del self.elogviewer
 
