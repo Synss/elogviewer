@@ -155,18 +155,18 @@ class TestGui(TestBase):
         self.elogviewer.tableView.selectionModel().clear()
         self.elogviewer.tableView.selectRow(0)
 
-    def select_all(self):
+    def _select_all(self):
         QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
 
     def unset_important_flag(self):
-        self.select_all()
+        self._select_all()
         for index in self.elogviewer.tableView.selectionModel().selectedRows(
             Column.ImportantState
         ):
             _itemFromIndex(index).setImportantState(Qt.Unchecked)
 
     def unset_read_flag(self):
-        self.select_all()
+        self._select_all()
         for index in self.elogviewer.tableView.selectionModel().selectedRows(
             Column.ReadState
         ):
@@ -205,16 +205,14 @@ class TestGuiButtons(TestGui):
         self.assert_elog_count_consistent()
 
     def test_delete_all(self):
-        self.select_all()
-
+        QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
         QTest.mouseClick(self.deleteButton, Qt.LeftButton)
 
         self.assert_elog_files_deleted()
         self.assert_elog_count_consistent()
 
     def test_delete_all_plus_one(self):
-        self.select_all()
-
+        QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
         QTest.mouseClick(self.deleteButton, Qt.LeftButton)
         QTest.mouseClick(self.deleteButton, Qt.LeftButton)
 
@@ -222,7 +220,7 @@ class TestGuiButtons(TestGui):
         self.assert_elog_count_consistent()
 
     def test_refresh_button(self):
-        self.select_all()
+        QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
         QTest.mouseClick(self.deleteButton, Qt.LeftButton)
         self.reset_test_set()
 
@@ -236,7 +234,7 @@ class TestGuiButtons(TestGui):
         self.assert_read_count_equal(1)
 
     def test_all_read(self):
-        self.select_all()
+        QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
         QTest.mouseClick(self.markReadButton, Qt.LeftButton)
         self.assert_read_count_equal(TEST_SET_SIZE)
 
@@ -249,7 +247,7 @@ class TestGuiButtons(TestGui):
         self.assert_important_count_equal(1)
 
     def test_all_important(self):
-        self.select_all()
+        QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
         QTest.mouseClick(self.toggleImportantButton, Qt.LeftButton)
         self.assert_important_count_equal(TEST_SET_SIZE)
 
