@@ -125,7 +125,7 @@ class TestGui(TestBase):
         self.deleteButton = button("delete")
         self.aboutAction = button("about")
 
-        self.elogviewer.refresh()
+        self.elogviewer.populate()
         self.unset_important_flag()
         self.unset_read_flag()
         self.select_first()

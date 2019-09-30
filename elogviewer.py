@@ -730,90 +730,83 @@ class Elogviewer(ElogviewerUi):
 
     def __initActions(self):
         Icon = QtGui.QIcon.fromTheme
-        self.toolBar.addAction(
-            QtWidgets.QAction(
-                Icon("view-refresh"),
-                "Refresh",
-                self.toolBar,
-                shortcut=QtGui.QKeySequence.Refresh,
-                triggered=self.populate,
-            )
+        self.refreshAction = QtWidgets.QAction(
+            Icon("view-refresh"),
+            "Refresh",
+            self.toolBar,
+            shortcut=QtGui.QKeySequence.Refresh,
+            triggered=self.populate,
         )
-        self.toolBar.addAction(
-            QtWidgets.QAction(
-                Icon("mail-mark-read"),
-                "Mark read",
-                self.toolBar,
-                triggered=partial(self.setSelectedReadState, Qt.Checked),
-            )
+        self.markReadAction = QtWidgets.QAction(
+            Icon("mail-mark-read"),
+            "Mark read",
+            self.toolBar,
+            triggered=partial(self.setSelectedReadState, Qt.Checked),
         )
-        self.toolBar.addAction(
-            QtWidgets.QAction(
-                Icon("mail-mark-unread"),
-                "Mark unread",
-                self.toolBar,
-                triggered=partial(self.setSelectedReadState, Qt.Unchecked),
-            )
+        self.markUnreadAction = QtWidgets.QAction(
+            Icon("mail-mark-unread"),
+            "Mark unread",
+            self.toolBar,
+            triggered=partial(self.setSelectedReadState, Qt.Unchecked),
         )
-        self.toolBar.addAction(
-            QtWidgets.QAction(
-                Icon("mail-mark-important"),
-                "Important",
-                self.toolBar,
-                triggered=self.toggleSelectedImportantState,
-            )
+        self.markImportantAction = QtWidgets.QAction(
+            Icon("mail-mark-important"),
+            "Important",
+            self.toolBar,
+            triggered=self.toggleSelectedImportantState,
         )
-        self.toolBar.addAction(
-            QtWidgets.QAction(
-                Icon("edit-delete"),
-                "Delete",
-                self.toolBar,
-                shortcut=QtGui.QKeySequence.Delete,
-                triggered=self.deleteSelected,
-            )
+        self.deleteAction = QtWidgets.QAction(
+            Icon("edit-delete"),
+            "Delete",
+            self.toolBar,
+            shortcut=QtGui.QKeySequence.Delete,
+            triggered=self.deleteSelected,
         )
-        self.toolBar.addAction(
-            QtWidgets.QAction(
-                Icon("help-about"),
-                "About",
-                self.toolBar,
-                shortcut=QtGui.QKeySequence.HelpContents,
-                triggered=partial(
-                    QtWidgets.QMessageBox.about,
-                    self,
-                    "About (k)elogviewer",
-                    "<h1>(k)elogviewer %s</h1>"
-                    "<center><small>"
-                    "(k)elogviewer, copyright (c) 2007-2016 Mathias Laurin<br>"
-                    "kelogviewer, copyright (c) 2007 Jeremy Wickersheimer<br>"
-                    "GNU General Public License (GPL) version 2</small><br>"
-                    "<a href=http://sourceforge.net/projects/elogviewer>"
-                    "http://sourceforge.net/projects/elogviewer</a>"
-                    "</center>"
-                    "<h2>Written by</h2>"
-                    "Mathias Laurin (current maintainer)<br>"
-                    "Timothy Kilbourn (initial author)<br>"
-                    "Jeremy Wickersheimer (qt3/KDE port)<br>"
-                    "David Radice, gentoo bug #187595<br>"
-                    "Christian Faulhammer, gentoo bug #192701<br>"
-                    "Fonic (<a href=https://github.com/fonic>github.com/fonic</a>),"
-                    "github issues 2-3, 6-8<br>"
-                    "<h2>Documented by</h2>"
-                    "Christian Faulhammer"
-                    '<a href="mailto:opfer@gentoo.org">&lt;opfer@gentoo.org&gt;</a>'
-                    % __version__,
-                ),
-            )
+        self.aboutAction = QtWidgets.QAction(
+            Icon("help-about"),
+            "About",
+            self.toolBar,
+            shortcut=QtGui.QKeySequence.HelpContents,
+            triggered=partial(
+                QtWidgets.QMessageBox.about,
+                self,
+                "About (k)elogviewer",
+                "<h1>(k)elogviewer %s</h1>"
+                "<center><small>"
+                "(k)elogviewer, copyright (c) 2007-2016 Mathias Laurin<br>"
+                "kelogviewer, copyright (c) 2007 Jeremy Wickersheimer<br>"
+                "GNU General Public License (GPL) version 2</small><br>"
+                "<a href=http://sourceforge.net/projects/elogviewer>"
+                "http://sourceforge.net/projects/elogviewer</a>"
+                "</center>"
+                "<h2>Written by</h2>"
+                "Mathias Laurin (current maintainer)<br>"
+                "Timothy Kilbourn (initial author)<br>"
+                "Jeremy Wickersheimer (qt3/KDE port)<br>"
+                "David Radice, gentoo bug #187595<br>"
+                "Christian Faulhammer, gentoo bug #192701<br>"
+                "Fonic (<a href=https://github.com/fonic>github.com/fonic</a>),"
+                "github issues 2-3, 6-8<br>"
+                "<h2>Documented by</h2>"
+                "Christian Faulhammer"
+                '<a href="mailto:opfer@gentoo.org">&lt;opfer@gentoo.org&gt;</a>'
+                % __version__,
+            ),
         )
-        self.toolBar.addAction(
-            QtWidgets.QAction(
-                Icon("application-exit"),
-                "Quit",
-                self.toolBar,
-                shortcut=QtGui.QKeySequence.Quit,
-                triggered=self.close,
-            )
+        self.exitAction = QtWidgets.QAction(
+            Icon("application-exit"),
+            "Quit",
+            self.toolBar,
+            shortcut=QtGui.QKeySequence.Quit,
+            triggered=self.close,
         )
+        self.toolBar.addAction(self.refreshAction)
+        self.toolBar.addAction(self.markReadAction)
+        self.toolBar.addAction(self.markUnreadAction)
+        self.toolBar.addAction(self.markImportantAction)
+        self.toolBar.addAction(self.deleteAction)
+        self.toolBar.addAction(self.aboutAction)
+        self.toolBar.addAction(self.exitAction)
 
     def saveSettings(self):
         readFlag = set()
