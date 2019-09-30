@@ -6,8 +6,10 @@ from unittest import mock
 from collections import namedtuple
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtTest import QTest
+
 Qt = QtCore.Qt
 import elogviewer
+
 Column = elogviewer.Column
 elogviewer.logger.setLevel(100)  # silence logging
 from elogviewer import _file, _itemFromIndex, _html
@@ -21,13 +23,11 @@ TEST_SET_SIZE = 5
 
 
 class TestRepr(unittest.TestCase):
-
     def assert_well_formatted_repr(self, obj):
         self.assertIsInstance(eval(repr(obj)), type(obj))
 
 
 class TestDelegateRepr(TestRepr):
-
     def test_TextToHtmlDelegate(self):
         self.assert_well_formatted_repr(elogviewer.TextToHtmlDelegate())
 
@@ -39,7 +39,6 @@ class TestDelegateRepr(TestRepr):
 
 
 class TestBase(unittest.TestCase):
-
     def setUp(self):
         self.reset_test_set()
 
@@ -49,11 +48,10 @@ class TestBase(unittest.TestCase):
 
     @property
     def htmls(self):
-        return [".".join((os.path.splitext(elog)[0], "html"))
-                for elog in self.elogs]
+        return [".".join((os.path.splitext(elog)[0], "html")) for elog in self.elogs]
 
     def delete_test_set(self):
-        assert(os.getcwd() == os.path.dirname(elogviewer.__file__))
+        assert os.getcwd() == os.path.dirname(elogviewer.__file__)
         os.system("rm -r %s" % config.elogpath)
 
     def reset_test_set(self):
@@ -73,7 +71,6 @@ class TestBase(unittest.TestCase):
 
 
 class TestEnvironment(TestBase):
-
     def setUp(self):
         super().setUp()
         self.maxDiff = None
@@ -103,8 +100,7 @@ class TestEnvironment(TestBase):
     def test_html_parser(self):
         for elog, html in zip(self.elogs, self.htmls):
             with open(html, "r") as html_file:
-                self.assertMultiLineEqual(
-                    _html(elog), "".join(html_file.readlines()))
+                self.assertMultiLineEqual(_html(elog), "".join(html_file.readlines()))
 
     def test_unsupported_format(self):
         with _file(self.htmls[0]) as elogfile:
@@ -113,7 +109,6 @@ class TestEnvironment(TestBase):
 
 
 class TestGui(TestBase):
-
     def setUp(self):
         super().setUp()
         self.elogviewer = elogviewer.Elogviewer(config)
@@ -149,13 +144,15 @@ class TestGui(TestBase):
     def unset_important_flag(self):
         self.select_all()
         for index in self.elogviewer.tableView.selectionModel().selectedRows(
-                Column.ImportantState):
+            Column.ImportantState
+        ):
             _itemFromIndex(index).setImportantState(Qt.Unchecked)
 
     def unset_read_flag(self):
         self.select_all()
         for index in self.elogviewer.tableView.selectionModel().selectedRows(
-                Column.ReadState):
+            Column.ReadState
+        ):
             _itemFromIndex(index).setReadState(Qt.Unchecked)
 
     def assert_elog_count_consistent(self):
@@ -172,7 +169,6 @@ class TestGui(TestBase):
 
 
 class TestGuiButtons(TestGui):
-
     def test_delete_one(self):
         self.select_first()
 
@@ -242,7 +238,6 @@ class TestGuiButtons(TestGui):
 
 
 class TestReadCounter(TestGui):
-
     def test_decrease_count_on_leaving_row(self):
         self.elogviewer.tableView.selectRow(0)
         self.elogviewer.tableView.selectRow(1)
