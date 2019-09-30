@@ -112,19 +112,6 @@ class TestGui(TestBase):
     def setUp(self):
         super().setUp()
         self.elogviewer = elogviewer.Elogviewer(config)
-
-        def button(name):
-            action = getattr(self.elogviewer, "%sAction" % name)
-            button = self.elogviewer.toolBar.widgetForAction(action)
-            return button
-
-        self.refreshButton = button("refresh")
-        self.markReadButton = button("markRead")
-        self.markUnreadButton = button("markUnread")
-        self.toggleImportantButton = button("markImportant")
-        self.deleteButton = button("delete")
-        self.aboutAction = button("about")
-
         self.elogviewer.populate()
         self.unset_important_flag()
         self.unset_read_flag()
@@ -133,6 +120,34 @@ class TestGui(TestBase):
     def tearDown(self):
         assert self.elogviewer.close()
         del self.elogviewer
+
+    def _button(self, name):
+        action = getattr(self.elogviewer, "%sAction" % name)
+        return self.elogviewer.toolBar.widgetForAction(action)
+
+    @property
+    def refreshButton(self):
+        return self._button("refresh")
+
+    @property
+    def markReadButton(self):
+        return self._button("markRead")
+
+    @property
+    def markUnreadButton(self):
+        return self._button("markUnread")
+
+    @property
+    def toggleImportantButton(self):
+        return self._button("markImportant")
+
+    @property
+    def deleteButton(self):
+        return self._button("delete")
+
+    @property
+    def aboutButton(self):
+        return self._button("about")
 
     def select_first(self):
         self.elogviewer.tableView.selectionModel().clear()
