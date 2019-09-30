@@ -70,30 +70,7 @@ logger.debug("running on python %s", sys.version)
 # pylint: enable=invalid-name
 
 # pylint: disable=wrong-import-position
-try:
-    import sip
-except ImportError:
-    from PySide import QtGui, QtCore
-
-    QtCore.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
-    QtWidgets = QtGui
-    logger.debug("selected PySide")
-else:
-    try:
-        from PyQt5 import QtGui, QtWidgets, QtCore
-
-        logger.debug("selected PyQt5")
-    except ImportError:
-        for __type in ("QDate", "QDateTime", "QString", "QVariant"):
-            sip.setapi(__type, 2)
-        from PyQt4 import QtGui, QtCore
-
-        QtCore.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
-        QtWidgets = QtGui
-        logger.debug("selected PyQt4")
-        del __type  # pylint: disable=undefined-loop-variable
-    finally:
-        del sip
+from PyQt5 import QtGui, QtWidgets, QtCore
 
 
 if not config.elogpath:
@@ -426,12 +403,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         self._btn.setGeometry(option.rect)
         if option.state & QtWidgets.QStyle.State_Selected:
             painter.fillRect(option.rect, option.palette.highlight())
-        try:
-            # PyQt5
-            pixmap = self._btn.grab()
-        except AttributeError:
-            # PyQt4
-            pixmap = QtGui.QPixmap.grabWidget(self._btn)
+        pixmap = self._btn.grab()
         painter.drawPixmap(option.rect.x(), option.rect.y(), pixmap)
 
     def editorEvent(self, event, model, option, index):
@@ -628,14 +600,8 @@ class ElogviewerUi(QtWidgets.QMainWindow):
         self.tableView.setSelectionMode(self.tableView.ExtendedSelection)
         self.tableView.setSelectionBehavior(self.tableView.SelectRows)
         horizontalHeader = self.tableView.horizontalHeader()
-        try:
-            # PyQt5
-            horizontalHeader.setSectionsClickable(True)
-            horizontalHeader.setSectionResizeMode(horizontalHeader.ResizeToContents)
-        except AttributeError:
-            # PyQt4
-            horizontalHeader.setClickable(True)
-            horizontalHeader.setResizeMode(horizontalHeader.ResizeToContents)
+        horizontalHeader.setSectionsClickable(True)
+        horizontalHeader.setSectionResizeMode(horizontalHeader.ResizeToContents)
         horizontalHeader.setStretchLastSection(True)
         self.tableView.verticalHeader().hide()
         centralLayout.addWidget(self.tableView)
