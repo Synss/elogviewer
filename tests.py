@@ -47,6 +47,13 @@ class TestBase(TestQtBase):
     def setUp(self):
         super().setUp()
         self.reset_test_set()
+        self.elogviewer = elogviewer.Elogviewer(config)
+        self.elogviewer.populate()
+
+    def tearDown(self):
+        super().tearDown()
+        assert self.elogviewer.close()
+        del self.elogviewer
 
     @property
     def elogs(self):
@@ -84,12 +91,6 @@ class TestEnvironment(TestBase):
             if not os.path.isfile(html):
                 with open(html, "w") as html_file:
                     html_file.writelines(_html(elog))
-        self.elogviewer = elogviewer.Elogviewer(config)
-
-    def tearDown(self):
-        super().tearDown()
-        assert self.elogviewer.close()
-        del self.elogviewer
 
     def test_delete_test_set(self):
         self.delete_test_set()
@@ -118,16 +119,9 @@ class TestEnvironment(TestBase):
 class TestGui(TestBase):
     def setUp(self):
         super().setUp()
-        self.elogviewer = elogviewer.Elogviewer(config)
-        self.elogviewer.populate()
         self.unset_important_flag()
         self.unset_read_flag()
         self.select_first()
-
-    def tearDown(self):
-        super().tearDown()
-        assert self.elogviewer.close()
-        del self.elogviewer
 
     def _button(self, name):
         action = getattr(self.elogviewer, "%sAction" % name)
