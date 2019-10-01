@@ -254,11 +254,10 @@ class TestGuiButtons(TestGui):
 
 class TestReadCounter(TestGui):
     def test_decrease_count_on_leaving_row(self):
-        self.elogviewer.tableView.selectRow(0)
-        self.elogviewer.tableView.selectRow(1)
-        self.elogviewer.tableView.selectRow(2)
+        readCount = self.elogviewer.readCount()
 
-        self.assert_read_count_equal(TEST_SET_SIZE - 2)
+        QTest.keyClick(self.elogviewer.tableView, Qt.Key_Down)
+        self.assert_read_count_equal(readCount + 1)
 
 
 if __name__ == "__main__":
