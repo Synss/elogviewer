@@ -1,18 +1,19 @@
-import sys
 import os
-from glob import glob
+import sys
 import unittest
-from unittest import mock
 from collections import namedtuple
-from PyQt5 import QtWidgets, QtCore
+from glob import glob
+from unittest import mock
+
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtTest import QTest
 
-Qt = QtCore.Qt
 import elogviewer
+from elogviewer import _file, _html, _itemFromIndex
+
+Qt = QtCore.Qt
 
 Column = elogviewer.Column
-elogviewer.logger.setLevel(100)  # silence logging
-from elogviewer import _file, _itemFromIndex, _html
 
 
 config = namedtuple("Config", "elogpath")
@@ -21,10 +22,12 @@ config.elogpath = "data"
 TEST_SET_SIZE = 5
 
 
-class TestQtBase(unittest.TestCase):
-    def setUp(self):
-        super().setUp()
-        self.app = QtWidgets.QApplication([])
+__APP = None
+
+
+def setUpModule():
+    global __APP
+    __APP = QtWidgets.QApplication([])
 
 
 class TestRepr(unittest.TestCase):
@@ -32,7 +35,7 @@ class TestRepr(unittest.TestCase):
         self.assertIsInstance(eval(repr(obj)), type(obj))
 
 
-class TestDelegateRepr(TestQtBase, TestRepr):
+class TestDelegateRepr(TestRepr):
     def test_TextToHtmlDelegate(self):
         self.assert_well_formatted_repr(elogviewer.TextToHtmlDelegate())
 
@@ -43,7 +46,7 @@ class TestDelegateRepr(TestQtBase, TestRepr):
         self.assert_well_formatted_repr(elogviewer.ButtonDelegate(button))
 
 
-class TestBase(TestQtBase):
+class TestBase(unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.reset_test_set()

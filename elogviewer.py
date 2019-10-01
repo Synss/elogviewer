@@ -34,66 +34,28 @@ Read /etc/make.conf.example for more information.
 
 import argparse
 import bz2
-from collections import namedtuple
-from contextlib import closing
-from enum import IntEnum
-from functools import partial
 import glob
 import gzip
 import itertools
-from io import BytesIO
 import locale
 import logging
-from math import cos, sin
 import os
 import re
 import sys
 import time
+from collections import namedtuple
+from contextlib import closing
+from enum import IntEnum
+from functools import partial
+from io import BytesIO
+from math import cos, sin
 
-# pylint: disable=invalid-name
-parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("-p", "--elogpath", help="path to the elog directory", default="")
-parser.add_argument(
-    "--log",
-    choices="DEBUG INFO WARNING ERROR".split(),
-    default="WARNING",
-    help="set logging level",
-)
+from PyQt5 import QtCore, QtGui, QtWidgets
 
-config = parser.parse_args()
-
-logging.basicConfig()
-logger = logging.getLogger("elogviewer")
-logger.setLevel(getattr(logging, config.log))
-
-logger.debug("running on python %s", sys.version)
-# pylint: enable=invalid-name
-
-# pylint: disable=wrong-import-position
-from PyQt5 import QtGui, QtWidgets, QtCore
-
-
-if not config.elogpath:
-    try:
-        import portage
-
-        logdir = portage.settings["PORT_LOGDIR"]
-        if not logdir:
-            logdir = os.path.join(
-                portage.settings["EPREFIX"] if portage.settings["EPREFIX"] else os.sep,
-                "var",
-                "log",
-                "portage",
-            )
-        config.elogpath = os.path.join(logdir, "elog")
-        del logdir
-        del portage
-    except ImportError:
-        pass
-
-logger.debug("elogpath is set to %r", config.elogpath)
-# pylint: enable=wrong-import-position
-
+try:
+    import portage
+except ImportError:
+    portage = None
 
 __version__ = "2.9"
 
@@ -101,6 +63,8 @@ __version__ = "2.9"
 # pylint: disable=invalid-name
 Qt = QtCore.Qt
 # pylint: disable=invalid-name
+
+_LOGGER = logging.getLogger("elogviewer")
 
 
 def _(bytestr):
@@ -174,7 +138,7 @@ def _file(filename):
             filename, "rb"
         )
     except KeyError:
-        logger.error("%s: unsupported format", filename)
+        _LOGGER.error("%s: unsupported format", filename)
         return closing(
             BytesIO(
                 b"""
@@ -185,7 +149,7 @@ def _file(filename):
             )
         )
     except IOError:
-        logger.error("%s: could not open file", filename)
+        _LOGGER.error("%s: could not open file", filename)
         return closing(
             BytesIO(
                 b"""
@@ -245,7 +209,7 @@ def _html(filename):
 class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclass"])):
     @classmethod
     def fromFilename(cls, filename):
-        logger.debug(filename)
+        _LOGGER.debug(filename)
         basename = os.path.basename(filename)
         try:
             category, package, rest = basename.split(":")
@@ -905,11 +869,45 @@ class Elogviewer(ElogviewerUi):
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
 
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
+def main(argv):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "-p", "--elogpath", help="path to the elog directory", default=""
+    )
+    parser.add_argument(
+        "--log",
+        choices="DEBUG INFO WARNING ERROR".split(),
+        default="WARNING",
+        help="set logging level",
+    )
+
+    config = parser.parse_args()
+
+    logging.basicConfig()
+    _LOGGER.setLevel(getattr(logging, config.log))
+
+    _LOGGER.debug("running on python %s", sys.version)
+    if portage and not config.elogpath:
+        logdir = portage.settings["PORT_LOGDIR"]
+        if not logdir:
+            logdir = os.path.join(
+                portage.settings["EPREFIX"] if portage.settings["EPREFIX"] else os.sep,
+                "var",
+                "log",
+                "portage",
+            )
+        config.elogpath = os.path.join(logdir, "elog")
+
+    _LOGGER.debug("elogpath is set to %r", config.elogpath)
+
+    app = QtWidgets.QApplication(argv)
     app.setWindowIcon(QtGui.QIcon.fromTheme("applications-system"))
 
     elogviewer = Elogviewer(config)
     elogviewer.show()
 
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main(sys.argv)
