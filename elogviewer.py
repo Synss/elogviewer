@@ -827,7 +827,7 @@ class Elogviewer(ElogviewerUi):
     def readCount(self):
         count = 0
         for row in range(self.model.rowCount()):
-            if self.model.item(row, 0).readState() != Qt.Unchecked:
+            if self.model.item(row).isReadState():
                 count += 1
         return count
 
@@ -837,7 +837,7 @@ class Elogviewer(ElogviewerUi):
     def importantCount(self):
         count = 0
         for row in range(self.model.rowCount()):
-            if self.model.item(row, 0).importantState() == Qt.Checked:
+            if self.model.item(row).isImportantState():
                 count += 1
         return count
 
