@@ -1,0 +1,40 @@
+#!/bin/sh
+# vim:noet:ts=2:sw=2:tw=79
+
+set -ex
+
+CACHE=$PWD/.cache
+IMAGE=gentoo
+CONTAINER=gentoo
+
+mkdir -p $CACHE/binpkgs
+mkdir -p $CACHE/distfiles
+
+build () {
+	# build once!
+	docker build \
+		--network=host \
+		--tag $IMAGE \
+		.
+	}
+
+run () {
+	docker run \
+		--rm \
+		--interactive \
+		--tty \
+		--network=host \
+		--name $CONTAINER \
+		--volume $CACHE/distfiles/:/var/cache/distfiles \
+		--volume $CACHE/binpkgs/:/var/cache/binpkgs \
+		$IMAGE \
+		/bin/bash
+	}
+
+
+while getopts "br" opt; do
+	case $opt in
+		b) build ;;
+		r) run ;;
+	esac
+done

@@ -1,0 +1,7 @@
+*
+!.cache
+!elogviewer.py
+!elogviewer.1
+!setup.py
+!tox.ini
+!tests.py
