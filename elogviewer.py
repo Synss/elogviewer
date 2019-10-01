@@ -498,7 +498,10 @@ class Model(QtCore.QAbstractTableModel):
         return True
 
     def toggleImportantState(self, index):
-        return self.setImportantState(index, not self.importantState(index))
+        return self.setImportantState(
+            index,
+            Qt.Unchecked if self.importantState(index) is Qt.Checked else Qt.Checked,
+        )
 
     def readState(self, index):
         return self.itemFromIndex(index).readState()
