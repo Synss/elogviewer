@@ -5,6 +5,7 @@ Usage:
 
 import os
 from distutils.core import setup
+
 import elogviewer
 
 setup(

@@ -9,8 +9,9 @@ matrix:
           packages:
             - libxkbcommon-x11-0
       before_install:
-        - pip install PyQt5 black
+        - pip install PyQt5 black isort
       before_script:
+        - isort --check elogviewer.py tests.py setup.py
         - black --check elogviewer.py tests.py setup.py
     - name: "Python 2.7"
       python: 2.7

@@ -4,16 +4,17 @@ import unittest
 from collections import namedtuple
 from glob import glob
 
-try:
-    from unittest import mock
-except ImportError:
-    from mock import mock
-
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtTest import QTest
 
 import elogviewer
 from elogviewer import _file, _html, _itemFromIndex
+
+try:
+    from unittest import mock
+except ImportError:
+    from mock import mock
+
 
 Qt = QtCore.Qt
 
