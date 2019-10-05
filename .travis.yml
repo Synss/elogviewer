@@ -1,0 +1,28 @@
+language: python
+cache: pip
+matrix:
+  include:
+    - name: "Python 3.6"
+      python: 3.6
+      addons:
+        apt:
+          packages:
+            - libxkbcommon-x11-0
+      before_install:
+        - pip install PyQt5 black
+      before_script:
+        - black --check elogviewer.py tests.py setup.py
+    - name: "Python 2.7"
+      python: 2.7
+      virtualenv:
+        system_site_packages: true
+      addons:
+        apt:
+          packages:
+            - python-pyqt5
+      before_install:
+        - pip install mock
+install:
+  - pip freeze
+script:
+  - xvfb-run -a python tests.py
