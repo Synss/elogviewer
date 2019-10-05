@@ -3,7 +3,11 @@ import sys
 import unittest
 from collections import namedtuple
 from glob import glob
-from unittest import mock
+
+try:
+    from unittest import mock
+except ImportError:
+    from mock import mock
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtTest import QTest
@@ -48,13 +52,13 @@ class TestDelegateRepr(TestRepr):
 
 class TestBase(unittest.TestCase):
     def setUp(self):
-        super().setUp()
+        super(TestBase, self).setUp()
         self.reset_test_set()
         self.elogviewer = elogviewer.Elogviewer(config)
         self.elogviewer.populate()
 
     def tearDown(self):
-        super().tearDown()
+        super(TestBase, self).tearDown()
         assert self.elogviewer.close()
         del self.elogviewer
 
@@ -88,7 +92,7 @@ class TestBase(unittest.TestCase):
 
 class TestEnvironment(TestBase):
     def setUp(self):
-        super().setUp()
+        super(TestEnvironment, self).setUp()
         self.maxDiff = None
         for elog, html in zip(self.elogs, self.htmls):
             if not os.path.isfile(html):
@@ -113,6 +117,13 @@ class TestEnvironment(TestBase):
             with open(html, "r") as html_file:
                 self.assertMultiLineEqual(_html(elog), "".join(html_file.readlines()))
 
+    def assertRegex(self, *args):
+        try:
+            super(TestEnvironment, self).assertRegex(*args)
+        except AttributeError:
+            # Python < 3.2
+            super(TestEnvironment, self).assertRegexpMatches(*args)
+
     def test_unsupported_format(self):
         with _file(self.htmls[0]) as elogfile:
             content = b"".join(elogfile.readlines())
@@ -121,7 +132,7 @@ class TestEnvironment(TestBase):
 
 class TestGui(TestBase):
     def setUp(self):
-        super().setUp()
+        super(TestGui, self).setUp()
         self.unset_important_flag()
         self.unset_read_flag()
         self.select_first()
