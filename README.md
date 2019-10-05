@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/Synss/elogviewer.svg?branch=master)](https://travis-ci.org/Synss/elogviewer)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 # An elog viewer for Gentoo
 
 Elogviewer lets you manage [portage logs](https://wiki.gentoo.org/wiki/Portage_log)
