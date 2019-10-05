@@ -1,0 +1,62 @@
+Portage 2.3.76 (python 3.6.5-final-0, default/linux/amd64/17.1, gcc-8.3.0, glibc-2.29-r2, 5.0.0-29-generic x86_64)
+=================================================================
+                         System Settings
+=================================================================
+System uname: Linux-5.0.0-29-generic-x86_64-Intel-R-_Core-TM-_i7-8650U_CPU_@_1.90GHz-with-gentoo-2.6
+KiB Mem:    16298396 total,    845916 free
+KiB Swap:    1003516 total,   1003516 free
+Timestamp of repository gentoo: Sat, 05 Oct 2019 00:45:01 +0000
+Head commit of repository gentoo: 0d4e43a5bd25451bac185f09aab2bec302c9dde1
+sh bash 4.4_p23-r1
+ld GNU ld (Gentoo 2.32 p2) 2.32.0
+app-shells/bash:          4.4_p23-r1::gentoo
+dev-lang/perl:            5.28.2-r1::gentoo
+dev-lang/python:          2.7.15::gentoo, 3.6.5::gentoo
+sys-apps/baselayout:      2.6-r1::gentoo
+sys-apps/openrc:          0.41.2::gentoo
+sys-apps/sandbox:         2.13::gentoo
+sys-devel/autoconf:       2.69-r4::gentoo
+sys-devel/automake:       1.16.1-r1::gentoo
+sys-devel/binutils:       2.32-r1::gentoo
+sys-devel/gcc:            8.3.0-r1::gentoo
+sys-devel/gcc-config:     2.0::gentoo
+sys-devel/libtool:        2.4.6-r3::gentoo
+sys-devel/make:           4.2.1-r4::gentoo
+sys-kernel/linux-headers: 4.19::gentoo (virtual/os-headers)
+sys-libs/glibc:           2.29-r2::gentoo
+Repositories:
+
+gentoo
+    location: /var/db/repos/gentoo
+    sync-type: rsync
+    sync-uri: rsync://rsync.gentoo.org/gentoo-portage
+    priority: -1000
+    sync-rsync-verify-jobs: 1
+    sync-rsync-verify-max-age: 24
+    sync-rsync-extra-opts: 
+    sync-rsync-verify-metamanifest: yes
+
+ACCEPT_KEYWORDS="amd64"
+ACCEPT_LICENSE="@FREE"
+CBUILD="x86_64-pc-linux-gnu"
+CFLAGS="-O2 -pipe"
+CHOST="x86_64-pc-linux-gnu"
+CONFIG_PROTECT="/etc /usr/share/gnupg/qualified.txt"
+CONFIG_PROTECT_MASK="/etc/ca-certificates.conf /etc/env.d /etc/gconf /etc/gentoo-release /etc/sandbox.d /etc/terminfo"
+CXXFLAGS="-O2 -pipe"
+DISTDIR="/var/cache/distfiles"
+EMERGE_DEFAULT_OPTS="--jobs=8 --usepkg"
+ENV_UNSET="DBUS_SESSION_BUS_ADDRESS DISPLAY GOBIN PERL5LIB PERL5OPT PERLPREFIX PERL_CORE PERL_MB_OPT PERL_MM_OPT XAUTHORITY XDG_CACHE_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_RUNTIME_DIR"
+FCFLAGS="-O2 -pipe"
+FEATURES="assume-digests binpkg-docompress binpkg-dostrip binpkg-logs buildpkg config-protect-if-modified distlocks ebuild-locks fixlafiles ipc-sandbox merge-sync multilib-strict network-sandbox news parallel-fetch pid-sandbox preserve-libs protect-owned sandbox sfperms strict unknown-features-warn unmerge-logs unmerge-orphans userfetch userpriv usersandbox usersync xattr"
+FFLAGS="-O2 -pipe"
+GENTOO_MIRRORS="http://distfiles.gentoo.org"
+LDFLAGS="-Wl,-O1 -Wl,--as-needed"
+MAKEOPTS="-j8"
+PKGDIR="/var/cache/binpkgs"
+PORTAGE_CONFIGROOT="/"
+PORTAGE_RSYNC_OPTS="--recursive --links --safe-links --perms --times --omit-dir-times --compress --force --whole-file --delete --stats --human-readable --timeout=180 --exclude=/distfiles --exclude=/local --exclude=/packages --exclude=/.git"
+PORTAGE_TMPDIR="/var/tmp"
+USE="acl amd64 berkdb bindist bzip2 cli crypt cxx dri fortran gdbm iconv ipv6 libtirpc multilib ncurses nls nptl openmp pam pcre readline seccomp split-usr ssl tcpd unicode xattr zlib" ABI_X86="64" ADA_TARGET="gnat_2018" ALSA_CARDS="ali5451 als4000 atiixp atiixp-modem bt87x ca0106 cmipci emu10k1x ens1370 ens1371 es1938 es1968 fm801 hda-intel intel8x0 intel8x0m maestro3 trident usb-audio via82xx via82xx-modem ymfpci" APACHE2_MODULES="authn_core authz_core socache_shmcb unixd actions alias auth_basic authn_alias authn_anon authn_dbm authn_default authn_file authz_dbm authz_default authz_groupfile authz_host authz_owner authz_user autoindex cache cgi cgid dav dav_fs dav_lock deflate dir disk_cache env expires ext_filter file_cache filter headers include info log_config logio mem_cache mime mime_magic negotiation rewrite setenvif speling status unique_id userdir usertrack vhost_alias" CALLIGRA_FEATURES="karbon sheets words" COLLECTD_PLUGINS="df interface irq load memory rrdtool swap syslog" CPU_FLAGS_X86="mmx mmxext sse sse2" ELIBC="glibc" GPSD_PROTOCOLS="ashtech aivdm earthmate evermore fv18 garmin garmintxt gpsclock greis isync itrax mtk3301 nmea ntrip navcom oceanserver oldstyle oncore rtcm104v2 rtcm104v3 sirf skytraq superstar2 timing tsip tripmate tnt ublox ubx" INPUT_DEVICES="libinput keyboard mouse" KERNEL="linux" LCD_DEVICES="bayrad cfontz cfontz633 glk hd44780 lb216 lcdm001 mtxorb ncurses text" LIBREOFFICE_EXTENSIONS="presenter-console presenter-minimizer" NETBEANS_MODULES="apisupport cnd groovy gsf harness ide identity j2ee java mobility nb php profiler soa visualweb webcommon websvccommon xml" OFFICE_IMPLEMENTATION="libreoffice" PHP_TARGETS="php7-2" POSTGRES_TARGETS="postgres10 postgres11" PYTHON_SINGLE_TARGET="python3_6" PYTHON_TARGETS="python2_7 python3_6" RUBY_TARGETS="ruby24 ruby25" USERLAND="GNU" VIDEO_CARDS="dummy" XTABLES_ADDONS="quota2 psd pknock lscan length2 ipv4options ipset ipp2p iface geoip fuzzy condition tee tarpit sysrq steal rawnat logmark ipmark dhcpmac delude chaos account"
+Unset:  CC, CPPFLAGS, CTARGET, CXX, INSTALL_MASK, LANG, LC_ALL, LINGUAS, PORTAGE_BINHOST, PORTAGE_BUNZIP2_COMMAND, PORTAGE_COMPRESS, PORTAGE_COMPRESS_FLAGS, PORTAGE_RSYNC_EXTRA_OPTS
+

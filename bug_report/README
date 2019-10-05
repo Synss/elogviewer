@@ -1,0 +1,19 @@
+ * Messages for package x11-libs/libX11-1.6.8:
+
+ * ERROR: x11-libs/libX11-1.6.8::gentoo failed (compile phase
+):
+ *   emake failed
+ *
+ * If you need support, post the output of `emerge --info '=x
+11-libs/libX11-1.6.8::gentoo'`, (1)
+ * the complete build log and the output of `emerge -pqv '=x1
+1-libs/libX11-1.6.8::gentoo'`. (2b)
+ * The complete build log is located at '/var/tmp/portage/x11
+-libs/libX11-1.6.8/temp/build.log'. (_build.log)
+ * The ebuild environment file is located at '/var/tmp/portag
+e/x11-libs/libX11-1.6.8/temp/environment'.
+ * Working directory: '/var/tmp/portage/x11-libs/libX11-1.6.8
+/work/libX11-1.6.8-abi_x86_64.amd64'
+ * S: '/var/tmp/portage/x11-libs/libX11-1.6.8/work/libX11-1.6
+.8'
+
