@@ -1,29 +1,17 @@
+# vim:et:ts=2:sw=2
 language: python
-cache: pip
-matrix:
-  include:
-    - name: "Python 3.6"
-      python: 3.6
-      addons:
-        apt:
-          packages:
-            - libxkbcommon-x11-0
-      before_install:
-        - pip install PyQt5 black isort
-      before_script:
-        - isort --check elogviewer.py tests.py setup.py
-        - black --check elogviewer.py tests.py setup.py
-    - name: "Python 2.7"
-      python: 2.7
-      virtualenv:
-        system_site_packages: true
-      addons:
-        apt:
-          packages:
-            - python-pyqt5
-      before_install:
-        - pip install mock
+python:
+  - 3.6
+addons:
+  apt:
+    packages:
+      - libxkbcommon-x11-0
+before_install:
+  - pip install PyQt5 black isort
 install:
   - pip freeze
+before_script:
+  - isort --check elogviewer.py tests.py setup.py
+  - black --check elogviewer.py tests.py setup.py
 script:
   - xvfb-run -a python tests.py

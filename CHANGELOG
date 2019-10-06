@@ -1,11 +1,11 @@
 Next
 ----
 
+- Drop Python 2.7 compatibility.
+- Drop PyQt4 support.
 - Fix bug where the important state would not toggle.
 - Format code with black.
 - Setup CI on travis-co.
-- Refactor to run tests with pytest, also on Python 2.7.
-- Drop PyQt4 support.
 
 
 Version 2.9

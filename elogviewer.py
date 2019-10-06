@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # (c) 2011, 2013, 2015 Mathias Laurin, GPL2
 #
 # This program is free software; you can redistribute it and/or modify it
