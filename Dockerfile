@@ -42,7 +42,19 @@ RUN mkdir -p /var/db/repos/gentoo/ \
  && emerge --autounmask-continue=y x11-misc/xvfb-run \
  && emerge app-portage/gentoolkit \
  && eclean --deep packages \
- && [ "${keep_tree}" = "0" ] && rm -rf /var/db/repos/gentoo/
+ && [ "${keep_tree}" = "0" ] && rm -rf /var/db/repos/gentoo/ || /bin/true
+
+# In host:
+#  - python setup.py sdist
+#  - docker run --rm -ti gentoo
+#  - docker cp dist/ gentoo:/home/gentoo/
+#
+# In container:
+#  - venv and test
+
+# TODO: Remove binpkgs from final image
+#       No copy / no binpkgs and build everything once more.
+
 
 # Make sdist on host and copy sdist here.
 
