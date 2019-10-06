@@ -1,0 +1,9 @@
+include elogviewer.py
+include elogviewer.1
+include setup.py
+include tests.py
+include CHANGELOG
+include LICENSE*
+include README.md
+recursive-include data *.html
+recursive-include data *.log
