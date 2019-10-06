@@ -4,7 +4,7 @@
 set -ex
 
 CACHE=$PWD/.cache
-IMAGE=stage3-amd64-x
+IMAGE=image
 CONTAINER=gentoo
 
 mkdir -p $CACHE/binpkgs
@@ -26,8 +26,6 @@ run () {
 		--tty \
 		--network=host \
 		--name $CONTAINER \
-		--volume $CACHE/distfiles/:/var/cache/distfiles \
-		--volume $CACHE/binpkgs/:/var/cache/binpkgs \
 		$IMAGE \
 		/bin/bash
 	}
