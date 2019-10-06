@@ -4,7 +4,7 @@
 set -ex
 
 CACHE=$PWD/.cache
-IMAGE=gentoo
+IMAGE=stage3-amd64-x
 CONTAINER=gentoo
 
 mkdir -p $CACHE/binpkgs
