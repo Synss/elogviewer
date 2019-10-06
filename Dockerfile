@@ -1,56 +1,64 @@
-# ARG keep_tree=1
+# Set `keep_tree=1` to keep the tree after emerging the packages.
+# This is useful for debugging.
+ARG keep_tree=0
 
 FROM gentoo/stage3-amd64 as gentoo
 WORKDIR /home/gentoo
 
-# Build packages with multiple cores and set upstream USE flags.
+# Configure make.conf for multiple cores and upstream and useful USE flags.
+# `introspection` requires kernel sources.
 RUN echo 'MAKEOPTS="-j8"' >> /etc/portage/make.conf \
- && echo 'FEATURES="buildpkg"' >> /etc/portage/make.conf \
- && echo 'EMERGE_DEFAULT_OPTS="--jobs=8"' >> /etc/portage/make.conf \
+ && echo 'EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --binpkg-respect-use=y"' >> /etc/portage/make.conf \
+ && echo 'EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --jobs=8"' >> /etc/portage/make.conf \
+ && echo 'EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --quiet"' >> /etc/portage/make.conf \
  && echo 'EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --usepkg"' >> /etc/portage/make.conf \
- && echo 'USE="${USE} bindist -filecaps"' >> /etc/portage/make.conf \
- && echo 'USE="${USE} -llvm"' >> /etc/portage/make.conf
+ && echo 'FEATURES="${FEATURES} buildpkg"' >> /etc/portage/make.conf \
+ && echo 'FEATURES="${FEATURES} -sandbox"' >> /etc/portage/make.conf \
+ && echo 'FEATURES="${FEATURES} -usersandbox"' >> /etc/portage/make.conf \
+ && echo 'USE="${USE} bindist"' >> /etc/portage/make.conf \
+ && echo 'USE="${USE} -introspection"' >> /etc/portage/make.conf \
+ && echo 'USE="${USE} -filecaps"' >> /etc/portage/make.conf \
+ && echo 'USE="${USE} -llvm"' >> /etc/portage/make.conf \
+ && echo 'VIDEO_CARDS="dummy"' >> /etc/portage/make.conf \
+ && cat /etc/portage/make.conf
 
-# Configure X.
-RUN echo 'dev-libs/libpcre2 pcre16' >> /etc/portage/package.use/deps \
-  && echo 'x11-libs/libxcb xkb' >> /etc/portage/package.use/deps \
-  && echo 'x11-libs/libxkbcommon X' >> /etc/portage/package.use/deps \
-  && echo 'x11-base/xorg-server xvfb -xorg' >> /etc/portage/package.use/deps \
-  && echo 'VIDEO_CARDS="dummy"' >> /etc/portage/make.conf
+# Configure packages.
+RUN echo 'x11-libs/libxcb xkb' >> /etc/portage/package.use/opts \
+ && echo 'x11-libs/libxkbcommon X' >> /etc/portage/package.use/opts \
+ && echo 'dev-libs/libpcre2 pcre16' >> /etc/portage/package.use/opts \
+ && echo 'x11-base/xorg-server -xorg' >> /etc/portage/package.use/opts \
+ && echo 'x11-base/xorg-server xvfb' >> /etc/portage/package.use/opts \
+ && echo 'dev-python/PyQt5 gui' >> /etc/portage/package.use/opts \
+ && echo 'dev-python/PyQt5 widgets' >> /etc/portage/package.use/opts
 
 # Install a recent portage tree.
+COPY .cache/ /var/cache/
 ENV portage_snapshot=http://distfiles.gentoo.org/snapshots/portage-latest.tar.xz
 RUN mkdir -p /var/db/repos/gentoo/ \
  && curl --silent $portage_snapshot \
-  | tar -xJ --strip-components 1 -C /var/db/repos/gentoo/
-RUN echo "tree installed"
+  | tar -xJ --strip-components 1 -C /var/db/repos/gentoo/ \
+ && emerge x11-base/xorg-server \
+ && emerge dev-python/PyQt5 \
+ && emerge --autounmask-continue=y x11-misc/xvfb-run \
+ && emerge app-portage/gentoolkit \
+ && eclean --deep packages \
+ && [ "${keep_tree}" = "0" ] && rm -rf /var/db/repos/gentoo/
 
-# /etc/portage/make.profile -> /var/db/repos/gentoo/profiles/default/...
-
- # && eclean-dist
- # && [ $keep_tree -ne 1 ] && rm -rf /var/db/repos/gentoo/*
-
-# Build minimal Xorg server.
-# RUN echo 'VIDEO_CARDS="dummy"' >> /etc/portage/make.conf \
-#  && echo 'x11-base/xorg-server minimal -glamor' >> /etc/portage/package.use/deps
-
-# COPY elogviewer.py /home/gentoo/elogviewer.py
-# COPY tests.py /home/gentoo/tests.py
-
-#  && echo 'dev-python/PyQt5 gui widgets -ssl' >> /etc/portage/package.use/pyqt5 \
-#  && echo 'USE="${USE} -llvm"' >> /etc/portage/make.conf
-# RUN emerge x11-base/xorg-drivers
-# RUN emerge xorg-server
-# RUN emerge PyQt5
+# Make sdist on host and copy sdist here.
 
 # Install test deps in venv with system site packages.  Note that
 # we really want the system site packages because it is the whole
 # point of testing in a Gentoo environment.
-
 # RUN python3 -m venv --system-site-packages venv \
-#  && . ./venv/bin/activate
+#  && . ./venv/bin/activate \
+#  && pip install \
+#   black \
+#   coverage \
+#   isort \
+#   pytest-black \
+#   pytest \
+#   pytest-cov \
+#   pytest-isort \
+#  && pip freeze \
 
-# !!! use awk to find 20 with highest version in 'desktop (stable)'
-# !!! or at least check that 20 is what I want (aka, a Desktop profile)
-# RUN eselect profile set 20
 CMD ["/bin/bash"]

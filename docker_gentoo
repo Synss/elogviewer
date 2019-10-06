@@ -15,6 +15,7 @@ build () {
 	docker build \
 		--network=host \
 		--tag $IMAGE \
+		--build-arg keep_tree=1 \
 		.
 	}
 
