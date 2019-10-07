@@ -138,34 +138,6 @@ class TestGui(TestBase):
         self.unset_read_flag()
         self.select_first()
 
-    def _button(self, name):
-        action = getattr(self.elogviewer, "%sAction" % name)
-        return self.elogviewer.toolBar.widgetForAction(action)
-
-    @property
-    def refreshButton(self):
-        return self._button("refresh")
-
-    @property
-    def markReadButton(self):
-        return self._button("markRead")
-
-    @property
-    def markUnreadButton(self):
-        return self._button("markUnread")
-
-    @property
-    def toggleImportantButton(self):
-        return self._button("markImportant")
-
-    @property
-    def deleteButton(self):
-        return self._button("delete")
-
-    @property
-    def aboutButton(self):
-        return self._button("about")
-
     def select_first(self):
         self.elogviewer.tableView.selectionModel().clear()
         self.elogviewer.tableView.selectRow(0)
@@ -204,7 +176,7 @@ class TestGuiButtons(TestGui):
     def test_delete_one(self):
         self.select_first()
 
-        QTest.mouseClick(self.deleteButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.deleteButton, Qt.LeftButton)
 
         self.assert_elog_count_equal(TEST_SET_SIZE - 1)
         self.assert_elog_count_consistent()
@@ -213,57 +185,57 @@ class TestGuiButtons(TestGui):
         self.select_first()
         self.assert_elog_count_equal(TEST_SET_SIZE)
 
-        QTest.mouseClick(self.deleteButton, Qt.LeftButton)
-        QTest.mouseClick(self.deleteButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.deleteButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.deleteButton, Qt.LeftButton)
 
         self.assert_elog_count_equal(TEST_SET_SIZE - 2)
         self.assert_elog_count_consistent()
 
     def test_delete_all(self):
         QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
-        QTest.mouseClick(self.deleteButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.deleteButton, Qt.LeftButton)
 
         self.assert_elog_files_deleted()
         self.assert_elog_count_consistent()
 
     def test_delete_all_plus_one(self):
         QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
-        QTest.mouseClick(self.deleteButton, Qt.LeftButton)
-        QTest.mouseClick(self.deleteButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.deleteButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.deleteButton, Qt.LeftButton)
 
         self.assert_elog_files_deleted()
         self.assert_elog_count_consistent()
 
     def test_refresh_button(self):
         QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
-        QTest.mouseClick(self.deleteButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.deleteButton, Qt.LeftButton)
         self.reset_test_set()
 
-        QTest.mouseClick(self.refreshButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.refreshButton, Qt.LeftButton)
 
         self.assert_elog_files_exist()
         self.assert_elog_count_consistent()
 
     def test_one_read(self):
-        QTest.mouseClick(self.markReadButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.markReadButton, Qt.LeftButton)
         self.assert_read_count_equal(1)
 
     def test_all_read(self):
         QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
-        QTest.mouseClick(self.markReadButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.markReadButton, Qt.LeftButton)
         self.assert_read_count_equal(TEST_SET_SIZE)
 
     def test_all_unread(self):
-        QTest.mouseClick(self.markUnreadButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.markUnreadButton, Qt.LeftButton)
         self.assert_read_count_equal(0)
 
     def test_one_important(self):
-        QTest.mouseClick(self.toggleImportantButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.toggleImportantButton, Qt.LeftButton)
         self.assert_important_count_equal(1)
 
     def test_all_important(self):
         QTest.keyClick(self.elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
-        QTest.mouseClick(self.toggleImportantButton, Qt.LeftButton)
+        QTest.mouseClick(self.elogviewer.toggleImportantButton, Qt.LeftButton)
         self.assert_important_count_equal(TEST_SET_SIZE)
 
 

@@ -632,36 +632,6 @@ class Elogviewer(ElogviewerUi):
             )
         )
 
-        self.__initActions()
-
-        self.tableView.selectionModel().currentRowChanged.connect(
-            self.onCurrentRowChanged
-        )
-
-        self.searchLineEdit = QtWidgets.QLineEdit(self.toolBar)
-        self.searchLineEdit.setPlaceholderText("search")
-        self.searchLineEdit.textEdited.connect(self.proxyModel.setFilterRegExp)
-        self.toolBar.addWidget(self.searchLineEdit)
-
-        QtCore.QTimer.singleShot(100, self.populate)
-        if self.settings.contains("sortColumn") and self.settings.contains("sortOrder"):
-            self.tableView.sortByColumn(
-                int(self.settings.value("sortColumn")),
-                int(self.settings.value("sortOrder")),
-            )
-        else:
-            self.tableView.sortByColumn(Column.Date, Qt.DescendingOrder)
-        self.tableView.selectRow(0)
-
-    def __setupTableColumnDelegates(self):
-        for column, delegate in (
-            (Column.ImportantState, ButtonDelegate(Star(), self.tableView)),
-            (Column.ReadState, ButtonDelegate(Bullet(), self.tableView)),
-            (Column.Eclass, SeverityColorDelegate(self.tableView)),
-        ):
-            self.tableView.setItemDelegateForColumn(column, delegate)
-
-    def __initActions(self):
         Icon = QtGui.QIcon.fromTheme
         self.refreshAction = QtWidgets.QAction(
             Icon("view-refresh"),
@@ -682,7 +652,7 @@ class Elogviewer(ElogviewerUi):
             self.toolBar,
             triggered=partial(self.setSelectedReadState, Qt.Unchecked),
         )
-        self.markImportantAction = QtWidgets.QAction(
+        self.toggleImportantAction = QtWidgets.QAction(
             Icon("mail-mark-important"),
             "Important",
             self.toolBar,
@@ -736,10 +706,48 @@ class Elogviewer(ElogviewerUi):
         self.toolBar.addAction(self.refreshAction)
         self.toolBar.addAction(self.markReadAction)
         self.toolBar.addAction(self.markUnreadAction)
-        self.toolBar.addAction(self.markImportantAction)
+        self.toolBar.addAction(self.toggleImportantAction)
         self.toolBar.addAction(self.deleteAction)
         self.toolBar.addAction(self.aboutAction)
         self.toolBar.addAction(self.exitAction)
+
+        def fromToolBar(name):
+            action = getattr(self, "%sAction" % name)
+            return self.toolBar.widgetForAction(action)
+
+        self.refreshButton = fromToolBar("refresh")
+        self.markReadButton = fromToolBar("markRead")
+        self.markUnreadButton = fromToolBar("markUnread")
+        self.toggleImportantButton = fromToolBar("toggleImportant")
+        self.deleteButton = fromToolBar("delete")
+        self.aboutButton = fromToolBar("about")
+
+        self.tableView.selectionModel().currentRowChanged.connect(
+            self.onCurrentRowChanged
+        )
+
+        self.searchLineEdit = QtWidgets.QLineEdit(self.toolBar)
+        self.searchLineEdit.setPlaceholderText("search")
+        self.searchLineEdit.textEdited.connect(self.proxyModel.setFilterRegExp)
+        self.toolBar.addWidget(self.searchLineEdit)
+
+        QtCore.QTimer.singleShot(100, self.populate)
+        if self.settings.contains("sortColumn") and self.settings.contains("sortOrder"):
+            self.tableView.sortByColumn(
+                int(self.settings.value("sortColumn")),
+                int(self.settings.value("sortOrder")),
+            )
+        else:
+            self.tableView.sortByColumn(Column.Date, Qt.DescendingOrder)
+        self.tableView.selectRow(0)
+
+    def __setupTableColumnDelegates(self):
+        for column, delegate in (
+            (Column.ImportantState, ButtonDelegate(Star(), self.tableView)),
+            (Column.ReadState, ButtonDelegate(Bullet(), self.tableView)),
+            (Column.Eclass, SeverityColorDelegate(self.tableView)),
+        ):
+            self.tableView.setItemDelegateForColumn(column, delegate)
 
     def saveSettings(self):
         readFlag = set()
