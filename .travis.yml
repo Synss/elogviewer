@@ -6,12 +6,9 @@ addons:
   apt:
     packages:
       - libxkbcommon-x11-0
-before_install:
-  - pip install PyQt5 black isort
 install:
+  - pip install PyQt5
+  - pip install black isort pytest pytest-black pytest-isort pytest-qt
   - pip freeze
-before_script:
-  - isort --check elogviewer.py tests.py setup.py
-  - black --check elogviewer.py tests.py setup.py
 script:
-  - xvfb-run -a python tests.py
+  - xvfb-run -a pytest --black --isort tests.py
