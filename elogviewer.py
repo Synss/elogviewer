@@ -29,9 +29,6 @@ without privileges.
 Read /etc/make.conf.example for more information.
 """
 
-# pylint: disable=no-member
-# pylint: disable=missing-docstring
-
 import argparse
 import bz2
 import glob
@@ -44,7 +41,7 @@ import re
 import sys
 import time
 from collections import namedtuple
-from contextlib import closing
+from contextlib import closing, suppress
 from enum import IntEnum
 from functools import partial
 from io import BytesIO
@@ -60,9 +57,7 @@ except ImportError:
 __version__ = "2.9"
 
 
-# pylint: disable=invalid-name
 Qt = QtCore.Qt
-# pylint: disable=invalid-name
 
 _LOGGER = logging.getLogger("elogviewer")
 
@@ -77,13 +72,11 @@ def _(bytestr):
 
 class Role(IntEnum):
 
-    # pylint: disable=invalid-name
     SortRole = Qt.UserRole + 1
 
 
 class Column(IntEnum):
 
-    # pylint: disable=invalid-name
     ImportantState = 0
     Category = 1
     Package = 2
@@ -94,13 +87,11 @@ class Column(IntEnum):
 
 class EClass(IntEnum):
 
-    # pylint: disable=invalid-name
     eerror = 50
     ewarn = 40
     einfo = 30
     elog = 10
     eqa = 0
-    # pylint: enable=invalid-name
 
     def color(self):
         return dict(
@@ -116,10 +107,8 @@ class EClass(IntEnum):
 
 def _sourceIndex(index):
     model = index.model()
-    try:
+    with suppress(AttributeError):
         index = model.mapToSource(index)  # proxy
-    except AttributeError:
-        pass
     return index
 
 
@@ -127,8 +116,7 @@ def _itemFromIndex(index):
     if index.isValid():
         index = _sourceIndex(index)
         return index.model().itemFromIndex(index)
-    else:
-        return QtGui.QStandardItem()
+    return QtGui.QStandardItem()
 
 
 def _file(filename):
@@ -238,9 +226,6 @@ class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclas
 
 
 class TextToHtmlDelegate(QtWidgets.QItemDelegate):
-    def __init__(self, parent=None):
-        super(TextToHtmlDelegate, self).__init__(parent)
-
     def __repr__(self):
         return "elogviewer.%s(%r)" % (self.__class__.__name__, self.parent())
 
@@ -252,9 +237,6 @@ class TextToHtmlDelegate(QtWidgets.QItemDelegate):
 
 
 class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, parent=None):
-        super(SeverityColorDelegate, self).__init__(parent)
-
     def paint(self, painter, option, index):
         if not index.isValid():
             return
@@ -265,19 +247,16 @@ class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
             pass
         else:
             option.palette.setColor(QtGui.QPalette.Text, color)
-        super(SeverityColorDelegate, self).paint(painter, option, index)
+        super().paint(painter, option, index)
 
 
 class ReadFontStyleDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, parent=None):
-        super(ReadFontStyleDelegate, self).__init__(parent)
-
     def paint(self, painter, option, index):
         if not index.isValid():
             return
         self.initStyleOption(option, index)
         option.font.setBold(_itemFromIndex(index).readState() == Qt.Unchecked)
-        super(ReadFontStyleDelegate, self).paint(painter, option, index)
+        super().paint(painter, option, index)
 
 
 class Bullet(QtWidgets.QAbstractButton):
@@ -285,7 +264,7 @@ class Bullet(QtWidgets.QAbstractButton):
     _scaleFactor = 20
 
     def __init__(self, parent=None):
-        super(Bullet, self).__init__(parent)
+        super().__init__(parent)
         self.setAttribute(Qt.WA_NoSystemBackground)
         self.setCheckable(True)
 
@@ -310,7 +289,7 @@ class Star(QtWidgets.QAbstractButton):
     _scaleFactor = 20
 
     def __init__(self, parent=None):
-        super(Star, self).__init__(parent)
+        super().__init__(parent)
         self.setAttribute(Qt.WA_NoSystemBackground)
         self.setCheckable(True)
         self._starPolygon = QtGui.QPolygonF([QtCore.QPointF(1.0, 0.5)])
@@ -339,7 +318,7 @@ class Star(QtWidgets.QAbstractButton):
 
 class ButtonDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, button=None, parent=None):
-        super(ButtonDelegate, self).__init__(parent)
+        super().__init__(parent)
         self._btn = QtWidgets.QPushButton() if button is None else button
         self._btn.setCheckable(True)
         self._btn.setParent(parent)
@@ -353,9 +332,9 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         )
 
     def sizeHint(self, option, index):
-        return super(ButtonDelegate, self).sizeHint(option, index)
+        return super().sizeHint(option, index)
 
-    def createEditor(self, parent, option, index):
+    def createEditor(self, _parent, _option, _index):
         return None
 
     def setModelData(self, editor, model, index):
@@ -370,7 +349,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         pixmap = self._btn.grab()
         painter.drawPixmap(option.rect.x(), option.rect.y(), pixmap)
 
-    def editorEvent(self, event, model, option, index):
+    def editorEvent(self, event, model, _option, index):
         if (
             int(index.flags()) & Qt.ItemIsEditable
             and (
@@ -390,7 +369,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         return False
 
 
-class ElogItem(object):
+class ElogItem:
     def __init__(self, elog, readState=Qt.Unchecked, importantState=Qt.Unchecked):
         self._elog = elog
         self._readState = readState
@@ -448,7 +427,7 @@ class ElogItem(object):
 
 class Model(QtCore.QAbstractTableModel):
     def __init__(self, parent=None):
-        super(Model, self).__init__(parent)
+        super().__init__(parent)
         self._data = []  # A list of ElogItem.
 
     def importantState(self, index):
@@ -486,13 +465,16 @@ class Model(QtCore.QAbstractTableModel):
     def itemFromIndex(self, index):
         return self._data[index.row()]
 
-    def item(self, row, column=0):
+    def item(self, row, _column=0):
         return self._data[row]
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def appendItem(self, item):
+        self._data.append(item)
+
+    def rowCount(self, _parent=QtCore.QModelIndex()):
         return len(self._data)
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, _parent=QtCore.QModelIndex()):
         return len(Column)
 
     def removeRows(self, row, count, parent=QtCore.QModelIndex()):
@@ -506,7 +488,7 @@ class Model(QtCore.QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation != Qt.Horizontal or role != Qt.DisplayRole:
-            return super(Model, self).headerData(section, orientation, role)
+            return super().headerData(section, orientation, role)
         return {
             Column.ImportantState: "!!",
             Column.ReadState: "Read",
@@ -515,48 +497,48 @@ class Model(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if index.column() in (Column.ImportantState, Column.ReadState):
-            return super(Model, self).flags(index) | Qt.ItemIsEditable
-        return super(Model, self).flags(index)
+            return super().flags(index) | Qt.ItemIsEditable
+        return super().flags(index)
 
     def data(self, index, role=Qt.DisplayRole):
         item = self._data[index.row()]
         if role in (Qt.DisplayRole, Qt.EditRole):
-            if index.column() == Column.Category:
-                return item.category()
-            elif index.column() == Column.Package:
-                return item.package()
-            elif index.column() == Column.Eclass:
-                return item.eclass().name
-            elif index.column() == Column.Date:
-                return item.localeTime()
-            else:
-                return ""
-        elif role == Qt.CheckStateRole:
-            if index.column() == Column.ImportantState:
-                return item.importantState()
-            elif index.column() == Column.ReadState:
-                return item.readState()
-        elif role == Role.SortRole:
-            if index.column() in (Column.ImportantState, Column.ReadState):
-                return "%r%r" % (item.data(Qt.CheckStateRole), item.isoTime())
-            elif index.column() == Column.Date:
-                return item.isoTime()
-            elif index.column() == Column.Eclass:
-                return "%r%r" % (item.eclass().value, item.isoTime())
-            else:
-                return "%r%r" % (self.data(index, Qt.DisplayRole), item.isoTime())
+            return {
+                Column.Category: item.category(),
+                Column.Package: item.package(),
+                Column.Eclass: item.eclass().name,
+                Column.Date: item.localeTime(),
+            }.get(index.column(), "")
+        if role == Qt.CheckStateRole:
+            return {
+                Column.ImportantState: item.importantState(),
+                Column.ReadState: item.readState(),
+            }.get(index.column())
+        if role == Role.SortRole:
+            key = {
+                Column.ImportantState: item.importantState,
+                Column.ReadState: item.readState,
+                Column.Date: item.isoTime,
+                Column.Eclass: lambda: item.eclass().value,
+            }.get(index.column(), lambda: self.data(index, Qt.DisplayRole))()
+            return "%s%s" % (key, item.isoTime())
+        return None
 
     def setData(self, index, value, role=Qt.EditRole):
-        if index.column() == Column.ImportantState:
-            return self.toggleImportantState(index)
-        elif index.column() == Column.ReadState:
-            return self.toggleReadState(index)
-        return super(Model, self).setData(index, value, role)
+        try:
+            {
+                Column.ImportantState: self.toggleImportantState,
+                Column.ReadState: self.toggleReadState,
+            }[index.column()](index)
+        except KeyError:
+            return super().setData(index, value, role)
+        else:
+            return True
 
 
 class ElogviewerUi(QtWidgets.QMainWindow):
     def __init__(self):
-        super(ElogviewerUi, self).__init__()
+        super().__init__()
         centralWidget = QtWidgets.QWidget(self)
         centralLayout = QtWidgets.QVBoxLayout()
         centralWidget.setLayout(centralLayout)
@@ -589,7 +571,7 @@ class ElogviewerUi(QtWidgets.QMainWindow):
 
 class Elogviewer(ElogviewerUi):
     def __init__(self, config):
-        super(Elogviewer, self).__init__()
+        super().__init__()
         self.config = config
         self.settings = QtCore.QSettings("elogviewer", "elogviewer")
         if not self.settings.contains("readFlag"):
@@ -618,7 +600,12 @@ class Elogviewer(ElogviewerUi):
         horizontalHeader = self.tableView.horizontalHeader()
         horizontalHeader.sortIndicatorChanged.connect(self.proxyModel.sort)
 
-        self.__setupTableColumnDelegates()
+        for column, delegate in (
+            (Column.ImportantState, ButtonDelegate(Star(), self.tableView)),
+            (Column.ReadState, ButtonDelegate(Bullet(), self.tableView)),
+            (Column.Eclass, SeverityColorDelegate(self.tableView)),
+        ):
+            self.tableView.setItemDelegateForColumn(column, delegate)
         self.tableView.setItemDelegate(ReadFontStyleDelegate(self.tableView))
 
         self.textEditMapper = QtWidgets.QDataWidgetMapper(self.tableView)
@@ -632,41 +619,41 @@ class Elogviewer(ElogviewerUi):
             )
         )
 
-        Icon = QtGui.QIcon.fromTheme
+        iconFromTheme = QtGui.QIcon.fromTheme
         self.refreshAction = QtWidgets.QAction(
-            Icon("view-refresh"),
+            iconFromTheme("view-refresh"),
             "Refresh",
             self.toolBar,
             shortcut=QtGui.QKeySequence.Refresh,
             triggered=self.populate,
         )
         self.markReadAction = QtWidgets.QAction(
-            Icon("mail-mark-read"),
+            iconFromTheme("mail-mark-read"),
             "Mark read",
             self.toolBar,
             triggered=partial(self.setSelectedReadState, Qt.Checked),
         )
         self.markUnreadAction = QtWidgets.QAction(
-            Icon("mail-mark-unread"),
+            iconFromTheme("mail-mark-unread"),
             "Mark unread",
             self.toolBar,
             triggered=partial(self.setSelectedReadState, Qt.Unchecked),
         )
         self.toggleImportantAction = QtWidgets.QAction(
-            Icon("mail-mark-important"),
+            iconFromTheme("mail-mark-important"),
             "Important",
             self.toolBar,
             triggered=self.toggleSelectedImportantState,
         )
         self.deleteAction = QtWidgets.QAction(
-            Icon("edit-delete"),
+            iconFromTheme("edit-delete"),
             "Delete",
             self.toolBar,
             shortcut=QtGui.QKeySequence.Delete,
             triggered=self.deleteSelected,
         )
         self.aboutAction = QtWidgets.QAction(
-            Icon("help-about"),
+            iconFromTheme("help-about"),
             "About",
             self.toolBar,
             shortcut=QtGui.QKeySequence.HelpContents,
@@ -697,7 +684,7 @@ class Elogviewer(ElogviewerUi):
             ),
         )
         self.exitAction = QtWidgets.QAction(
-            Icon("application-exit"),
+            iconFromTheme("application-exit"),
             "Quit",
             self.toolBar,
             shortcut=QtGui.QKeySequence.Quit,
@@ -740,14 +727,6 @@ class Elogviewer(ElogviewerUi):
         else:
             self.tableView.sortByColumn(Column.Date, Qt.DescendingOrder)
         self.tableView.selectRow(0)
-
-    def __setupTableColumnDelegates(self):
-        for column, delegate in (
-            (Column.ImportantState, ButtonDelegate(Star(), self.tableView)),
-            (Column.ReadState, ButtonDelegate(Bullet(), self.tableView)),
-            (Column.Eclass, SeverityColorDelegate(self.tableView)),
-        ):
-            self.tableView.setItemDelegateForColumn(column, delegate)
 
     def saveSettings(self):
         readFlag = set()
@@ -880,7 +859,7 @@ class Elogviewer(ElogviewerUi):
                 if filename in self.settings.value("importantFlag")
                 else Qt.Unchecked
             )
-            self.model._data.append(item)
+            self.model.appendItem(item)
         self.model.endResetModel()
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
 
@@ -904,6 +883,7 @@ def main(argv):
 
     _LOGGER.debug("running on python %s", sys.version)
     if portage and not config.elogpath:
+        # pylint: disable=no-member
         logdir = portage.settings["PORT_LOGDIR"]
         if not logdir:
             logdir = os.path.join(
