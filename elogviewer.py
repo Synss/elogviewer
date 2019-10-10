@@ -819,10 +819,18 @@ class Elogviewer(ElogviewerUi):
         self.updateUnreadCount()
 
     def toggleSelectedImportantState(self):
+        state = None
         for index in self.tableView.selectionModel().selectedRows(
             Column.ImportantState
         ):
-            self.model.toggleImportantState(_sourceIndex(index))
+            sourceIndex = _sourceIndex(index)
+            if state is None:
+                state = (
+                    Qt.Unchecked
+                    if self.model.importantState(sourceIndex) is Qt.Checked
+                    else Qt.Checked
+                )
+            self.model.setImportantState(sourceIndex, state)
 
     def deleteSelected(self):
         selection = [
