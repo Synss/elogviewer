@@ -11,4 +11,4 @@ install:
   - pip install black isort pytest pytest-black pytest-isort pytest-qt
   - pip freeze
 script:
-  - xvfb-run -a pytest --black --isort tests.py
+  - xvfb-run -a python -m pytest --black --isort tests
