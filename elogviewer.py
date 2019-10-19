@@ -33,6 +33,7 @@ import argparse
 import bz2
 import glob
 import gzip
+import io
 import itertools
 import locale
 import logging
@@ -44,7 +45,6 @@ from collections import namedtuple
 from contextlib import closing, suppress
 from enum import IntEnum
 from functools import partial
-from io import BytesIO
 from math import cos, sin
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -60,14 +60,6 @@ __version__ = "2.9"
 Qt = QtCore.Qt
 
 _LOGGER = logging.getLogger("elogviewer")
-
-
-def _(bytestr):
-    """This helper changes `bytes` to `str` on python3 and does nothing
-    under python2.
-
-    """
-    return bytestr.decode(locale.getpreferredencoding(), "replace")
 
 
 class Role(IntEnum):
@@ -123,28 +115,39 @@ def _file(filename):
     _, ext = os.path.splitext(filename)
     try:
         return {".gz": gzip.open, ".bz2": bz2.BZ2File, ".log": open}[ext](
-            filename, "rb"
+            filename, "rt"
         )
     except KeyError:
         _LOGGER.error("%s: unsupported format", filename)
         return closing(
-            BytesIO(
-                b"""
-            <!-- set eclass: ERROR: -->
-            <h2>Unsupported format</h2>
-            The selected elog is in an unsupported format.
-            """
+            io.StringIO(
+                """
+                <!-- set eclass: ERROR: -->
+                <h2>Unsupported format</h2>
+                The selected elog is in an unsupported format.
+                """
+            )
+        )
+    except FileNotFoundError:
+        _LOGGER.error("%s: file not found", filename)
+        return closing(
+            io.StringIO(
+                """
+                <!-- set eclass: ERROR: -->
+                <h2>File not found</h2>
+                The selected elog could does not exist on the filesystem.
+                """
             )
         )
     except IOError:
         _LOGGER.error("%s: could not open file", filename)
         return closing(
-            BytesIO(
-                b"""
-            <!-- set eclass: ERROR: -->
-            <h2>File does not open</h2>
-            The selected elog could not be opened.
-            """
+            io.StringIO(
+                """
+                <!-- set eclass: ERROR: -->
+                <h2>File does not open</h2>
+                The selected elog could not be opened.
+                """
             )
         )
 
@@ -153,7 +156,7 @@ def _html(filename):
     lines = []
     with _file(filename) as elogfile:
         for line in elogfile:
-            line = _(line.strip())
+            line = line.strip()
             try:
                 eclass, stage = line.split(":")
                 eclass = EClass["e%s" % eclass.lower()]
@@ -213,7 +216,7 @@ class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclas
     def _getClass(filename):
         # Get the highest elog class. Adapted from Luca Marturana's elogv.
         with _file(filename) as elogfile:
-            eClasses = re.findall("LOG:|INFO:|WARN:|ERROR:", _(elogfile.read()))
+            eClasses = re.findall("LOG:|INFO:|WARN:|ERROR:", elogfile.read())
             if "ERROR:" in eClasses:
                 eclass = EClass.eerror
             elif "WARN:" in eClasses:
