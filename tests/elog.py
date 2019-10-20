@@ -28,7 +28,10 @@ def randomTime(begin, end):
 
 def randomElogContent(eclass):
     return "\n".join(
-        ("{}: {}".format(eclass.name.upper(), randomString(10)), randomText(5, 10, 10))
+        (
+            "{}: {}".format(eclass.name[1:].upper(), randomString(10)),
+            randomText(5, 10, 10),
+        )
     )
 
 

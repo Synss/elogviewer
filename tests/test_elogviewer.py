@@ -60,6 +60,42 @@ def testUnsupportedFormat(getHTMLs):
     assert b"ERROR" in content
 
 
+class TestElogClass:
+    @pytest.fixture(params=_ev.EClass)
+    def eclass(self, request):
+        return request.param
+
+    @pytest.fixture
+    def elogFile(self, eclass):
+        return FakeElog(_elog.randomElogFileName(), _elog.randomElogContent(eclass))
+
+    @pytest.fixture
+    def elogFullPath(self, elogPath, elogFile):
+        return elogPath / elogFile.fileName
+
+    @pytest.fixture
+    def elogContents(self, elogFile):
+        return elogFile.content
+
+    @pytest.fixture
+    def elogClassInstance(self, elogFullPath, elogFile, fs):
+        fs.create_file(elogFullPath, contents=elogFile.content)
+        return _ev.Elog.fromFilename(elogFullPath)
+
+    def testFileName(self, elogClassInstance, elogFullPath):
+        assert elogClassInstance.filename == elogFullPath
+
+    def testContents(self, elogClassInstance, elogContents):
+        assert elogClassInstance.contents == elogContents
+
+    def testEClass(self, elogClassInstance, eclass, elogFile):
+        assert elogClassInstance.eclass is {
+            _ev.EClass.eerror: _ev.EClass.eerror,
+            _ev.EClass.ewarn: _ev.EClass.ewarn,
+            _ev.EClass.elog: _ev.EClass.elog,
+        }.get(eclass, _ev.EClass.einfo)
+
+
 @pytest.mark.usefixtures("elogsToFS")
 class TestUI:
     @pytest.fixture

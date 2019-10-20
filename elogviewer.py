@@ -227,6 +227,11 @@ class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclas
                 eclass = EClass.einfo
         return eclass
 
+    @property
+    def contents(self):
+        with _file(self.filename) as file:
+            return file.read()
+
 
 class TextToHtmlDelegate(QtWidgets.QItemDelegate):
     def __repr__(self):
