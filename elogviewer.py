@@ -210,11 +210,11 @@ class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclas
         date = rest.split(".")[0]
         date = time.strptime(date, "%Y%m%d-%H%M%S")
         with _file(filename) as elogFile:
-            eclass = cls._getClass(elogFile.read())
+            eclass = cls.getClass(elogFile.read())
         return cls(filename, category, package, date, eclass)
 
     @staticmethod
-    def _getClass(elogBody):
+    def getClass(elogBody):
         # Get the highest elog class. Adapted from Luca Marturana's elogv.
         eClasses = re.findall("LOG:|INFO:|WARN:|ERROR:", elogBody)
         if "ERROR:" in eClasses:

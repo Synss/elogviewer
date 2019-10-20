@@ -60,6 +60,21 @@ def testUnsupportedFormat(getHTMLs):
     assert b"ERROR" in content
 
 
+class TestElogClassUnit:
+    @pytest.mark.parametrize(
+        "content, eclass",
+        [
+            ("ERROR: xxx\n", _ev.EClass.eerror),
+            ("WARN: xxx\n", _ev.EClass.ewarn),
+            ("LOG: xxx\n", _ev.EClass.elog),
+            ("WARN: xxx\nERROR: xxx\n", _ev.EClass.eerror),
+            ("WARN: xxx\nLOG: xxx\n", _ev.EClass.ewarn),
+        ],
+    )
+    def testGetClass(self, content, eclass):
+        assert _ev.Elog.getClass(content) is eclass
+
+
 class TestElogClass:
     @pytest.fixture(params=_ev.EClass)
     def eclass(self, request):
