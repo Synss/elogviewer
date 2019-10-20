@@ -29,6 +29,7 @@ without privileges.
 Read /etc/make.conf.example for more information.
 """
 
+import abc
 import argparse
 import bz2
 import glob
@@ -41,6 +42,7 @@ import os
 import re
 import sys
 import time
+import weakref
 from collections import namedtuple
 from contextlib import closing, suppress
 from enum import IntEnum
@@ -97,6 +99,104 @@ class EClass(IntEnum):
         return "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
 
 
+class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclass"])):
+    HeaderPattern = re.compile(
+        r"({}):\s+(\S+)".format("|".join(_.name[1:].upper() for _ in EClass))
+    )
+    AnsiColorPattern = re.compile(r"\x1b\[[0-9;]+m")
+    LinkPattern = re.compile(r"((https?|ftp)://\S+)")
+    BugPattern = re.compile(r"([bB]ug)\s+#([0-9]+)")
+    PackagePattern = re.compile(r"([a-z0-9]+-[a-z0-9]+/[a-z0-9]+)-([0-9.]+)")
+
+    @staticmethod
+    def __file(filename):
+        # Static so that it may be called *before* instantiation.
+        _, ext = os.path.splitext(filename)
+        try:
+            return {".gz": gzip.open, ".bz2": bz2.BZ2File, ".log": open}[ext](
+                filename, "rt"
+            )
+        except KeyError:
+            _LOGGER.error("%s: unsupported format", filename)
+            return closing(
+                io.StringIO(
+                    """
+                    <!-- set eclass: ERROR: -->
+                    <h2>Unsupported format</h2>
+                    The selected elog is in an unsupported format.
+                    """
+                )
+            )
+        except FileNotFoundError:
+            _LOGGER.error("%s: file not found", filename)
+            return closing(
+                io.StringIO(
+                    """
+                    <!-- set eclass: ERROR: -->
+                    <h2>File not found</h2>
+                    The selected elog could does not exist on the filesystem.
+                    """
+                )
+            )
+        except IOError:
+            _LOGGER.error("%s: could not open file", filename)
+            return closing(
+                io.StringIO(
+                    """
+                    <!-- set eclass: ERROR: -->
+                    <h2>File does not open</h2>
+                    The selected elog could not be opened.
+                    """
+                )
+            )
+
+    @property
+    def file(self):
+        return self.__file(self.filename)
+
+    @classmethod
+    def fromFilename(cls, filename):
+        _LOGGER.debug(filename)
+        basename = os.path.basename(filename)
+        try:
+            category, package, rest = basename.split(":")
+        except ValueError:
+            category = os.path.dirname(filename).split(os.sep)[-1]
+            package, rest = basename.split(":")
+        date = rest.split(".")[0]
+        date = time.strptime(date, "%Y%m%d-%H%M%S")
+        with cls.__file(filename) as elogFile:
+            eclass = cls.getClass(elogFile.read())
+        return cls(filename, category, package, date, eclass)
+
+    @classmethod
+    def getClass(cls, elogBody):
+        # Get the highest elog class. Adapted from Luca Marturana's elogv.
+        eClasses = frozenset(_[0] for _ in cls.HeaderPattern.findall(elogBody))
+        if "ERROR" in eClasses:
+            eclass = EClass.eerror
+        elif "WARN" in eClasses:
+            eclass = EClass.ewarn
+        elif "LOG" in eClasses:
+            eclass = EClass.elog
+        else:
+            eclass = EClass.einfo
+        return eclass
+
+    @property
+    def contents(self):
+        with self.file as file:
+            return file.read()
+
+    @property
+    def html(self):
+        parsed = []
+        with ParserFSM(parsed) as parser, self.file as file:
+            for line in file:
+                parser.parse(line)
+        return os.linesep.join(_ for _ in parsed if _ is not None)
+
+
 def _sourceIndex(index):
     model = index.model()
     with suppress(AttributeError):
@@ -111,128 +211,6 @@ def _itemFromIndex(index):
     return QtGui.QStandardItem()
 
 
-def _file(filename):
-    _, ext = os.path.splitext(filename)
-    try:
-        return {".gz": gzip.open, ".bz2": bz2.BZ2File, ".log": open}[ext](
-            filename, "rt"
-        )
-    except KeyError:
-        _LOGGER.error("%s: unsupported format", filename)
-        return closing(
-            io.StringIO(
-                """
-                <!-- set eclass: ERROR: -->
-                <h2>Unsupported format</h2>
-                The selected elog is in an unsupported format.
-                """
-            )
-        )
-    except FileNotFoundError:
-        _LOGGER.error("%s: file not found", filename)
-        return closing(
-            io.StringIO(
-                """
-                <!-- set eclass: ERROR: -->
-                <h2>File not found</h2>
-                The selected elog could does not exist on the filesystem.
-                """
-            )
-        )
-    except IOError:
-        _LOGGER.error("%s: could not open file", filename)
-        return closing(
-            io.StringIO(
-                """
-                <!-- set eclass: ERROR: -->
-                <h2>File does not open</h2>
-                The selected elog could not be opened.
-                """
-            )
-        )
-
-
-def _html(filename):
-    lines = []
-    with _file(filename) as elogfile:
-        for line in elogfile:
-            line = line.strip()
-            try:
-                eclass, stage = line.split(":")
-                eclass = EClass["e%s" % eclass.lower()]
-            except (ValueError, KeyError):
-                # Not a section header: write line
-                lines.append("{} <br />".format(line))
-            else:
-                # Format section header
-                sectionHeader = "".join(
-                    (
-                        "<h2>{eclass}: {stage}</h2>".format(
-                            eclass=eclass.name[1:].capitalize(), stage=stage
-                        ),
-                        '<p style="color: {}">'.format(eclass.htmlColor()),
-                    )
-                )
-                # Close previous section if exists and open new section
-                if lines:
-                    lines.append("</p>")
-                lines.append(sectionHeader)
-    lines.append("</p>")
-    lines.append("")
-    text = os.linesep.join(lines)
-    # Strip ANSI colors
-    text = re.sub(r"\x1b\[[0-9;]+m", "", text)
-    # Hyperlink
-    text = re.sub(r"((https?|ftp)://\S+)", r'<a href="\1">\1</a>', text)
-    # Hyperlink bugs
-    text = re.sub(
-        r"bug\s+#([0-9]+)", r'<a href="https://bugs.gentoo.org/\1">bug #\1</a>', text
-    )
-    # Hyperlink packages
-    text = re.sub(
-        r"(\s)([a-z1]+[-][a-z0-9]+/[a-z0-9-]+)([\s,.:;!?])",
-        r'\1<a href="http://packages.gentoo.org/package/\2">\2</a>\3',
-        text,
-    )
-    return text
-
-
-class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclass"])):
-    @classmethod
-    def fromFilename(cls, filename):
-        _LOGGER.debug(filename)
-        basename = os.path.basename(filename)
-        try:
-            category, package, rest = basename.split(":")
-        except ValueError:
-            category = os.path.dirname(filename).split(os.sep)[-1]
-            package, rest = basename.split(":")
-        date = rest.split(".")[0]
-        date = time.strptime(date, "%Y%m%d-%H%M%S")
-        with _file(filename) as elogFile:
-            eclass = cls.getClass(elogFile.read())
-        return cls(filename, category, package, date, eclass)
-
-    @staticmethod
-    def getClass(elogBody):
-        # Get the highest elog class. Adapted from Luca Marturana's elogv.
-        eClasses = re.findall("LOG:|INFO:|WARN:|ERROR:", elogBody)
-        if "ERROR:" in eClasses:
-            eclass = EClass.eerror
-        elif "WARN:" in eClasses:
-            eclass = EClass.ewarn
-        elif "LOG:" in eClasses:
-            eclass = EClass.elog
-        else:
-            eclass = EClass.einfo
-        return eclass
-
-    @property
-    def contents(self):
-        with _file(self.filename) as file:
-            return file.read()
-
-
 class TextToHtmlDelegate(QtWidgets.QItemDelegate):
     def __repr__(self):
         return "elogviewer.%s(%r)" % (self.__class__.__name__, self.parent())
@@ -242,6 +220,114 @@ class TextToHtmlDelegate(QtWidgets.QItemDelegate):
             return
         model = index.model()
         editor.setHtml(model.itemFromIndex(index).html())
+
+
+class AbstractState(abc.ABC):
+    def __init__(self, context):
+        self.context = weakref.proxy(context)
+
+    @abc.abstractmethod
+    def enter(self):
+        """Entry action."""
+
+    @abc.abstractmethod
+    def exit(self):
+        """Exit action."""
+
+    @abc.abstractmethod
+    def parse(self, line):
+        """Do action."""
+
+
+class NoopState(AbstractState):
+    def enter(self):
+        pass
+
+    def exit(self):
+        pass
+
+    def parse(self, line):
+        return line
+
+
+class HeaderState(AbstractState):
+    def enter(self):
+        return "<h2>"
+
+    def exit(self):
+        return "</h2>"
+
+    def parse(self, line):
+        eclass, stage = line.split(":")
+        self.context.eclass = EClass["e{}".format(eclass.lower())]
+        return "{}: {}".format(eclass.capitalize(), stage)
+
+
+class BodyState(AbstractState):
+    __href = r'<a href="{url}">{text}</a>'
+    _parse_link = partial(Elog.LinkPattern.sub, __href.format(url=r"\1", text=r"\1"))
+    _parse_bug = partial(
+        Elog.BugPattern.sub,
+        __href.format(url=r"https://bugs.gentoo.org/\2", text=r"\1 #\2"),
+    )
+    _parse_pkg = partial(
+        Elog.PackagePattern.sub,
+        __href.format(url=r"http://packages.gentoo.org/packages/\1", text=r"\1-\2"),
+    )
+    _parse_ansi_colors = partial(Elog.AnsiColorPattern.sub, "")
+
+    def enter(self):
+        return '<p style="color: {}">'.format(self.context.eclass.htmlColor())
+
+    def exit(self):
+        return "</p>"
+
+    def parse(self, line):
+        line = self._parse_ansi_colors(line)
+        line = self._parse_link(line)
+        line = self._parse_bug(line)
+        line = self._parse_pkg(line)
+        return "{} <br />".format(line)
+
+
+class ParserFSM:
+    def __init__(self, results):
+        self.eclass = EClass.elog
+        self._results = results
+        self._noopState = NoopState(self)
+        self._headerState = HeaderState(self)
+        self._bodyState = BodyState(self)
+
+    @property
+    def state(self):
+        return self.__dict__.get("state", self._noopState)
+
+    @state.setter
+    def state(self, state):
+        if state is not self.state:
+            self._results.append(self.state.exit())
+            self.__dict__["state"] = state
+            self._results.append(self.state.enter())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        if any(exc_info):
+            return False
+        self.state = self._noopState
+        return True
+
+    def _stateFor(self, line):
+        if Elog.HeaderPattern.match(line):
+            return self._headerState
+        return self._bodyState
+
+    def parse(self, line):
+        if not line.strip():
+            return
+        self.state = self._stateFor(line)
+        self._results.append(self.state.parse(line))
 
 
 class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
@@ -429,7 +515,7 @@ class ElogItem:
         header = "<h1>{category}/{package}</h1>".format(
             category=self.category(), package=self.package()
         )
-        text = _html(self.filename())
+        text = self._elog.html
         return header + text
 
 

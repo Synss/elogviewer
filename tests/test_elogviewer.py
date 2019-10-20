@@ -1,4 +1,6 @@
+import io
 from collections import namedtuple
+from contextlib import closing
 from glob import glob
 from pathlib import Path
 
@@ -8,7 +10,6 @@ from PyQt5.QtCore import Qt
 
 import elogviewer as _ev
 import tests.elog as _elog
-from elogviewer import _file
 
 
 class FakeElog(namedtuple("FakeElog", ["fileName", "content"])):
@@ -55,7 +56,7 @@ def elogCount(elogFiles):
 
 @pytest.mark.skip
 def testUnsupportedFormat(getHTMLs):
-    with _file(getHTMLs()[0]) as elogfile:
+    with _ev.Elog._file(getHTMLs()[0]) as elogfile:
         content = b"".join(elogfile.readlines())
     assert b"ERROR" in content
 
@@ -109,6 +110,59 @@ class TestElogClass:
             _ev.EClass.ewarn: _ev.EClass.ewarn,
             _ev.EClass.elog: _ev.EClass.elog,
         }.get(eclass, _ev.EClass.einfo)
+
+    @pytest.mark.parametrize(
+        "elogText, elogHtml",
+        [
+            # Regular logs
+            (
+                "ERROR: error_stage\ntext",
+                "<h2>\n"
+                "Error:  error_stage\n\n"
+                "</h2>\n"
+                '<p style="color: #FF0000">\n'
+                "text <br />\n"
+                "</p>",
+            ),
+            # Bugs
+            (
+                "bug #42",
+                '<p style="color: #FFFFFF">\n'
+                '<a href="https://bugs.gentoo.org/42">bug #42</a> <br />\n'
+                "</p>",
+            ),
+            (
+                "Bug #42",
+                '<p style="color: #FFFFFF">\n'
+                '<a href="https://bugs.gentoo.org/42">Bug #42</a> <br />\n'
+                "</p>",
+            ),
+            (
+                "text bug #42 text",
+                '<p style="color: #FFFFFF">\n'
+                'text <a href="https://bugs.gentoo.org/42">bug #42</a> text <br />\n'
+                "</p>",
+            ),
+            # Hyperlinks
+            (
+                "text http://example.com/url text",
+                '<p style="color: #FFFFFF">\n'
+                'text <a href="http://example.com/url">http://example.com/url</a> text <br />\n'
+                "</p>",
+            ),
+            # Packages
+            (
+                "text dev-portage/elogviewer-3.0 text",
+                '<p style="color: #FFFFFF">\n'
+                'text <a href="http://packages.gentoo.org/packages/dev-portage/elogviewer">dev-portage/elogviewer-3.0</a> text <br />\n'
+                "</p>",
+            ),
+        ],
+    )
+    def testHtml(self, elogText, elogHtml, monkeypatch):
+        monkeypatch.setattr(_ev.Elog, "file", closing(io.StringIO(elogText)))
+        elog = _ev.Elog("", "", "", "", "")
+        assert elog.html == elogHtml
 
 
 @pytest.mark.usefixtures("elogsToFS")
