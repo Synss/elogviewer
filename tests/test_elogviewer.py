@@ -1,4 +1,3 @@
-import os
 from collections import namedtuple
 from glob import glob
 from pathlib import Path
@@ -75,7 +74,6 @@ class TestUI:
         elogviewer.populate()
         qtbot.addWidget(elogviewer)
         yield elogviewer
-        os.system("git checkout -- %s" % config.elogpath)
         qtbot.keyClick(elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
         qtbot.mouseClick(elogviewer.markUnreadButton, Qt.LeftButton)
         qtbot.mouseClick(elogviewer.toggleImportantButton, Qt.LeftButton)
@@ -131,7 +129,6 @@ class TestUI:
     def testRefreshButton(self, elogviewer, elogPath, elogCount, qtbot):
         qtbot.keyClick(elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
         qtbot.mouseClick(elogviewer.deleteButton, Qt.LeftButton)
-        os.system("git checkout -- %s" % elogPath)
 
         qtbot.mouseClick(elogviewer.refreshButton, Qt.LeftButton)
 

@@ -1,4 +1,0 @@
-LOG: postinst
-If you are upgrading from a previous kernel, you may be interested
-in the following document:
-  - General upgrade guide: http://www.gentoo.org/doc/en/kernel-upgrade.xml
