@@ -56,7 +56,7 @@ try:
 except ImportError:
     portage = None
 
-__version__ = "2.9"
+__version__ = "3.0"
 
 
 Qt = QtCore.Qt
