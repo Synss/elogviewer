@@ -174,11 +174,12 @@ class TestUI:
         return config_
 
     @pytest.fixture
-    def elogviewer(self, config, qtbot):
+    def elogviewer(self, config, qtbot, qtmodeltester):
         elogviewer = _ev.Elogviewer(config)
         elogviewer.populate()
         qtbot.addWidget(elogviewer)
         yield elogviewer
+        qtmodeltester.check(elogviewer.model)
         qtbot.keyClick(elogviewer.tableView, Qt.Key_A, Qt.ControlModifier)
         qtbot.mouseClick(elogviewer.markUnreadButton, Qt.LeftButton)
         qtbot.mouseClick(elogviewer.toggleImportantButton, Qt.LeftButton)
