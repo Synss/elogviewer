@@ -1,4 +1,6 @@
 import io
+import random
+import time
 from collections import namedtuple
 from contextlib import closing
 from glob import glob
@@ -9,7 +11,34 @@ from pyfakefs.fake_filesystem_unittest import Patcher
 from PyQt5.QtCore import Qt
 
 import elogviewer as _ev
-import tests.elog as _elog
+import tests.fuzz as _fuzz
+
+
+def randomElogContent(eclass, stage):
+    return "\n".join(
+        ("{}: {}".format(eclass.name[1:].upper(), stage), _fuzz.randomText(5, 10, 10))
+    )
+
+
+def randomElogFileName():
+    now = time.gmtime()
+    return (
+        ":".join(
+            (
+                "{}-{}".format(_fuzz.randomString(3), _fuzz.randomString(10)),
+                "{}-{}.{}.{}".format(
+                    _fuzz.randomString(10),
+                    random.randint(0, 9),
+                    random.randint(0, 9),
+                    random.randint(0, 9),
+                ),
+                time.strftime(
+                    "%Y%m%d-%H%M%S", _fuzz.randomTime((now.tm_year - 1, *now[1:]), now)
+                ),
+            )
+        )
+        + ".log"
+    )
 
 
 class FakeElog(namedtuple("FakeElog", ["fileName", "content"])):
@@ -32,7 +61,10 @@ def elogFiles():
     for eclass in _ev.EClass:
         for _ in range(5):
             elogs.append(
-                FakeElog(_elog.randomElogFileName(), _elog.randomElogContent(eclass))
+                FakeElog(
+                    randomElogFileName(),
+                    randomElogContent(eclass, _fuzz.randomString(10)),
+                )
             )
     return elogs
 
@@ -83,7 +115,9 @@ class TestElogClass:
 
     @pytest.fixture
     def elogFile(self, eclass):
-        return FakeElog(_elog.randomElogFileName(), _elog.randomElogContent(eclass))
+        return FakeElog(
+            randomElogFileName(), randomElogContent(eclass, _fuzz.randomString(10))
+        )
 
     @pytest.fixture
     def elogFullPath(self, elogPath, elogFile):
