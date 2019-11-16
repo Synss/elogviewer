@@ -1,0 +1,170 @@
+---
+
+- hosts: all
+  tasks:
+
+  - name: Configure locale
+    become: yes
+    lineinfile:
+      path: /etc/locale.gen
+      regexp: '^#?en_US\.UTF-8'
+      line: 'en_US.UTF-8 UTF-8'
+
+  - name: Generate locale
+    become: yes
+    shell: locale-gen
+
+  - name: Configure `make.conf`
+    become: yes
+    vars:
+        ncpus: 4
+    template:
+        src: make_conf.j2
+        dest: /etc/portage/make.conf
+        mode: 0644
+        backup: yes
+
+  - name: Configure per-package USE flags
+    become: yes
+    lineinfile:
+        create: yes
+        path: /etc/portage/package.use/opts
+        line: '{{ item }}'
+        state: present
+    loop:
+        - dev-libs/libpcre2 pcre16
+        - dev-python/PyQt5 gui
+        - dev-python/PyQt5 testlib
+        - dev-python/PyQt5 widgets
+        - x11-libs/libxcb xkb
+        - app-editors/vim -X
+
+  - name: Configure cache
+    become: yes
+    lineinfile:
+        path: /etc/portage/make.conf
+        regexp: '^{{ item.env }}='
+        line: '{{ item.env }}="/var/cache/{{ item.dest }}"'
+    loop:
+        - { env: 'DISTDIR', dest: 'distfiles' }
+        - { env: 'PKGDIR', dest: 'binpkgs' }
+
+  - name: Install cache
+    become: yes
+    synchronize:
+        mode: push
+        src: '.cache/{{ item }}/'
+        dest: '/var/cache/{{ item }}/'
+        use_ssh_args: yes
+    loop: ['binpkgs', 'distfiles']
+    tags: ['code']
+
+  - command: /usr/bin/which equery
+    register: has_equery
+    ignore_errors: yes
+
+  - name: Install `equery` (for portage module)
+    become: yes
+    shell: /usr/bin/emerge app-portage/gentoolkit
+    when: has_equery is failed
+
+  - name: Update world
+    become: yes
+    portage:
+        package: '@world'
+        newuse: yes
+        deep: yes
+        keepgoing: yes
+
+  - name: Update cache
+    synchronize:
+        mode: pull
+        src: '/var/cache/{{ item }}/'
+        dest: '.cache/{{ item }}/'
+    loop: ['binpkgs', 'distfiles']
+    tags: ['code']
+
+  - name: Install packages
+    become: yes
+    portage:
+        name:
+            - app-admin/sudo
+            - app-emulation/virtualbox-guest-additions
+            - app-emulation/virtualbox-modules
+            - dev-python/pip
+            - dev-python/pytest
+            - dev-python/PyQt5
+            - x11-base/xorg-server
+            - x11-misc/menumaker
+            - x11-terms/xterm
+            - x11-wm/openbox
+            - x11-wm/twm
+        state: present
+
+  - name: Trim cache
+    become: yes
+    command: '/usr/bin/eclean {{ item }}'
+    loop: ['distfiles', 'packages']
+
+  - name: Update cache
+    synchronize:
+        mode: pull
+        src: '/var/cache/{{ item }}/'
+        dest: '.cache/{{ item }}/'
+        delete: yes
+    loop: ['binpkgs', 'distfiles']
+    tags: ['code']
+
+  - name: Add user
+    become: yes
+    user:
+        name: gentoo
+        state: present
+        password: '{{ "gentoo" | password_hash("sha256") }}'
+        groups: [adm, dialout, portage, users, vboxusers, wheel]
+
+  - name: Make user omnipotent
+    become: yes
+    lineinfile:
+        path: /etc/sudoers.d/gentoo
+        line: "gentoo\tALL=(ALL)\tNOPASSWD: ALL"
+        validate: 'visudo -cf %s'
+        state: present
+        create: yes
+        owner: root
+        group: root
+        mode: 0440
+
+  - name: Start X with OpenBox
+    become: yes
+    lineinfile:
+        path: /home/gentoo/.xinitrc
+        line: 'exec openbox-session'
+        state: present
+        create: yes
+        owner: gentoo
+        group: gentoo
+
+  - name: Create OpenBox menu
+    become: yes
+    become_user: gentoo
+    command: /usr/bin/mmaker -f OpenBox3
+
+  - name: Copy dist
+    become: yes
+    become_user: gentoo
+    synchronize:
+        mode: push
+        src: '../dist'
+        dest: '/home/gentoo/'
+        group: no
+        owner: no
+    tags: ['code']
+
+  - name: Fix permissions
+    become: yes
+    file:
+        path: '/home/gentoo/dist'
+        owner: gentoo
+        group: gentoo
+        recurse: yes

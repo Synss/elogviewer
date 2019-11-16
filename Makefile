@@ -6,3 +6,9 @@ upload-doc: doc
 
 test:
 	python ./tests.py
+
+vagrant-up:
+	cd vagrant && vagrant --provision up
+
+vagrant-destroy:
+	cd vagrant && vagrant -f destroy
