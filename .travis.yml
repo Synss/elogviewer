@@ -8,7 +8,7 @@ addons:
       - libxkbcommon-x11-0
 install:
   - pip install PyQt5
-  - pip install black isort pyfakefs pytest pytest-black pytest-isort pytest-qt
+  - pip install pyfakefs pytest pytest-black pytest-isort pytest-qt
   - pip freeze
 script:
   - xvfb-run -a python -m pytest --black --isort tests
