@@ -104,9 +104,9 @@ class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclas
         r"({}):\s+(\S+)".format("|".join(_.name[1:].upper() for _ in EClass))
     )
     AnsiColorPattern = re.compile(r"\x1b\[[0-9;]+m")
-    LinkPattern = re.compile(r"((https?|ftp)://\S+)")
-    BugPattern = re.compile(r"([bB]ug)\s+#([0-9]+)")
-    PackagePattern = re.compile(r"([a-z0-9]+-[a-z0-9]+/[a-z0-9]+)-([0-9.]+)")
+    LinkPattern = re.compile(r"((https?|ftp)://\S+)", re.IGNORECASE)
+    BugPattern = re.compile(r"([bB]ug)\s+#([0-9]+)", re.IGNORECASE)
+    PackagePattern = re.compile(r"([a-z0-9]+-[a-z0-9]+/[a-z0-9]+)-([0-9.]+)", re.IGNORECASE)
 
     @staticmethod
     def __file(filename):
@@ -614,6 +614,8 @@ class Model(QtCore.QAbstractTableModel):
                 Column.ReadState: item.readState,
                 Column.Date: item.isoTime,
                 Column.Eclass: lambda: item.eclass().value,
+                Column.Category: item.category().lower,
+                Column.Package: item.package().lower,
             }.get(index.column(), lambda: self.data(index, Qt.DisplayRole))()
             return "%s%s" % (key, item.isoTime())
         return None
