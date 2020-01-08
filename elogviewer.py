@@ -686,7 +686,7 @@ class Elogviewer(ElogviewerUi):
             )
         else:
             screenSize = QtWidgets.QApplication.desktop().screenGeometry()
-            self.resize(screenSize.width() / 2, screenSize.height() / 2)
+            self.resize(screenSize.width() // 2, screenSize.height() // 2)
 
         self.model = Model(self.tableView)
         self.model.dataChanged.connect(self.saveSettings)
