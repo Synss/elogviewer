@@ -7,7 +7,7 @@ addons:
     packages:
       - libxkbcommon-x11-0
 install:
-  - pip install PyQt5
+  - pip install PyQt5==5.13.2
   - pip install pyfakefs pytest pytest-black pytest-isort pytest-qt
   - pip freeze
 script:
