@@ -32,12 +32,17 @@
         line: '{{ item }}'
         state: present
     loop:
+        # Check packages / use flag with `euse -I $USE`
+        - app-crypt/gpgme -qt5
+        - app-crypt/pinentry -qt5
+        - app-editors/vim -X
         - dev-libs/libpcre2 pcre16
         - dev-python/PyQt5 gui
         - dev-python/PyQt5 testlib
         - dev-python/PyQt5 widgets
+        - dev-util/cmake -qt5
+        - sys-apps/groff -X
         - x11-libs/libxcb xkb
-        - app-editors/vim -X
 
   - name: Configure cache
     become: yes
@@ -68,15 +73,39 @@
     shell: /usr/bin/emerge app-portage/gentoolkit
     when: has_equery is failed
 
+  - name: Clean up packages
+    become: yes
+    portage:
+        package: net-wireless/wireless-tools
+        state: absent
+        depclean: yes
+
+  - name: Update system
+    become: yes
+    portage:
+        package: '@system'
+        update: yes
+        deep: yes
+        newuse: yes
+        sync: yes
+
+  - name: Update cache [1/3]
+    synchronize:
+        mode: pull
+        src: '/var/cache/{{ item }}/'
+        dest: '.cache/{{ item }}/'
+    loop: ['binpkgs', 'distfiles']
+    tags: ['code']
+
   - name: Update world
     become: yes
     portage:
         package: '@world'
-        newuse: yes
+        update: yes
         deep: yes
-        keepgoing: yes
+        newuse: yes
 
-  - name: Update cache
+  - name: Update cache [2/3]
     synchronize:
         mode: pull
         src: '/var/cache/{{ item }}/'
@@ -106,7 +135,7 @@
     command: '/usr/bin/eclean {{ item }}'
     loop: ['distfiles', 'packages']
 
-  - name: Update cache
+  - name: Update cache [3/3]
     synchronize:
         mode: pull
         src: '/var/cache/{{ item }}/'

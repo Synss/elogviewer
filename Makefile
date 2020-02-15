@@ -7,8 +7,14 @@ upload-doc: doc
 test:
 	python ./tests.py
 
-vagrant-up:
-	cd vagrant && vagrant --provision up
+vm-start:
+	cd vagrant && $(MAKE) start
 
-vagrant-destroy:
-	cd vagrant && vagrant -f destroy
+vm-stop:
+	cd vagrant && $(MAKE) stop
+
+vm-update:
+	cd vagrant && $(MAKE) update
+
+vm-destroy:
+	cd vagrant && $(MAKE) destroy

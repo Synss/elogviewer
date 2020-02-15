@@ -18,6 +18,7 @@ PORTAGE_ELOG_SYSTEM="save"
 PORTAGE_ELOG_CLASSES="warn info error log"
 
 FEATURES="${FEATURES} buildpkg parallel-fetch"
+ACCEPT_PROPERTIES="* -interactive"
 
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --usepkg --binpkg-respect-use=y"
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --quiet"
