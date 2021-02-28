@@ -47,4 +47,4 @@ Elogviewer is written by (in no particular order)
 
 ## License
 
-Elogviewer, copyright (c) 2007-2020, is distributed under the GPLv2 license.
+Elogviewer, copyright (c) 2007-2021, is distributed under the GPLv2 license.

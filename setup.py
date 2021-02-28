@@ -2,13 +2,13 @@ from setuptools import setup
 
 setup(
     name="elogviewer",
-    version="3.1",
+    version="3.2",
     author="Mathias Laurin",
     author_email="Mathias.Laurin+gentoo.org@gmail.com",
     url="https://github.com/Synss/elogviewer",
     license="GPLv2",
     install_requires=["PyQt5"],
-    tests_require=["pytest", "isort", "black"],
+    tests_require=["black", "isort", "pyfakefs", "pytest", "pytest-qt"],
     test_suite="tests",
     data_files=[("", ["elogviewer.1", "LICENSE.TXT"])],
     scripts=["elogviewer.py"],
