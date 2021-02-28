@@ -93,6 +93,37 @@ def testUnsupportedFormat(getHTMLs):
     assert b"ERROR" in content
 
 
+class TestParserFSM:
+    @pytest.fixture
+    def results(self):
+        return []
+
+    @pytest.fixture
+    def parser(self, results):
+        with _ev.ParserFSM(results) as parser:
+            yield parser
+
+    def testSmokeTestParserStr(self, parser):
+        assert isinstance(str(parser), str)
+
+    @pytest.mark.parametrize("state", [_ev.NoopState, _ev.HeaderState, _ev.BodyState])
+    def testSmokeTestStateStr(self, parser, state):
+        assert isinstance(str(state(parser)), str)
+
+    def testParseNotAHeader(self, parser, results):
+        # Gentoo Bug 721522
+        for line in "LOG: xxx\nSection content".splitlines():
+            # Initialize FSM
+            parser.parse(line)
+        assert type(parser.state) is _ev.BodyState
+
+        # Looks like a header but is not.
+        line = "ERROR: dev-python/sqlalchemy-migrate-0.13.0::gentoo failed (prepare phase):"
+        parser.parse(line)
+
+        assert type(parser.state) is _ev.BodyState
+
+
 class TestElogClassUnit:
     @pytest.mark.parametrize("eclass", _ev.EClass)
     def testGetClassValue(self, eclass):

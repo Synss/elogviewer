@@ -223,6 +223,9 @@ class AbstractState(abc.ABC):
     def __init__(self, context):
         self.context = weakref.proxy(context)
 
+    def __str__(self):
+        return f"type(self).__name__()"
+
     @abc.abstractmethod
     def enter(self):
         """Entry action."""
@@ -255,7 +258,12 @@ class HeaderState(AbstractState):
         return "</h2>"
 
     def parse(self, line):
-        eclass, stage = line.split(":")
+        try:
+            eclass, stage = line.split(":")
+        except ValueError:
+            # Not a header, e.g., "Too many values to unpack (expected 2)"
+            return ""
+
         self.context.eclass = {
             "ERROR": EClass.Error,
             "WARN": EClass.Warning,
@@ -312,6 +320,9 @@ class ParserFSM:
             self.__dict__["state"] = state
             self._results.append(self.state.enter())
 
+    def __str__(self):
+        return f"type(self).__name__: self.state"
+
     def __enter__(self):
         return self
 
@@ -322,7 +333,7 @@ class ParserFSM:
         return True
 
     def _stateFor(self, line):
-        if Elog.HeaderPattern.match(line):
+        if Elog.HeaderPattern.match(line) and self._headerState.parse(line):
             return self._headerState
         return self._bodyState
 
