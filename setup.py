@@ -7,7 +7,7 @@ setup(
     author_email="Mathias.Laurin+gentoo.org@gmail.com",
     url="https://github.com/Synss/elogviewer",
     license="GPLv2",
-    install_requires=["PyQt5"],
+    install_requires=["PyQt6"],
     tests_require=["black", "isort", "pyfakefs", "pytest", "pytest-qt"],
     test_suite="tests",
     data_files=[("", ["elogviewer.1", "LICENSE.TXT"])],
