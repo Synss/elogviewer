@@ -49,10 +49,10 @@ from contextlib import closing, suppress
 from functools import partial
 from math import cos, sin
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 try:
-    import portage
+    import portage  # type: ignore[import-not-found]
 except ImportError:
     portage = None
 
@@ -66,7 +66,7 @@ _LOGGER = logging.getLogger("elogviewer")
 
 class Role(enum.IntEnum):
 
-    SortRole = Qt.UserRole + 1
+    SortRole = Qt.ItemDataRole.UserRole + 1
 
 
 class Column(enum.IntEnum):
@@ -89,11 +89,11 @@ class EClass(str, enum.Enum):
 
     def color(self):
         return {
-            "Error": QtGui.QColor(Qt.red),
+            "Error": QtGui.QColor(QtGui.QColorConstants.Red),
             "Warning": QtGui.QColor(229, 103, 23),
-            "Log": QtGui.QColor(Qt.darkGreen),
-            "Info": QtGui.QColor(Qt.darkGreen),
-            "QA": QtGui.QColor(Qt.darkGreen),
+            "Log": QtGui.QColor(QtGui.QColorConstants.DarkGreen),
+            "Info": QtGui.QColor(QtGui.QColorConstants.DarkGreen),
+            "QA": QtGui.QColor(QtGui.QColorConstants.DarkGreen),
         }[self.name]
 
     def htmlColor(self):
@@ -107,7 +107,9 @@ class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclas
     AnsiColorPattern = re.compile(r"\x1b\[[0-9;]+m")
     LinkPattern = re.compile(r"((https?|ftp)://\S+)", re.IGNORECASE)
     BugPattern = re.compile(r"([bB]ug)\s+#([0-9]+)", re.IGNORECASE)
-    PackagePattern = re.compile(r"([a-z0-9]+-[a-z0-9]+/[a-z0-9]+)-([0-9.]+)", re.IGNORECASE)
+    PackagePattern = re.compile(
+        r"([a-z0-9]+-[a-z0-9]+/[a-z0-9]+)-([0-9.]+)", re.IGNORECASE
+    )
 
     @staticmethod
     def __file(filename):
@@ -354,7 +356,7 @@ class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
         except KeyError:
             pass
         else:
-            option.palette.setColor(QtGui.QPalette.Text, color)
+            option.palette.setColor(QtGui.QPalette.ColorRole.Text, color)
         super().paint(painter, option, index)
 
 
@@ -363,7 +365,9 @@ class ReadFontStyleDelegate(QtWidgets.QStyledItemDelegate):
         if not index.isValid():
             return
         self.initStyleOption(option, index)
-        option.font.setBold(_itemFromIndex(index).readState() == Qt.Unchecked)
+        option.font.setBold(
+            _itemFromIndex(index).readState() == Qt.CheckState.Unchecked
+        )
         super().paint(painter, option, index)
 
 
@@ -373,14 +377,14 @@ class Bullet(QtWidgets.QAbstractButton):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setAttribute(Qt.WA_NoSystemBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground)
         self.setCheckable(True)
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
-        painter.setPen(Qt.NoPen)
-        green = QtGui.QBrush(Qt.darkGreen)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
+        painter.setPen(Qt.PenStyle.NoPen)
+        green = QtGui.QBrush(QtGui.QColorConstants.DarkGreen)
         painter.setBrush(self.palette().dark() if self.isChecked() else green)
         rect = event.rect()
         painter.translate(rect.x(), rect.y())
@@ -398,7 +402,7 @@ class Star(QtWidgets.QAbstractButton):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setAttribute(Qt.WA_NoSystemBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground)
         self.setCheckable(True)
         self._starPolygon = QtGui.QPolygonF([QtCore.QPointF(1.0, 0.5)])
         for i in range(5):
@@ -410,15 +414,15 @@ class Star(QtWidgets.QAbstractButton):
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
-        painter.setPen(Qt.NoPen)
-        red = QtGui.QBrush(Qt.red)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
+        painter.setPen(Qt.PenStyle.NoPen)
+        red = QtGui.QBrush(QtGui.QColorConstants.Red)
         painter.setBrush(red if self.isChecked() else self.palette().dark())
         rect = event.rect()
         yOffset = (rect.height() - self._scaleFactor) / 2.0
         painter.translate(rect.x(), rect.y() + yOffset)
         painter.scale(self._scaleFactor, self._scaleFactor)
-        painter.drawPolygon(self._starPolygon, QtCore.Qt.WindingFill)
+        painter.drawPolygon(self._starPolygon, Qt.FillRule.WindingFill)
 
     def sizeHint(self):
         return self._scaleFactor * QtCore.QSize(1.0, 1.0)
@@ -446,28 +450,33 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         return None
 
     def setModelData(self, editor, model, index):
-        data = Qt.Checked if editor.isChecked() else Qt.Unchecked
-        model.setData(index, data, role=Qt.CheckStateRole)
+        data = Qt.CheckState.Checked if editor.isChecked() else Qt.CheckState.Unchecked
+        model.setData(index, data, role=Qt.ItemDataRole.CheckStateRole)
 
     def paint(self, painter, option, index):
-        self._btn.setChecked(index.data(role=Qt.CheckStateRole))
+        self._btn.setChecked(
+            index.data(role=Qt.ItemDataRole.CheckStateRole) == Qt.CheckState.Checked
+        )
         self._btn.setGeometry(option.rect)
-        if option.state & QtWidgets.QStyle.State_Selected:
+        if option.state & QtWidgets.QStyle.StateFlag.State_Selected:
             painter.fillRect(option.rect, option.palette.highlight())
         pixmap = self._btn.grab()
         painter.drawPixmap(option.rect.x(), option.rect.y(), pixmap)
 
     def editorEvent(self, event, model, _option, index):
         if (
-            int(index.flags()) & Qt.ItemIsEditable
+            index.flags() & Qt.ItemFlag.ItemIsEditable
             and (
                 event.type()
-                in (QtCore.QEvent.MouseButtonRelease, QtCore.QEvent.MouseButtonDblClick)
-                and event.button() == Qt.LeftButton
+                in (
+                    QtCore.QEvent.Type.MouseButtonRelease,
+                    QtCore.QEvent.Type.MouseButtonDblClick,
+                )
+                and event.button() == Qt.MouseButton.LeftButton
             )
             or (
-                event.type() == QtCore.QEvent.KeyPress
-                and event.key() in (Qt.Key_Space, Qt.Key_Select)
+                event.type() == QtCore.QEvent.Type.KeyPress
+                and event.key() in (Qt.Key.Key_Space, Qt.Key.Key_Select)
             )
         ):
             self._btn.toggle()
@@ -478,7 +487,12 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
 
 
 class ElogItem:
-    def __init__(self, elog, readState=Qt.Unchecked, importantState=Qt.Unchecked):
+    def __init__(
+        self,
+        elog,
+        readState=Qt.CheckState.Unchecked,
+        importantState=Qt.CheckState.Unchecked,
+    ):
         self._elog = elog
         self._readState = readState
         self._importantState = importantState
@@ -508,10 +522,12 @@ class ElogItem:
         self._readState = state
 
     def isReadState(self):
-        return self.readState() == Qt.Checked
+        return self.readState() == Qt.CheckState.Checked
 
     def toggleReadState(self):
-        self.setReadState(Qt.Unchecked if self.isReadState() else Qt.Checked)
+        self.setReadState(
+            Qt.CheckState.Unchecked if self.isReadState() else Qt.CheckState.Checked
+        )
 
     def importantState(self):
         return self._importantState
@@ -520,10 +536,14 @@ class ElogItem:
         self._importantState = state
 
     def isImportantState(self):
-        return self.importantState() == Qt.Checked
+        return self.importantState() == Qt.CheckState.Checked
 
     def toggleImportantState(self):
-        self.setImportantState(Qt.Unchecked if self.isImportantState() else Qt.Checked)
+        self.setImportantState(
+            Qt.CheckState.Unchecked
+            if self.isImportantState()
+            else Qt.CheckState.Checked
+        )
 
     def html(self):
         header = "<h1>{category}/{package}</h1>".format(
@@ -551,7 +571,11 @@ class Model(QtCore.QAbstractTableModel):
     def toggleImportantState(self, index):
         return self.setImportantState(
             index,
-            Qt.Unchecked if self.importantState(index) is Qt.Checked else Qt.Checked,
+            (
+                Qt.CheckState.Unchecked
+                if self.importantState(index) is Qt.CheckState.Checked
+                else Qt.CheckState.Checked
+            ),
         )
 
     def readState(self, index):
@@ -594,8 +618,11 @@ class Model(QtCore.QAbstractTableModel):
         self.endRemoveRows()
         return idx > -1
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation != Qt.Horizontal or role != Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+        if (
+            orientation != Qt.Orientation.Horizontal
+            or role != Qt.ItemDataRole.DisplayRole
+        ):
             return super().headerData(section, orientation, role)
         return {
             Column.ImportantState: "!!",
@@ -605,19 +632,19 @@ class Model(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if index.column() in (Column.ImportantState, Column.ReadState):
-            return super().flags(index) | Qt.ItemIsEditable
+            return super().flags(index) | Qt.ItemFlag.ItemIsEditable
         return super().flags(index)
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         item = self._data[index.row()]
-        if role in (Qt.DisplayRole, Qt.EditRole):
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             return {
                 Column.Category: item.category(),
                 Column.Package: item.package(),
                 Column.Eclass: item.eclass().name,
                 Column.Date: item.localeTime(),
             }.get(index.column(), "")
-        if role == Qt.CheckStateRole:
+        if role == Qt.ItemDataRole.CheckStateRole:
             return {
                 Column.ImportantState: item.importantState(),
                 Column.ReadState: item.readState(),
@@ -630,11 +657,13 @@ class Model(QtCore.QAbstractTableModel):
                 Column.Eclass: lambda: item.eclass().value,
                 Column.Category: item.category().lower,
                 Column.Package: item.package().lower,
-            }.get(index.column(), lambda: self.data(index, Qt.DisplayRole))()
+            }.get(
+                index.column(), lambda: self.data(index, Qt.ItemDataRole.DisplayRole)
+            )()
             return "%s%s" % (key, item.isoTime())
         return None
 
-    def setData(self, index, value, role=Qt.EditRole):
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         try:
             {
                 Column.ImportantState: self.toggleImportantState,
@@ -656,11 +685,13 @@ class ElogviewerUi(QtWidgets.QMainWindow):
 
         self.tableView = QtWidgets.QTableView(centralWidget)
         self.tableView.setSortingEnabled(True)
-        self.tableView.setSelectionMode(self.tableView.ExtendedSelection)
-        self.tableView.setSelectionBehavior(self.tableView.SelectRows)
+        self.tableView.setSelectionMode(self.tableView.SelectionMode.ExtendedSelection)
+        self.tableView.setSelectionBehavior(self.tableView.SelectionBehavior.SelectRows)
         horizontalHeader = self.tableView.horizontalHeader()
         horizontalHeader.setSectionsClickable(True)
-        horizontalHeader.setSectionResizeMode(horizontalHeader.ResizeToContents)
+        horizontalHeader.setSectionResizeMode(
+            horizontalHeader.ResizeMode.ResizeToContents
+        )
         horizontalHeader.setStretchLastSection(True)
         self.tableView.verticalHeader().hide()
         centralLayout.addWidget(self.tableView)
@@ -696,7 +727,9 @@ class Elogviewer(ElogviewerUi):
                 int(self.settings.value("windowHeight")),
             )
         else:
-            screenSize = QtWidgets.QApplication.desktop().screenGeometry()
+            screenSize = (
+                QtWidgets.QApplication.primaryScreen().availableGeometry()
+            )  # FIXME properly
             self.resize(screenSize.width() // 2, screenSize.height() // 2)
 
         self.model = Model(self.tableView)
@@ -719,7 +752,7 @@ class Elogviewer(ElogviewerUi):
         self.tableView.setItemDelegate(ReadFontStyleDelegate(self.tableView))
 
         self.textEditMapper = QtWidgets.QDataWidgetMapper(self.tableView)
-        self.textEditMapper.setSubmitPolicy(self.textEditMapper.AutoSubmit)
+        self.textEditMapper.setSubmitPolicy(self.textEditMapper.SubmitPolicy.AutoSubmit)
         self.textEditMapper.setItemDelegate(TextToHtmlDelegate(self.textEditMapper))
         self.textEditMapper.setModel(self.model)
         self.textEditMapper.addMapping(self.textEdit, 0)
@@ -730,43 +763,43 @@ class Elogviewer(ElogviewerUi):
         )
 
         iconFromTheme = QtGui.QIcon.fromTheme
-        self.refreshAction = QtWidgets.QAction(
+        self.refreshAction = QtGui.QAction(
             iconFromTheme("view-refresh"),
             "Refresh",
             self.toolBar,
-            shortcut=QtGui.QKeySequence.Refresh,
+            shortcut=QtGui.QKeySequence.StandardKey.Refresh,
             triggered=self.populate,
         )
-        self.markReadAction = QtWidgets.QAction(
+        self.markReadAction = QtGui.QAction(
             iconFromTheme("mail-mark-read"),
             "Mark read",
             self.toolBar,
-            triggered=partial(self.setSelectedReadState, Qt.Checked),
+            triggered=partial(self.setSelectedReadState, Qt.CheckState.Checked),
         )
-        self.markUnreadAction = QtWidgets.QAction(
+        self.markUnreadAction = QtGui.QAction(
             iconFromTheme("mail-mark-unread"),
             "Mark unread",
             self.toolBar,
-            triggered=partial(self.setSelectedReadState, Qt.Unchecked),
+            triggered=partial(self.setSelectedReadState, Qt.CheckState.Unchecked),
         )
-        self.toggleImportantAction = QtWidgets.QAction(
+        self.toggleImportantAction = QtGui.QAction(
             iconFromTheme("mail-mark-important"),
             "Important",
             self.toolBar,
             triggered=self.toggleSelectedImportantState,
         )
-        self.deleteAction = QtWidgets.QAction(
+        self.deleteAction = QtGui.QAction(
             iconFromTheme("edit-delete"),
             "Delete",
             self.toolBar,
-            shortcut=QtGui.QKeySequence.Delete,
+            shortcut=QtGui.QKeySequence.StandardKey.Delete,
             triggered=self.deleteSelected,
         )
-        self.aboutAction = QtWidgets.QAction(
+        self.aboutAction = QtGui.QAction(
             iconFromTheme("help-about"),
             "About",
             self.toolBar,
-            shortcut=QtGui.QKeySequence.HelpContents,
+            shortcut=QtGui.QKeySequence.StandardKey.HelpContents,
             triggered=partial(
                 QtWidgets.QMessageBox.about,
                 self,
@@ -793,11 +826,11 @@ class Elogviewer(ElogviewerUi):
                 % __version__,
             ),
         )
-        self.exitAction = QtWidgets.QAction(
+        self.exitAction = QtGui.QAction(
             iconFromTheme("application-exit"),
             "Quit",
             self.toolBar,
-            shortcut=QtGui.QKeySequence.Quit,
+            shortcut=QtGui.QKeySequence.StandardKey.Quit,
             triggered=self.close,
         )
         self.toolBar.addAction(self.refreshAction)
@@ -825,17 +858,23 @@ class Elogviewer(ElogviewerUi):
 
         self.searchLineEdit = QtWidgets.QLineEdit(self.toolBar)
         self.searchLineEdit.setPlaceholderText("search")
-        self.searchLineEdit.textEdited.connect(self.proxyModel.setFilterRegExp)
+        self.searchLineEdit.textEdited.connect(
+            self.proxyModel.setFilterRegularExpression
+        )
         self.toolBar.addWidget(self.searchLineEdit)
 
         QtCore.QTimer.singleShot(100, self.populate)
         if self.settings.contains("sortColumn") and self.settings.contains("sortOrder"):
             self.tableView.sortByColumn(
                 int(self.settings.value("sortColumn")),
-                int(self.settings.value("sortOrder")),
+                (
+                    Qt.SortOrder.DescendingOrder
+                    if self.settings.value("sortOrder") == 1
+                    else Qt.SortOrder.AscendingOrder
+                ),
             )
         else:
-            self.tableView.sortByColumn(Column.Date, Qt.DescendingOrder)
+            self.tableView.sortByColumn(Column.Date, Qt.SortOrder.DescendingOrder)
         self.tableView.selectRow(0)
 
     def saveSettings(self):
@@ -843,9 +882,9 @@ class Elogviewer(ElogviewerUi):
         importantFlag = set()
         for row in range(self.model.rowCount()):
             item = self.model.item(row, Column.ReadState)
-            if item.readState() == Qt.Checked:
+            if item.readState() == Qt.CheckState.Checked:
                 readFlag.add(item.filename())
-            if item.importantState() == Qt.Checked:
+            if item.importantState() == Qt.CheckState.Checked:
                 importantFlag.add(item.filename())
         self.settings.setValue("readFlag", readFlag)
         self.settings.setValue("importantFlag", importantFlag)
@@ -863,7 +902,7 @@ class Elogviewer(ElogviewerUi):
             index = self.model.index(
                 _sourceIndex(current).row(), Column.ReadState, current.parent()
             )
-            self.model.setReadState(index, Qt.Checked)
+            self.model.setReadState(index, Qt.CheckState.Checked)
         self.updateStatus()
         self.updateUnreadCount()
 
@@ -915,9 +954,9 @@ class Elogviewer(ElogviewerUi):
             sourceIndex = _sourceIndex(index)
             if state is None:
                 state = (
-                    Qt.Unchecked
-                    if self.model.importantState(sourceIndex) is Qt.Checked
-                    else Qt.Checked
+                    Qt.CheckState.Unchecked
+                    if self.model.importantState(sourceIndex) is Qt.CheckState.Checked
+                    else Qt.CheckState.Checked
                 )
             self.model.setImportantState(sourceIndex, state)
 
@@ -960,14 +999,14 @@ class Elogviewer(ElogviewerUi):
         ):
             item = ElogItem(Elog.fromFilename(filename))
             item.setReadState(
-                Qt.Checked
+                Qt.CheckState.Checked
                 if filename in self.settings.value("readFlag")
-                else Qt.Unchecked
+                else Qt.CheckState.Unchecked
             )
             item.setImportantState(
-                Qt.Checked
+                Qt.CheckState.Checked
                 if filename in self.settings.value("importantFlag")
-                else Qt.Unchecked
+                else Qt.CheckState.Unchecked
             )
             self.model.appendItem(item)
         self.model.endResetModel()
@@ -1012,7 +1051,7 @@ def main(argv):
     elogviewer = Elogviewer(config)
     elogviewer.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@
 # An elog viewer for Gentoo
 
 Elogviewer lets you manage [portage logs](https://wiki.gentoo.org/wiki/Portage_log)
-in a Qt use interface.  It is written in Python and depends on PyQt5.
+in a Qt use interface.  It is written in Python and depends on PyQt6.
 
 
 ## Installation
@@ -18,7 +18,7 @@ but checking the repo and the usual
 
     python setup.py install
 
-should work as well provided PyQt5 is installed.
+should work as well provided PyQt6 is installed.
 
 
 ## Documentation
