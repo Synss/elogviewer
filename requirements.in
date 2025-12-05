@@ -1,0 +1,13 @@
+# Runtime
+PyQt6
+
+# Build
+setuptools
+
+# Tests
+pytest
+pyfakefs
+pytest-qt
+
+# Linters
+ruff
