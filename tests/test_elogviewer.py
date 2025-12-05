@@ -49,13 +49,13 @@ def _count(iterable):
     return sum(1 for _ in iterable)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def elogPath():
     with Patcher():
-        return Path("/var/log/portage/elog/")
+        yield Path("/var/log/portage/elog/")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def elogFiles():
     elogs = []
     for eclass in _ev.EClass:
