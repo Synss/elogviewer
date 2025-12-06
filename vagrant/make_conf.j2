@@ -3,8 +3,8 @@ MAKEOPTS="-j{{ hostvars[inventory_hostname]['ansible_processor_vcpus'] }}"
 CFLAGS="-mtune=generic -O2 -pipe"
 CXXFLAGS="${CFLAGS}"
 
-USE_PYTHON="3.6 2.7"
-PYTHON_TARGETS="python3_6 python2_7"
+# USE_PYTHON="{{ use_python }}"
+# PYTHON_TARGETS="{{ python_targets }}"
 GRUB_PLATFORMS="emu efi-32 efi-64 pc"
 
 PORTDIR="/usr/portage"
@@ -12,7 +12,7 @@ DISTDIR="/var/cache/distfiles"
 PKGDIR="/var/cache/binpkgs"
 
 INPUT_DEVICES="libinput"
-VIDEO_CARDS="dummy virtualbox"
+VIDEO_CARDS=""
 
 PORTAGE_ELOG_SYSTEM="save"
 PORTAGE_ELOG_CLASSES="warn info error log"
@@ -25,4 +25,4 @@ EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --quiet"
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --load-average={{ hostvars[inventory_hostname]['ansible_processor_vcpus'] }}"
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --jobs={{ hostvars[inventory_hostname]['ansible_processor_vcpus'] }}"
 
-USE="${USE} -llvm openssl qt5 X"
+USE="${USE} -llvm openssl {{ qt_use_flag }} X harfbuzz"

@@ -1,5 +1,12 @@
+ensure-dist:
+	mkdir -p ../dist
+
+setup-cache:
+	mkdir -p .cache/binpkgs
+	mkdir -p .cache/distfiles
+
 .PHONY: start
-start:
+start: setup-cache ensure-dist
 	vagrant --provision up
 
 .PHONY: stop
