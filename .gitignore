@@ -1,3 +1,4 @@
 ._DS_Store
 *.pyc
 .cache/
+vagrant/.vagrant
