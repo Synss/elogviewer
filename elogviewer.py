@@ -37,7 +37,6 @@ import glob
 import gzip
 import io
 import itertools
-import locale
 import logging
 import os
 import re
