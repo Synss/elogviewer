@@ -1,7 +1,6 @@
 import random
 import string
 import time
-from functools import partial
 
 
 def randomString(length, choice=random.choice, charset=string.ascii_lowercase):

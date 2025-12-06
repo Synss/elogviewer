@@ -3,7 +3,6 @@ import random
 import time
 from collections import namedtuple
 from contextlib import closing
-from glob import glob
 from pathlib import Path
 
 import pytest
