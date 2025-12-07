@@ -37,6 +37,8 @@ Bug reports may be submitted on GitHub or [Gentoo's bugzilla](https://bugs.gento
 
 Elogviewer is written by (in no particular order)
 
+* [a17r](https://github.com/a17r)
+* [Chiito](https://github.com/Chiitoo)
 * Christian Faulhammer
 * David Radice
 * [Fonic](https://github.com/fonic)

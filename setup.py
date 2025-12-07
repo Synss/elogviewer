@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="elogviewer",
-    version="3.2",
+    version="3.3",
     author="Mathias Laurin",
     author_email="Mathias.Laurin+gentoo.org@gmail.com",
     url="https://github.com/Synss/elogviewer",
