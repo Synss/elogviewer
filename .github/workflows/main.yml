@@ -1,0 +1,31 @@
+---
+name: main
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install qt deps
+        run: sudo apt update && sudo apt install -y libegl1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: '3.11'
+      - run: uv venv && uv pip install -r requirements.in
+      - name: Check format
+        run: uv run --frozen ruff format --check
+      - name: Lint
+        run: uv run --frozen ruff check
+      # - name: Test
+      #   run: PYTHONPATH=. uv run --frozen pytest
+      - name: Build
+        run: python setup.py sdist
+      - name: Upload source dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist
+          if-no-files-found: error
