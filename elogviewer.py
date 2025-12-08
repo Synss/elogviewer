@@ -222,7 +222,7 @@ class AbstractState(abc.ABC):
         self.context = weakref.proxy(context)
 
     def __str__(self):
-        return f"type(self).__name__()"
+        return type(self).__name__
 
     @abc.abstractmethod
     def enter(self):
@@ -319,7 +319,7 @@ class ParserFSM:
             self._results.append(self.state.enter())
 
     def __str__(self):
-        return f"type(self).__name__: self.state"
+        return f"{type(self).__name__}: {self.state}"
 
     def __enter__(self):
         return self
