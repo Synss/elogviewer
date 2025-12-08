@@ -64,12 +64,10 @@ _LOGGER = logging.getLogger("elogviewer")
 
 
 class Role(enum.IntEnum):
-
     SortRole = Qt.ItemDataRole.UserRole + 1
 
 
 class Column(enum.IntEnum):
-
     ImportantState = 0
     Category = 1
     Package = 2
@@ -79,7 +77,6 @@ class Column(enum.IntEnum):
 
 
 class EClass(str, enum.Enum):
-
     Error = "ERROR"
     Warning = "WARN"
     Log = "LOG"
@@ -371,7 +368,6 @@ class ReadFontStyleDelegate(QtWidgets.QStyledItemDelegate):
 
 
 class Bullet(QtWidgets.QAbstractButton):
-
     _scaleFactor = 20
 
     def __init__(self, parent=None):
