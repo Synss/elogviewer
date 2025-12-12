@@ -144,6 +144,7 @@
               - app-emulation/virtualbox-guest-additions
               - app-emulation/virtualbox-guest-modules
               - dev-python/pip
+              - dev-python/pipx
               - dev-python/pytest
               - dev-python/pyqt6
               - x11-base/xorg-server
@@ -203,6 +204,15 @@
       ansible.builtin.lineinfile:
           path: /home/gentoo/.bashrc
           line: 'export XSESSION=openbox'
+          state: present
+          create: yes
+          owner: gentoo
+          group: gentoo
+
+    - name: Set path for pipx
+      ansible.builtin.lineinfile:
+          path: /home/gentoo/.bashrc
+          line: 'PATH=$PATH:/home/gentoo/.local/bin'
           state: present
           create: yes
           owner: gentoo
