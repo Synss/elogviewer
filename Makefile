@@ -12,16 +12,16 @@ test:
 
 .PHONY: vm-start
 vm-start:
-	cd vagrant && $(MAKE) start
+	cd vm && $(MAKE) start
 
 .PHONY: vm-stop
 vm-stop:
-	cd vagrant && $(MAKE) stop
+	cd vm && $(MAKE) stop
 
 .PHONY: vm-update
 vm-update:
-	cd vagrant && $(MAKE) update
+	cd vm && $(MAKE) update
 
 .PHONY: vm-destroy
 vm-destroy:
-	cd vagrant && $(MAKE) destroy
+	cd vm && $(MAKE) destroy
