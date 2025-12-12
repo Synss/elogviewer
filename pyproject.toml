@@ -1,3 +1,33 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "elogviewer"
+description = "An elog viewer for Gentoo Linux"
+version = "3.3"
+authors = [
+    {name = "Mathias Laurin", email = "Mathias.Laurin+gentoo.org@gmail.com"}
+]
+license = "GPL-2.0-only"
+license-files = ["LICENSE*"]
+dynamic = ["readme"]
+urls = {source = "https://github.com/Synss/elogviewer"}
+gui-scripts = {elogviewer = "elogviewer:main"}
+dependencies = ["PyQt6"]
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "Environment :: X11 Applications :: Qt",
+]
+
+[project.optional-dependencies]
+test = ["ruff", "pyfakefs", "pytest", "pytest-qt"]
+
+[tool.setuptools]
+include-package-data = true  # MANIFEST.in
+py-modules = ["elogviewer"]
+
+[tool.setuptools.dynamic]
+readme = {file = "README.md"}
