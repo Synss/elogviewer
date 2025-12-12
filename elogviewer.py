@@ -1008,7 +1008,7 @@ class Elogviewer(ElogviewerUi):
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
 
 
-def main(argv):
+def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "-p", "--elogpath", help="path to the elog directory", default=""
@@ -1040,7 +1040,7 @@ def main(argv):
 
     _LOGGER.debug("elogpath is set to %r", config.elogpath)
 
-    app = QtWidgets.QApplication(argv)
+    app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon.fromTheme("applications-system"))
 
     elogviewer = Elogviewer(config)
@@ -1050,4 +1050,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
