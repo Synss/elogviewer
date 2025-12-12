@@ -10,7 +10,7 @@ setup(
     install_requires=["PyQt6"],
     tests_require=["ruff", "pyfakefs", "pytest", "pytest-qt"],
     test_suite="tests",
-    data_files=[("", ["elogviewer.1", "LICENSE.TXT"])],
+    data_files=[("", ["elogviewer.1", "LICENSE.TXT", "pyproject.toml"])],
     scripts=["elogviewer.py"],
     classifiers="\n".join(
         (
