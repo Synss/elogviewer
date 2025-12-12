@@ -25,4 +25,4 @@ EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --quiet"
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --load-average={{ hostvars[inventory_hostname]['ansible_processor_vcpus'] }}"
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --jobs={{ hostvars[inventory_hostname]['ansible_processor_vcpus'] }}"
 
-USE="${USE} -llvm openssl {{ qt_use_flag }} X harfbuzz"
+USE="${USE} -llvm elogind openssl {{ qt_use_flag }} X harfbuzz"

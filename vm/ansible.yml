@@ -174,22 +174,6 @@
     become: yes
 
   - block:
-    - name: Create OpenBox menu
-      ansible.builtin.command: /usr/bin/mmaker -f OpenBox3
-      become_user: gentoo
-
-    - name: Set xsession env
-      ansible.builtin.lineinfile:
-          path: /home/gentoo/.bashrc
-          line: 'export XSESSION=openbox'
-          state: present
-          create: yes
-          owner: gentoo
-          group: gentoo
-
-    become: yes
-
-  - block:
     - name: Add user
       ansible.builtin.user:
           name: gentoo
@@ -209,6 +193,22 @@
           group: root
           mode: 0440
       become: yes
+
+  - block:
+    - name: Create OpenBox menu
+      ansible.builtin.command: /usr/bin/mmaker -f OpenBox3
+      become_user: gentoo
+
+    - name: Set xsession env
+      ansible.builtin.lineinfile:
+          path: /home/gentoo/.bashrc
+          line: 'export XSESSION=openbox'
+          state: present
+          create: yes
+          owner: gentoo
+          group: gentoo
+
+    become: yes
 
   - name: Copy dist
     ansible.builtin.synchronize:
