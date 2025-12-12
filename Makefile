@@ -6,9 +6,15 @@ html/index.html:
 upload-doc: doc
 	rsync -avzP -e ssh html/ mathias_laurin@web.sourceforge.net:/home/project-web/elogviewer/htdocs/ 
 
+.venv:
+	uv venv
+	uv pip install -r pyproject.toml --all-extras
+
 .PHONY: test
-test:
-	PYTHONPATH=. pytest ./tests/test_elogviewer.py
+test: .venv
+	uv run ruff format
+	uv run ruff check --fix
+	uv run pytest
 
 .PHONY: vm-start
 vm-start:

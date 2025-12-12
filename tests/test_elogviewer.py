@@ -10,7 +10,7 @@ from pyfakefs.fake_filesystem_unittest import Patcher
 from PyQt6.QtCore import Qt
 
 import elogviewer as _ev
-import tests.fuzz as _fuzz
+import fuzz as _fuzz
 
 
 def randomElogContent(eclass, stage):
