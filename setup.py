@@ -8,7 +8,7 @@ setup(
     url="https://github.com/Synss/elogviewer",
     license="GPLv2",
     install_requires=["PyQt6"],
-    tests_require=["black", "isort", "pyfakefs", "pytest", "pytest-qt"],
+    tests_require=["ruff", "pyfakefs", "pytest", "pytest-qt"],
     test_suite="tests",
     data_files=[("", ["elogviewer.1", "LICENSE.TXT"])],
     scripts=["elogviewer.py"],
