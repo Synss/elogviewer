@@ -1,0 +1,19 @@
+---
+- name: Configure locale
+  ansible.builtin.lineinfile:
+    path: /etc/locale.gen
+    regexp: "^#?en_US\\.UTF-8"
+    line: "en_US.UTF-8 UTF-8"
+  register: gentoo_base_locale_config
+
+- name: Check available locales
+  ansible.builtin.command: locale -a
+  changed_when: false
+  register: gentoo_base_available_locales
+
+- name: Generate locale
+  ansible.builtin.command: locale-gen
+  when: >
+    gentoo_base_locale_config.changed or
+    'en_US.utf8' not in gentoo_base_available_locales.stdout_lines
+  changed_when: true

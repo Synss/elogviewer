@@ -1,0 +1,9 @@
+---
+- name: Upload cache
+  ansible.posix.synchronize:
+    mode: push
+    src: ".cache/{{ item }}/"
+    dest: "/var/cache/{{ item }}/"
+    use_ssh_args: true
+  loop: ["binpkgs", "distfiles"]
+  failed_when: false

@@ -1,0 +1,11 @@
+---
+- name: Make user omnipotent
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/{{ gentoo_user_name }}
+    line: "{{ gentoo_user_name }}\tALL=(ALL)\tNOPASSWD: ALL"
+    validate: "visudo -cf %s"
+    state: present
+    create: true
+    owner: root
+    group: root
+    mode: "0440"

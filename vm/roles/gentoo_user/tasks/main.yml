@@ -1,0 +1,7 @@
+---
+- name: "Add user"
+  ansible.builtin.import_tasks: users.yml
+- name: "Setup privileges"
+  ansible.builtin.import_tasks: sudoers.yml
+- name: "Setup path"
+  ansible.builtin.import_tasks: path.yml

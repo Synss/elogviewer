@@ -1,0 +1,9 @@
+---
+- name: Configure `make.conf` from template
+  ansible.builtin.template:
+    src: make_conf.j2
+    dest: /etc/portage/make.conf
+    mode: "0644"
+    backup: true
+  vars:
+    ncpus: "{{ ansible_facts['processor_vcpus'] }}"

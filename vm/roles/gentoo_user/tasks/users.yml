@@ -1,0 +1,7 @@
+---
+- name: Add user
+  ansible.builtin.user:
+    name: gentoo
+    state: present
+    password: '{{ gentoo_user_password | password_hash("sha256") }}'
+    groups: "{{ gentoo_user_groups }}"

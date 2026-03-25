@@ -1,0 +1,17 @@
+---
+# use_python: "3.12"
+# python_targets: "python3_12"
+qt_use_flag: "qt6"
+
+gentoo_user_name: "gentoo"
+gentoo_user_password: "gentoo"
+gentoo_user_groups:
+  - adm
+  - audio
+  - dialout
+  - portage
+  - users
+  - vboxsf
+  - vboxusers
+  - video
+  - wheel

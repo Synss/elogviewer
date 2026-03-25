@@ -1,0 +1,10 @@
+---
+- name: Set path for pipx
+  ansible.builtin.lineinfile:
+    path: /home/{{ gentoo_user_name }}/.bashrc
+    line: "PATH=$PATH:/home/{{ gentoo_user_name }}/.local/bin"
+    state: present
+    create: true
+    mode: "0644"
+    owner: "{{ gentoo_user_name }}"
+    group: "{{ gentoo_user_name }}"

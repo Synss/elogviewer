@@ -5,6 +5,8 @@
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
+HOST_CPUS = [1, RbConfig::CONFIG["target_cpu"] ? `nproc`.to_i / 2 : 2].max
+
 Vagrant.configure("2") do |config|
   # The most common configuration options are documented and commented below.
   # For a complete reference, please see the online documentation at
@@ -57,7 +59,7 @@ Vagrant.configure("2") do |config|
  
     # Customize the amount of memory on the VM:
     vb.memory = "4096"
-    vb.cpus = "4"
+    vb.cpus = HOST_CPUS
     vb.customize ["modifyvm", :id, "--graphicscontroller", "VMSVGA"]
   end
   #
@@ -72,7 +74,12 @@ Vagrant.configure("2") do |config|
   #   apt-get install -y apache2
   # SHELL
   config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "ansible.yml"
+    ansible.playbook = "site.yml"
+    ansible.inventory_path = "inventory"
     #ansible.verbose  = true
+    #ansible.limit = "all"
+    ansible.extra_vars = {
+        gentoo_run_sync: true,
+    }
   end
 end

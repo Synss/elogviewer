@@ -1,0 +1,10 @@
+---
+- name: Main
+  hosts: all
+  become: true
+  roles:
+    - role: gentoo_base
+    - role: gentoo_system
+    - role: gentoo_user
+    - role: gentoo_desktop
+    - role: gentoo_deploy

@@ -1,0 +1,21 @@
+---
+- name: Update @system
+  block:
+    - name: Update system
+      ansible.builtin.command: |
+        /usr/bin/emerge --update --deep --changed-use @system
+      register: gentoo_system_update_system
+      changed_when: gentoo_system_update_system.stdout is search('sys-kernel/')
+
+    - name: Update cache [system]
+      ansible.posix.synchronize:
+        mode: pull
+        src: "/var/cache/{{ item }}/"
+        dest: ".cache/{{ item }}/"
+      become: false
+      loop: ["binpkgs", "distfiles"]
+
+- name: "Request reboot after updates"  # noqa: no-handler
+  ansible.builtin.meta: noop
+  when: gentoo_system_update_system.changed
+  notify: Reboot system

@@ -1,0 +1,6 @@
+---
+- name: Configure per-package USE flags
+  ansible.builtin.template:
+    src: package_use.j2
+    dest: /etc/portage/package.use/opts
+    mode: "0644"
