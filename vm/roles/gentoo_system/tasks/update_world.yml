@@ -1,0 +1,40 @@
+---
+- name: Install `equery` (for portage module)
+  ansible.builtin.command: /usr/bin/emerge app-portage/gentoolkit
+  changed_when: false
+
+- name: Clean up packages
+  community.general.portage:
+    package: net-wireless/wireless-tools
+    state: absent
+    depclean: true
+
+- name: Update @world
+  block:
+    - name: Update world
+      community.general.portage:
+        package: "@world"
+        update: true
+        deep: true
+        changed_use: true
+      register: gentoo_system_update_world
+
+    - name: Update cache [world]
+      ansible.posix.synchronize:
+        mode: pull
+        src: "/var/cache/{{ item }}/"
+        dest: ".cache/{{ item }}/"
+      become: false
+      loop: ["binpkgs", "distfiles"]
+
+  rescue:
+    - name: Warn on world update failure
+      ansible.builtin.debug:
+        msg: "World update failed — manual intervention may be needed"
+
+- name: "Request reboot after kernel update"  # noqa: no-handler
+  ansible.builtin.meta: noop
+  when:
+    - gentoo_system_update_world is defined
+    - gentoo_system_update_world.msg is search('sys-kernel/')
+  notify: Reboot system

@@ -1,0 +1,15 @@
+---
+- name: Trim cache
+  ansible.builtin.command: "/usr/bin/eclean {{ item }}"
+  loop: ["distfiles", "packages"]
+  changed_when: false
+
+- name: Download cache
+  ansible.posix.synchronize:
+    mode: pull
+    src: "/var/cache/{{ item }}/"
+    dest: ".cache/{{ item }}/"
+    delete: true
+  become: false
+  loop: ["binpkgs", "distfiles"]
+  failed_when: false

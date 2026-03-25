@@ -1,10 +1,14 @@
 CHOST="x86_64-pc-linux-gnu"
-MAKEOPTS="-j{{ hostvars[inventory_hostname]['ansible_processor_vcpus'] }}"
+MAKEOPTS="-j{{ ncpus }}"
 CFLAGS="-mtune=generic -O2 -pipe"
 CXXFLAGS="${CFLAGS}"
 
-# USE_PYTHON="{{ use_python }}"
-# PYTHON_TARGETS="{{ python_targets }}"
+{% if use_python is defined %}
+USE_PYTHON="{{ use_python }}"
+{% endif %}
+{% if python_targets is defined %}
+PYTHON_TARGETS="{{ python_targets }}"
+{% endif %}
 GRUB_PLATFORMS="emu efi-32 efi-64 pc"
 
 PORTDIR="/usr/portage"
@@ -22,7 +26,7 @@ ACCEPT_PROPERTIES="* -interactive"
 
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --usepkg --binpkg-respect-use=y"
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --quiet"
-EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --load-average={{ hostvars[inventory_hostname]['ansible_processor_vcpus'] }}"
-EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --jobs={{ hostvars[inventory_hostname]['ansible_processor_vcpus'] }}"
+EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --load-average={{ ncpus }}"
+EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --jobs={{ ncpus }}"
 
 USE="${USE} -llvm elogind openssl {{ qt_use_flag }} X harfbuzz"

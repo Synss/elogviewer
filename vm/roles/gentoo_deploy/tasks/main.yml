@@ -1,0 +1,3 @@
+---
+- name: "Sync dist"
+  ansible.builtin.import_tasks: sync_dist.yml

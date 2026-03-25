@@ -1,0 +1,28 @@
+---
+- name: Install packages
+  community.general.portage:
+    name:
+      - acct-group/adm
+      - acct-group/audio
+      - acct-group/dialout
+      - acct-group/portage
+      - acct-group/users
+      - acct-group/vboxsf
+      - acct-group/vboxguest
+      - acct-group/vboxusers
+      - acct-group/video
+      - acct-group/wheel
+      - acct-user/vboxguest
+      - app-admin/sudo
+      - app-emulation/virtualbox-guest-additions
+      - app-emulation/virtualbox-guest-modules
+      - dev-python/pip
+      - dev-python/pipx
+      - dev-python/pytest
+      - dev-python/pyqt6
+      - x11-base/xorg-server
+      - x11-misc/menumaker
+      - x11-terms/xterm
+      - x11-wm/openbox
+      - x11-wm/twm
+    state: present

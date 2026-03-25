@@ -1,0 +1,22 @@
+---
+- name: Check for existing OpenBox menu
+  ansible.builtin.stat:
+    path: /home/{{ gentoo_user_name }}/.config/openbox/menu.xml
+  register: gentoo_desktop_openbox_menu
+
+- name: Create OpenBox menu
+  ansible.builtin.command: /usr/bin/mmaker OpenBox3
+  become_user: "{{ gentoo_user_name }}"
+  become: true
+  when: not gentoo_desktop_openbox_menu.stat.exists
+  changed_when: true
+
+- name: Set xsession env
+  ansible.builtin.lineinfile:
+    path: /home/{{ gentoo_user_name }}/.bashrc
+    line: "export XSESSION=openbox"
+    state: present
+    create: true
+    mode: "0644"
+    owner: "{{ gentoo_user_name }}"
+    group: "{{ gentoo_user_name }}"

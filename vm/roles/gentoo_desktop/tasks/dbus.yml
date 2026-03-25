@@ -1,0 +1,4 @@
+---
+- name: Set machine-id for dbus
+  ansible.builtin.command: /usr/bin/dbus-uuidgen --ensure=/var/lib/dbus/machine-id
+  changed_when: false

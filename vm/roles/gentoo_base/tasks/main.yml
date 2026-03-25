@@ -1,0 +1,12 @@
+---
+- name: "Configure locale"
+  ansible.builtin.import_tasks: locale.yml
+
+- name: "Configure `make.conf`"
+  ansible.builtin.import_tasks: makeconf.yml
+
+- name: "Configure per-package USE flags"
+  ansible.builtin.import_tasks: package_use.yml
+
+- name: "Create cache dirs"
+  ansible.builtin.import_tasks: cache.yml

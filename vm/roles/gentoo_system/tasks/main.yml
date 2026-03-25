@@ -1,0 +1,24 @@
+---
+- name: "Sync tree"
+  ansible.builtin.command: /usr/bin/emerge --sync
+  tags: sync
+  when: gentoo_run_sync | default(false)
+  changed_when: false
+
+- name: "Upload cache"
+  ansible.builtin.import_tasks: "upload_cache.yml"
+
+- name: "Update system"
+  ansible.builtin.import_tasks: "update_system.yml"
+
+- name: "Flush handlers"
+  ansible.builtin.meta: flush_handlers
+
+- name: "Update world"
+  ansible.builtin.import_tasks: "update_world.yml"
+
+- name: "Install required packages"
+  ansible.builtin.import_tasks: "install.yml"
+
+- name: "Download cache"
+  ansible.builtin.import_tasks: "download_cache.yml"

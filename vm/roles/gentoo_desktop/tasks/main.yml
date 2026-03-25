@@ -1,0 +1,5 @@
+---
+- name: "Setup dbus"
+  ansible.builtin.import_tasks: "dbus.yml"
+- name: "Setup DE"
+  ansible.builtin.import_tasks: openbox.yml
