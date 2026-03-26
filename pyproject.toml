@@ -24,7 +24,7 @@ classifiers = [
 
 [project.optional-dependencies]
 just = ["rust-just"]
-lint = ["ansible-lint", "ruff", "yamllint"]
+lint = ["ansible-lint", "ruff", "ty", "yamllint"]
 test = ["pyfakefs", "pytest", "pytest-qt"]
 vm = ["ansible", "molecule", "passlib"]
 
