@@ -17,8 +17,8 @@ start: setup-cache ensure-dist
 stop:
 	vagrant halt
 
-.PHONY: update
-update:
+.PHONY: provision
+provision: start
 	vagrant provision
 
 .PHONY: destroy
