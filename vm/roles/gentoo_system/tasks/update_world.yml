@@ -1,8 +1,4 @@
 ---
-- name: Install `equery` (for portage module)
-  ansible.builtin.command: /usr/bin/emerge app-portage/gentoolkit
-  changed_when: false
-
 - name: Clean up packages
   community.general.portage:
     package: net-wireless/wireless-tools

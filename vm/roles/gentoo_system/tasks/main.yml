@@ -17,6 +17,11 @@
 - name: "Upload cache"
   ansible.builtin.import_tasks: "upload_cache.yml"
 
+- name: Install `equery` (for portage module)
+  community.general.portage:
+    package: app-portage/gentoolkit
+    state: present
+
 - name: "Update system"
   ansible.builtin.import_tasks: "update_system.yml"
 

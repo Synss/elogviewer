@@ -2,15 +2,17 @@
 - name: Update @system
   block:
     - name: Update system
-      ansible.builtin.command: |
-        /usr/bin/emerge --update --deep --changed-use @system
+      community.general.portage:
+        package: "@system"
+        update: true
+        deep: true
+        changed_use: true
       register: gentoo_system_update_system
-      changed_when: gentoo_system_update_system.stdout is search('sys-kernel/')
 
     - name: Report cache hits [system]
       ansible.builtin.include_tasks: report_cache_hits.yml
       vars:
-        _output: "{{ gentoo_system_update_system.stdout }}"
+        _output: "{{ gentoo_system_update_system.msg }}"
 
     - name: Update cache [system]
       ansible.posix.synchronize:
@@ -22,5 +24,5 @@
 
 - name: "Request reboot after updates"  # noqa: no-handler
   ansible.builtin.meta: noop
-  when: gentoo_system_update_system.changed
+  when: gentoo_system_update_system.msg is search('sys-kernel/')
   notify: Reboot system
