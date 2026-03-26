@@ -27,3 +27,6 @@ vm-provision:
 
 vm-destroy:
     cd vm && just destroy
+
+vm-ssh:
+	cd vm && just ssh

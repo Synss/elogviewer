@@ -16,6 +16,9 @@ provision: start
 destroy:
     vagrant -f destroy
 
+ssh:
+	vagrant ssh
+
 _setup-cache:
     mkdir -p .cache/binpkgs
     mkdir -p .cache/distfiles
