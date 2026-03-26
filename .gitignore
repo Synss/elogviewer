@@ -1,4 +1,5 @@
 ._DS_Store
+.direnv/
 *.pyc
 .cache/
 vm/.vagrant

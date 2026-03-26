@@ -1,0 +1,24 @@
+default:
+    just --list
+
+test:
+    cd roles/gentoo_base && uv run --extra vm molecule test
+
+start: _setup-cache _ensure-dist
+    vagrant --provision up
+
+stop:
+    vagrant halt
+
+provision: start
+    vagrant provision
+
+destroy:
+    vagrant -f destroy
+
+_setup-cache:
+    mkdir -p .cache/binpkgs
+    mkdir -p .cache/distfiles
+
+_ensure-dist:
+    mkdir -p ../dist
