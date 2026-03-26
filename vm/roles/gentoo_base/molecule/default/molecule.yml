@@ -5,6 +5,11 @@ platforms:
   - name: localhost
 provisioner:
   name: ansible
+  env:
+    JUNIT_OUTPUT_DIR: "${MOLECULE_PROJECT_DIRECTORY}/junit"
+  config_options:
+    defaults:
+      callbacks_enabled: junit
   inventory:
     hosts:
       all:
