@@ -1,0 +1,10 @@
+---
+- name: Render package_use
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../templates/package_use.j2"  # noqa: no-relative-paths
+    dest: /tmp/molecule_package_use
+    mode: "0644"
+  vars:
+    gentoo_base_package_use_lines:
+      - dev-libs/foo bar
+      - dev-libs/baz -qux

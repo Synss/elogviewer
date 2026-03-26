@@ -1,0 +1,12 @@
+---
+- name: Read package_use output
+  ansible.builtin.slurp:
+    src: /tmp/molecule_package_use
+  register: gentoo_base_conf_package_use
+
+- name: Assert package_use lines are rendered
+  ansible.builtin.assert:
+    that:
+      - gentoo_base_conf_package_use.content | b64decode is search('dev-libs/foo bar')
+      - gentoo_base_conf_package_use.content | b64decode is search('dev-libs/baz -qux')
+    fail_msg: "package_use lines are not rendered correctly"
