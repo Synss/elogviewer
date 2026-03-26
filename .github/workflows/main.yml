@@ -19,11 +19,11 @@ jobs:
       - name: Test ansible roles
         run: cd vm/roles/gentoo_base && uv run --extra vm molecule test
       - name: Check format
-        run: uv run ruff format --check
+        run: uv run --extra lint ruff format --check
       - name: Lint python
-        run: uv run ruff check
+        run: uv run --extra lint ruff check
       - name: Lint ansible
-        run: uv run --extra vm ansible-lint vm/site.yml
+        run: uv run --extra lint ansible-lint vm/site.yml
       - name: Test
         run: PYTHONPATH=. QT_QPA_PLATFORM=offscreen uv run --extra test pytest
       - name: Build
