@@ -28,9 +28,9 @@ vm-start:
 vm-stop:
 	cd vm && $(MAKE) stop
 
-.PHONY: vm-update
-vm-update:
-	cd vm && $(MAKE) update
+.PHONY: vm-provision
+vm-provision:
+	cd vm && $(MAKE) provision
 
 .PHONY: vm-destroy
 vm-destroy:
