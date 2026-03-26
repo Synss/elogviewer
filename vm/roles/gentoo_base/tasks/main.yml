@@ -1,4 +1,7 @@
 ---
+- name: "Configure repos.conf"
+  ansible.builtin.import_tasks: reposconf.yml
+
 - name: "Configure locale"
   ansible.builtin.import_tasks: locale.yml
 
