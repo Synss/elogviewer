@@ -14,12 +14,16 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           python-version: '3.11'
+      - name: Install ansible collections
+        run: uv run --extra vm ansible-galaxy collection install ansible.posix community.general
       - name: Test ansible roles
         run: cd vm/roles/gentoo_base && uv run --extra vm molecule test
       - name: Check format
         run: uv run ruff format --check
-      - name: Lint
+      - name: Lint python
         run: uv run ruff check
+      - name: Lint ansible
+        run: uv run --extra vm ansible-lint vm/site.yml
       - name: Test
         run: PYTHONPATH=. QT_QPA_PLATFORM=offscreen uv run --extra test pytest
       - name: Build
