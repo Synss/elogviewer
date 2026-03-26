@@ -16,6 +16,10 @@ test: .venv
 	uv run ruff check --fix
 	uv run pytest
 
+.PHONY: vm-test
+vm-test:
+	cd vm && $(MAKE) test
+
 .PHONY: vm-start
 vm-start:
 	cd vm && $(MAKE) start

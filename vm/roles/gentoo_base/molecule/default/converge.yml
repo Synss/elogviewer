@@ -1,0 +1,26 @@
+---
+- name: Render make.conf template
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Render with qt6
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../../templates/make_conf.j2"  # noqa: no-relative-paths
+        dest: /tmp/molecule_make_conf_qt6
+        mode: "0644"
+      vars:
+        ncpus: 4
+        qt_use_flag: qt6
+        use_python: "3.12"
+        python_targets: python3_12
+
+    - name: Render with qt5
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../../templates/make_conf.j2"  # noqa: no-relative-paths
+        dest: /tmp/molecule_make_conf_qt5
+        mode: "0644"
+      vars:
+        ncpus: 4
+        qt_use_flag: qt5
+        use_python: "3.12"
+        python_targets: python3_12
