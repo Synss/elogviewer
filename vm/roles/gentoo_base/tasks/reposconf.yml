@@ -1,0 +1,12 @@
+---
+- name: Create repos.conf directory
+  ansible.builtin.file:
+    path: /etc/portage/repos.conf
+    state: directory
+    mode: "0755"
+
+- name: Configure gentoo repository
+  ansible.builtin.copy:
+    src: repos_conf.ini
+    dest: /etc/portage/repos.conf/gentoo.conf
+    mode: "0644"
