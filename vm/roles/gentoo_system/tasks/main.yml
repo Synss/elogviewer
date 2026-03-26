@@ -1,8 +1,17 @@
 ---
+- name: Check last sync time
+  ansible.builtin.stat:
+    path: /usr/portage/metadata/timestamp.chk
+  register: gentoo_system_sync_timestamp
+  tags: sync
+
 - name: "Sync tree"
   ansible.builtin.command: /usr/bin/emerge --sync
   tags: sync
-  when: gentoo_run_sync | default(false)
+  when:
+    - gentoo_run_sync | default(false)
+    - not gentoo_system_sync_timestamp.stat.exists or
+      (ansible_date_time.epoch | int) - (gentoo_system_sync_timestamp.stat.mtime | int) > 86400
   changed_when: false
 
 - name: "Upload cache"
