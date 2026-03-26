@@ -26,3 +26,9 @@
       - x11-wm/openbox
       - x11-wm/twm
     state: present
+  register: gentoo_system_install
+
+- name: Report cache hits [install]
+  ansible.builtin.include_tasks: report_cache_hits.yml
+  vars:
+    _output: "{{ gentoo_system_install.msg }}"

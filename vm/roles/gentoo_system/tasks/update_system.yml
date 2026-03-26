@@ -7,6 +7,11 @@
       register: gentoo_system_update_system
       changed_when: gentoo_system_update_system.stdout is search('sys-kernel/')
 
+    - name: Report cache hits [system]
+      ansible.builtin.include_tasks: report_cache_hits.yml
+      vars:
+        _output: "{{ gentoo_system_update_system.stdout }}"
+
     - name: Update cache [system]
       ansible.posix.synchronize:
         mode: pull

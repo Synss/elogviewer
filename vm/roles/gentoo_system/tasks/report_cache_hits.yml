@@ -1,0 +1,6 @@
+---
+- name: Report cache hits
+  ansible.builtin.debug:
+    msg: >-
+      Cache hits: {{ _output | regex_findall('\[binary') | length }},
+      built from source: {{ _output | regex_findall('\[ebuild') | length }}

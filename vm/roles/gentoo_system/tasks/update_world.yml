@@ -19,6 +19,11 @@
         changed_use: true
       register: gentoo_system_update_world
 
+    - name: Report cache hits [world]
+      ansible.builtin.include_tasks: report_cache_hits.yml
+      vars:
+        _output: "{{ gentoo_system_update_world.msg }}"
+
     - name: Update cache [world]
       ansible.posix.synchronize:
         mode: pull
