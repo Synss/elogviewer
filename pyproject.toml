@@ -23,6 +23,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+just = ["rust-just"]
 test = ["ruff", "pyfakefs", "pytest", "pytest-qt"]
 vm = ["ansible", "ansible-lint", "molecule", "passlib"]
 
