@@ -20,8 +20,8 @@ jobs:
         run: uv run ruff format --check
       - name: Lint
         run: uv run ruff check
-      # - name: Test
-      #   run: PYTHONPATH=. uv run pytest
+      - name: Test
+        run: PYTHONPATH=. QT_QPA_PLATFORM=offscreen uv run --extra test pytest
       - name: Build
         run: uv build
       - name: Upload source dist
