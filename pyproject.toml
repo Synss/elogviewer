@@ -24,8 +24,9 @@ classifiers = [
 
 [project.optional-dependencies]
 just = ["rust-just"]
-test = ["ruff", "pyfakefs", "pytest", "pytest-qt"]
-vm = ["ansible", "ansible-lint", "molecule", "passlib"]
+lint = ["ansible-lint", "ruff", "yamllint"]
+test = ["pyfakefs", "pytest", "pytest-qt"]
+vm = ["ansible", "molecule", "passlib"]
 
 [tool.setuptools]
 include-package-data = true  # MANIFEST.in
