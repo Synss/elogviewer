@@ -25,6 +25,9 @@ vm-stop:
 vm-provision:
     cd vm && just provision
 
+vm-reboot:
+    cd vm && just reboot
+
 vm-destroy:
     cd vm && just destroy
 

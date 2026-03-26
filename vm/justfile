@@ -13,6 +13,9 @@ stop:
 provision: start
     vagrant provision
 
+reboot: start
+    ansible -i inventory gentoo -m ansible.builtin.reboot -b
+
 destroy:
     vagrant -f destroy
 
