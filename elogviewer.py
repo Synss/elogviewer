@@ -45,8 +45,8 @@ import re
 import sys
 import time
 import weakref
-from collections import namedtuple
 from contextlib import AbstractContextManager, closing, suppress
+from dataclasses import dataclass
 from functools import partial
 from math import cos, sin
 from typing import IO
@@ -99,7 +99,14 @@ class EClass(str, enum.Enum):
         return self.color().name()
 
 
-class Elog(namedtuple("Elog", ["filename", "category", "package", "date", "eclass"])):
+@dataclass(frozen=True)
+class Elog:
+    filename: str
+    category: str
+    package: str
+    date: time.struct_time
+    eclass: EClass
+
     HeaderPattern = re.compile(
         r"({}):\s+(\S+)".format("|".join(_.value for _ in EClass))
     )
