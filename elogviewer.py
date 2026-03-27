@@ -164,7 +164,8 @@ class Elog:
         return self.__file(self.filename)
 
     @classmethod
-    def fromFilename(cls, filename: str) -> Elog:
+    def fromFilename(cls, filename: str | os.PathLike[str]) -> Elog:
+        filename = os.fspath(filename)
         _LOGGER.debug(filename)
         basename = os.path.basename(filename)
         try:
