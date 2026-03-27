@@ -11,7 +11,5 @@ gentoo_user_groups:
   - dialout
   - portage
   - users
-  - vboxsf
-  - vboxusers
   - video
   - wheel

@@ -1,0 +1,15 @@
+---
+gentoo_run_sync: true
+gentoo_system_cache_binpkgs: .cache/docker/binpkgs
+gentoo_system_cache_distfiles: .cache/distfiles
+qt_use_flag: qt6
+gentoo_user_name: gentoo
+gentoo_user_password: gentoo
+gentoo_user_groups:
+  - adm
+  - audio
+  - dialout
+  - portage
+  - users
+  - video
+  - wheel

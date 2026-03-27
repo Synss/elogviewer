@@ -1,14 +1,11 @@
 ---
 gentoo_base_package_use_lines:
   # Check packages / use flag with `euse -I $USE`
-  - app-crypt/gpgme -qt5
-  - app-crypt/pinentry -qt5
+  - app-crypt/pinentry -qt6
   - app-editors/vim -X
-  - dev-build/cmake -qt5
   - dev-libs/libpcre2 pcre16
-  - dev-python/PyQt5 gui
-  - dev-python/PyQt5 testlib
-  - dev-python/PyQt5 widgets
+  - dev-python/pyqt6 testlib
+  - dev-python/qtpy testlib
   - sys-apps/groff -X
   - sys-kernel/installkernel dracut
   - x11-base/xorg-server suid

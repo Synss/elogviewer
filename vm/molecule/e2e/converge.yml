@@ -1,12 +1,10 @@
 ---
-- name: Main
+- name: E2E converge
   hosts: all
-  become: true
+  vars:
+    gentoo_allow_reboot: false
   roles:
     - role: gentoo_base
     - role: gentoo_system
     - role: gentoo_packages
     - role: gentoo_user
-    - role: gentoo_virtualbox
-    - role: gentoo_desktop
-    - role: gentoo_deploy

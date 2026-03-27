@@ -1,7 +1,7 @@
 ---
 - name: Check last sync time
   ansible.builtin.stat:
-    path: /usr/portage/metadata/timestamp.chk
+    path: /var/db/repos/gentoo/metadata/timestamp.chk
   register: gentoo_system_sync_timestamp
   tags: sync
 

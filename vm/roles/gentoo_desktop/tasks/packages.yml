@@ -1,0 +1,10 @@
+---
+- name: Install desktop packages
+  community.general.portage:
+    name:
+      - x11-base/xorg-server
+      - x11-misc/menumaker
+      - x11-terms/xterm
+      - x11-wm/openbox
+      - x11-wm/twm
+    state: present

@@ -26,7 +26,7 @@ classifiers = [
 just = ["rust-just"]
 lint = ["ansible-lint", "ruff", "ty", "yamllint"]
 test = ["pyfakefs", "pytest", "pytest-qt"]
-vm = ["ansible", "molecule", "passlib"]
+vm = ["ansible", "molecule", "molecule-docker", "passlib"]
 
 [tool.setuptools]
 include-package-data = true  # MANIFEST.in

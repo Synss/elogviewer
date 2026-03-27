@@ -3,5 +3,7 @@
   hosts: all
   gather_facts: false
   tasks:
-    - ansible.builtin.import_tasks: converge_make_conf.yml
-    - ansible.builtin.import_tasks: converge_package_use.yml
+    - name: Render make.conf templates
+      ansible.builtin.import_tasks: converge_make_conf.yml
+    - name: Render package.use templates
+      ansible.builtin.import_tasks: converge_package_use.yml

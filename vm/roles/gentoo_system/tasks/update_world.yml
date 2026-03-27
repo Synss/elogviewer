@@ -23,10 +23,14 @@
     - name: Update cache [world]
       ansible.posix.synchronize:
         mode: pull
-        src: "/var/cache/{{ item }}/"
-        dest: ".cache/{{ item }}/"
+        src: "{{ item.src }}/"
+        dest: "{{ item.dest }}/"
       become: false
-      loop: ["binpkgs", "distfiles"]
+      loop:
+        - {src: /var/cache/binpkgs, dest: "{{ gentoo_system_cache_binpkgs }}"}
+        - {src: /var/cache/distfiles, dest: "{{ gentoo_system_cache_distfiles }}"}
+      failed_when: false
+      changed_when: false
 
   rescue:
     - name: Warn on world update failure

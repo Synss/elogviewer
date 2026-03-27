@@ -1,0 +1,20 @@
+---
+- name: Install VirtualBox guest packages
+  community.general.portage:
+    name:
+      - acct-group/vboxguest
+      - acct-group/vboxsf
+      - acct-group/vboxusers
+      - acct-user/vboxguest
+      - app-emulation/virtualbox-guest-additions
+      - app-emulation/virtualbox-guest-modules
+    state: present
+
+- name: Add user to VirtualBox groups
+  ansible.builtin.user:
+    name: "{{ gentoo_user_name }}"
+    groups:
+      - vboxguest
+      - vboxsf
+      - vboxusers
+    append: true

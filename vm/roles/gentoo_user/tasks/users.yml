@@ -4,4 +4,6 @@
     name: gentoo
     state: present
     password: '{{ gentoo_user_password | password_hash("sha256") }}'
+    update_password: on_create
     groups: "{{ gentoo_user_groups }}"
+    append: true

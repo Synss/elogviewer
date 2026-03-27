@@ -1,5 +1,5 @@
 ---
-- name: Main
+- name: E2E (Docker/CI)
   hosts: all
   become: true
   roles:
@@ -7,6 +7,3 @@
     - role: gentoo_system
     - role: gentoo_packages
     - role: gentoo_user
-    - role: gentoo_virtualbox
-    - role: gentoo_desktop
-    - role: gentoo_deploy
