@@ -77,17 +77,6 @@ def elogPath() -> Iterator[Path]:
         yield Path("/var/log/portage/elog/")
 
 
-@pytest.fixture
-def elogsToFS(fs: _FakeFilesystem, elogPath: Path) -> None:
-    for eclass in _ev.EClass:
-        for _ in range(5):
-            fakeElog = FakeElog(
-                randomElogFileName(),
-                randomElogContent(eclass, _fuzz.randomString(10)),
-            )
-            fs.create_file(elogPath / fakeElog.fileName, contents=fakeElog.content)
-
-
 class TestParserFSM:
     @pytest.fixture
     def parser(self) -> Iterator[_ev.ParserFSM]:
@@ -231,8 +220,17 @@ class TestElogClass:
         assert elog.html == elogHtml
 
 
-@pytest.mark.usefixtures("elogsToFS")
 class TestUI:
+    @pytest.fixture(autouse=True)
+    def elogsToFS(self, fs: _FakeFilesystem, elogPath: Path) -> None:
+        for eclass in _ev.EClass:
+            for _ in range(5):
+                fakeElog = FakeElog(
+                    randomElogFileName(),
+                    randomElogContent(eclass, _fuzz.randomString(10)),
+                )
+                fs.create_file(elogPath / fakeElog.fileName, contents=fakeElog.content)
+
     @pytest.fixture
     def elogviewer(
         self, elogPath: Path, qtbot: QtBot, qtmodeltester: QtModelTester
