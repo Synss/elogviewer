@@ -65,6 +65,16 @@ jobs:
         with:
           sarif_file: ruff.sarif
           category: ruff
+      - name: Type check
+        run: uv run --extra lint ty check --output-format sarif elogviewer.py tests/ > ty.sarif
+        if: always()
+        continue-on-error: true
+      - name: Upload ty SARIF
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: ty.sarif
+          category: ty
       - name: Test
         run: PYTHONPATH=. QT_QPA_PLATFORM=offscreen uv run --extra test pytest --junit-xml=junit/pytest.xml
       - name: Publish pytest results
