@@ -3,10 +3,12 @@ from __future__ import annotations
 import io
 import random
 import time
+import os
 from collections.abc import Iterable, Iterator, Sequence
 from contextlib import closing
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, Protocol, TypeAlias
 
 import pytest  # type: ignore
 from pyfakefs.fake_filesystem_unittest import Patcher  # type: ignore
@@ -14,6 +16,17 @@ from PyQt6.QtCore import Qt
 
 import elogviewer as _ev
 import fuzz as _fuzz
+
+QtBot: TypeAlias = Any
+QtModelTester: TypeAlias = Any
+
+
+class _FakeFilesystem(Protocol):
+    def create_file(
+        self,
+        file_path: str | os.PathLike[str],
+        contents: str = "",
+    ) -> object: ...
 
 
 def randomElogContent(eclass: _ev.EClass, stage: str) -> str:
@@ -43,7 +56,13 @@ def randomElogFileName() -> str:
     )
 
 
-class FakeElog(NamedTuple):
+@dataclass(frozen=True)
+class Config:
+    elogpath: Path
+
+
+@dataclass(frozen=True)
+class FakeElog:
     fileName: str
     content: str
 
@@ -73,7 +92,9 @@ def elogFiles() -> Sequence[FakeElog]:
 
 
 @pytest.fixture
-def elogsToFS(fs: Any, elogPath: Path, elogFiles: Sequence[FakeElog]) -> None:
+def elogsToFS(
+    fs: _FakeFilesystem, elogPath: Path, elogFiles: Sequence[FakeElog]
+) -> None:
     for fakeElog in elogFiles:
         fs.create_file(elogPath / fakeElog.fileName, contents=fakeElog.content)
     assert _count(elogPath.glob("*")) == len(elogFiles)
@@ -180,7 +201,7 @@ class TestElogClass:
 
     @pytest.fixture
     def elogClassInstance(
-        self, elogFullPath: Path, elogFile: FakeElog, fs: Any
+        self, elogFullPath: Path, elogFile: FakeElog, fs: _FakeFilesystem
     ) -> _ev.Elog:
         fs.create_file(elogFullPath, contents=elogFile.content)
         return _ev.Elog.fromFilename(elogFullPath)
@@ -255,16 +276,12 @@ class TestElogClass:
 @pytest.mark.usefixtures("elogsToFS")
 class TestUI:
     @pytest.fixture
-    def config(self, elogPath: Path) -> Any:
-        from collections import namedtuple
-
-        config_ = namedtuple("Config", "elogpath")
-        config_.elogpath = elogPath  # type: ignore
-        return config_
+    def config(self, elogPath: Path) -> Config:
+        return Config(elogpath=elogPath)
 
     @pytest.fixture
     def elogviewer(
-        self, config: Any, qtbot: Any, qtmodeltester: Any
+        self, config: Config, qtbot: QtBot, qtmodeltester: QtModelTester
     ) -> Iterator[_ev.Elogviewer]:
         elogviewer = _ev.Elogviewer(config)
         elogviewer.populate()
@@ -287,7 +304,7 @@ class TestUI:
         assert _count(elogPath.glob("*.log")) == elogCount
         assert elogviewer.elogCount() == elogCount
 
-    def testOneRead(self, elogviewer: _ev.Elogviewer, qtbot: Any) -> None:
+    def testOneRead(self, elogviewer: _ev.Elogviewer, qtbot: QtBot) -> None:
         assert elogviewer.readCount() == 0
 
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
@@ -296,7 +313,7 @@ class TestUI:
         assert elogviewer.readCount() == 1
 
     def testAllRead(
-        self, elogviewer: _ev.Elogviewer, elogCount: int, qtbot: Any
+        self, elogviewer: _ev.Elogviewer, elogCount: int, qtbot: QtBot
     ) -> None:
         assert elogviewer.readCount() == 0
 
@@ -307,7 +324,7 @@ class TestUI:
         assert elogviewer.readCount() == elogCount
 
     def testAllUnread(
-        self, elogviewer: _ev.Elogviewer, elogCount: int, qtbot: Any
+        self, elogviewer: _ev.Elogviewer, elogCount: int, qtbot: QtBot
     ) -> None:
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
         qtbot.keyClick(
@@ -322,7 +339,7 @@ class TestUI:
         qtbot.mouseClick(elogviewer.markUnreadButton, Qt.MouseButton.LeftButton)
         assert elogviewer.readCount() == 0
 
-    def testOneImportant(self, elogviewer: _ev.Elogviewer, qtbot: Any) -> None:
+    def testOneImportant(self, elogviewer: _ev.Elogviewer, qtbot: QtBot) -> None:
         assert elogviewer.importantCount() == 0
 
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
@@ -331,7 +348,7 @@ class TestUI:
         assert elogviewer.importantCount() == 1
 
     def testAllImportant(
-        self, elogviewer: _ev.Elogviewer, elogCount: int, qtbot: Any
+        self, elogviewer: _ev.Elogviewer, elogCount: int, qtbot: QtBot
     ) -> None:
         assert elogviewer.importantCount() == 0
 
@@ -344,7 +361,7 @@ class TestUI:
 
     @pytest.mark.skip
     def testRefreshButton(
-        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: Any
+        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: QtBot
     ) -> None:
         qtbot.keyClick(
             elogviewer.tableView, Qt.Key.Key_A, Qt.KeyboardModifier.ControlModifier
@@ -357,7 +374,7 @@ class TestUI:
         assert elogviewer.elogCount() == elogCount
 
     def testDeleteOne(
-        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: Any
+        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: QtBot
     ) -> None:
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
         count = elogviewer.elogCount()
@@ -370,7 +387,7 @@ class TestUI:
         assert elogviewer.elogCount() == _count(elogPath.glob("*.log"))
 
     def testDeleteTwo(
-        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: Any
+        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: QtBot
     ) -> None:
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
         count = elogviewer.elogCount()
@@ -384,7 +401,7 @@ class TestUI:
         assert elogviewer.elogCount() == _count(elogPath.glob("*.log"))
 
     def testDeleteAll(
-        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: Any
+        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: QtBot
     ) -> None:
         assert elogviewer.elogCount() == elogCount
 
@@ -396,7 +413,7 @@ class TestUI:
         assert elogviewer.elogCount() == _count(elogPath.glob("*.log")) == 0
 
     def testDeleteAllPlusOne(
-        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: Any
+        self, elogviewer: _ev.Elogviewer, elogPath: Path, elogCount: int, qtbot: QtBot
     ) -> None:
         assert elogviewer.elogCount() == elogCount
 
@@ -411,7 +428,7 @@ class TestUI:
         assert elogviewer.elogCount() == _count(elogPath.glob("*.log"))
 
     def testDecreaseCountOnLeavingRow(
-        self, elogviewer: _ev.Elogviewer, qtbot: Any
+        self, elogviewer: _ev.Elogviewer, qtbot: QtBot
     ) -> None:
         readCount = elogviewer.readCount()
         assert readCount == 0
