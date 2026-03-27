@@ -88,18 +88,6 @@ def elogsToFS(fs: _FakeFilesystem, elogPath: Path) -> None:
             fs.create_file(elogPath / fakeElog.fileName, contents=fakeElog.content)
 
 
-@pytest.fixture
-def getHTMLs() -> None:
-    pass
-
-
-@pytest.mark.skip
-def testUnsupportedFormat(getHTMLs: None) -> None:
-    with _ev.Elog._file(getHTMLs()[0]) as elogfile:  # type: ignore
-        content = b"".join(elogfile.readlines())
-    assert b"ERROR" in content
-
-
 class TestParserFSM:
     @pytest.fixture
     def parser(self) -> Iterator[_ev.ParserFSM]:
