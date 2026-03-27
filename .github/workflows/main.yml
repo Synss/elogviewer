@@ -1,8 +1,13 @@
 ---
 name: main
+
 on: [push, pull_request, workflow_dispatch]
+
+env:
+  PYTHON_VERSION: '3.11'
+
 jobs:
-  build:
+  ansible:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -10,14 +15,10 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@v4
-      - name: Install qt deps
-        run: sudo apt update && sudo apt install -y libegl1
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: '3.11'
-
-      # Ansible
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Install ansible collections
         run: uv run --extra vm ansible-galaxy collection install ansible.posix community.general
       - name: Lint ansible
@@ -38,7 +39,20 @@ jobs:
         with:
           report_paths: vm/roles/gentoo_base/junit/*.xml
 
-      # Python
+  python:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install qt deps
+        run: sudo apt update && sudo apt install -y libegl1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Check format
         run: uv run --extra lint ruff format --check
       - name: Lint python
@@ -59,7 +73,17 @@ jobs:
         with:
           report_paths: junit/pytest.xml
 
-      # Publish
+  publish:
+    runs-on: ubuntu-latest
+    needs: [ansible, python]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Build
         run: uv build
       - name: Upload source dist
