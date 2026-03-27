@@ -49,7 +49,7 @@ from contextlib import AbstractContextManager, closing, suppress
 from dataclasses import dataclass
 from functools import partial
 from math import cos, sin
-from typing import IO
+from typing import IO, Protocol
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
@@ -802,8 +802,13 @@ class ElogviewerUi(QtWidgets.QMainWindow):
         statusBar.addWidget(self.unreadLabel)
 
 
+class _Config(Protocol):
+    @property
+    def elogpath(self) -> str | os.PathLike[str]: ...
+
+
 class Elogviewer(ElogviewerUi):
-    def __init__(self, config: argparse.Namespace) -> None:
+    def __init__(self, config: _Config) -> None:
         super().__init__()
         self.config = config
         self.settings = QtCore.QSettings("elogviewer", "elogviewer")
