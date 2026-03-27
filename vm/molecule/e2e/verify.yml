@@ -1,0 +1,47 @@
+---
+- name: E2E verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Check gentoo user exists with expected groups
+      ansible.builtin.command: id gentoo
+      register: gentoo_id
+      changed_when: false
+
+    - name: Assert gentoo user has required groups
+      ansible.builtin.assert:
+        that:
+          - "'adm' in gentoo_id.stdout"
+          - "'wheel' in gentoo_id.stdout"
+
+    - name: Check sudo is configured for gentoo user
+      ansible.builtin.command: sudo -l -U gentoo
+      changed_when: false
+
+    - name: Check portage profile is valid
+      ansible.builtin.command: emerge --info
+      changed_when: false
+
+    - name: Check elogviewer is available in portage
+      ansible.builtin.command: emerge --pretend --ask=n app-portage/elogviewer
+      changed_when: false
+
+    - name: Check uv is available
+      ansible.builtin.command: uv --version
+      changed_when: false
+
+    - name: Copy elogviewer source to container
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../../{{ item }}"
+        dest: /tmp/{{ item }}
+        mode: "0644"
+      loop:
+        - elogviewer.py
+        - tests/
+
+    - name: Run pytest suite
+      ansible.builtin.command: python -m pytest /tmp/tests/
+      environment:
+        QT_QPA_PLATFORM: offscreen
+        PYTHONPATH: /tmp
+      changed_when: false

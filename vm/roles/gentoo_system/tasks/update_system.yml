@@ -17,12 +17,18 @@
     - name: Update cache [system]
       ansible.posix.synchronize:
         mode: pull
-        src: "/var/cache/{{ item }}/"
-        dest: ".cache/{{ item }}/"
+        src: "{{ item.src }}/"
+        dest: "{{ item.dest }}/"
       become: false
-      loop: ["binpkgs", "distfiles"]
+      loop:
+        - {src: /var/cache/binpkgs, dest: "{{ gentoo_system_cache_binpkgs }}"}
+        - {src: /var/cache/distfiles, dest: "{{ gentoo_system_cache_distfiles }}"}
+      failed_when: false
+      changed_when: false
 
 - name: "Request reboot after updates"  # noqa: no-handler
   ansible.builtin.meta: noop
-  when: gentoo_system_update_system.msg is search('sys-kernel/')
+  when:
+    - gentoo_allow_reboot | default(true)
+    - gentoo_system_update_system.msg is search('sys-kernel/')
   notify: Reboot system

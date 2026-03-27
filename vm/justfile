@@ -4,7 +4,7 @@ default:
 test:
     cd roles/gentoo_base && uv run --extra vm molecule test
 
-start: _setup-cache _ensure-dist
+start:
     vagrant --provision up
 
 stop:
@@ -19,12 +19,5 @@ reboot: start
 destroy:
     vagrant -f destroy
 
-ssh:
+ssh: start
 	vagrant ssh
-
-_setup-cache:
-    mkdir -p .cache/binpkgs
-    mkdir -p .cache/distfiles
-
-_ensure-dist:
-    mkdir -p ../dist

@@ -1,0 +1,51 @@
+---
+name: e2e
+
+on:
+  schedule:
+    # First day of every month at 2:00 AM UTC.
+    - cron: '0 2 1 * *'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Restore cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            vm/.cache/docker/binpkgs
+            vm/.cache/distfiles
+            vm/.cache/repos
+          key: gentoo-e2e-${{ github.run_id }}
+          restore-keys: gentoo-e2e-
+      - name: Install ansible collections
+        run: uv run --extra vm ansible-galaxy collection install ansible.posix community.general
+      - name: Run e2e scenario
+        run: cd vm && uv run --extra vm molecule test --scenario-name e2e
+      - name: Save cache
+        uses: actions/cache/save@v5
+        if: always()
+        with:
+          path: |
+            vm/.cache/docker/binpkgs
+            vm/.cache/distfiles
+            vm/.cache/repos
+          key: gentoo-e2e-${{ github.run_id }}
+      - name: Publish e2e test results
+        uses: mikepenz/action-junit-report@v6
+        if: always()
+        with:
+          report_paths: vm/junit/e2e/*.xml

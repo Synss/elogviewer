@@ -3,3 +3,5 @@
 *.pyc
 .cache/
 vm/.vagrant
+vm/roles/gentoo_base/junit/
+vm/junit/

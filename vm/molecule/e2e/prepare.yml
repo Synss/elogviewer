@@ -1,0 +1,10 @@
+---
+- name: Prepare
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create junit output directory
+      ansible.builtin.file:
+        path: "{{ lookup('env', 'JUNIT_OUTPUT_DIR') }}"
+        state: directory
+        mode: "0755"

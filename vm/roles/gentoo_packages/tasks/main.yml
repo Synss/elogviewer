@@ -1,0 +1,11 @@
+---
+- name: Install Python packages
+  community.general.portage:
+    name:
+      - dev-python/pip
+      - dev-python/uv
+      - dev-python/pyfakefs
+      - dev-python/pytest
+      - dev-python/pytest-qt
+      - dev-python/pyqt6
+    state: present

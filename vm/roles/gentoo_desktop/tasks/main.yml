@@ -1,5 +1,7 @@
 ---
+- name: Install packages
+  ansible.builtin.import_tasks: packages.yml
 - name: "Setup dbus"
-  ansible.builtin.import_tasks: "dbus.yml"
+  ansible.builtin.import_tasks: dbus.yml
 - name: "Setup DE"
   ansible.builtin.import_tasks: openbox.yml

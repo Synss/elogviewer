@@ -1,8 +1,7 @@
 ---
-- name: Create cache dir
+- name: Create cache dir  # noqa: risky-file-permissions
   ansible.builtin.file:
     path: "/var/cache/{{ item }}"
     state: directory
-    group: portage
-    mode: "0755"
   loop: ["binpkgs", "distfiles"]
+  changed_when: false
