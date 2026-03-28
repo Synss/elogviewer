@@ -1,4 +1,9 @@
 ---
+- name: Depclean
+  community.general.portage:
+    depclean: true
+  changed_when: false
+
 - name: Create cache dirs # noqa: risky-file-permissions
   ansible.builtin.file:
     path: "/var/cache/{{ item }}"

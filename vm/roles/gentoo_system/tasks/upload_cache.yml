@@ -5,8 +5,8 @@
     state: directory
     mode: "0755"
   loop:
-    - "{{ gentoo_system_cache_binpkgs }}"
-    - "{{ gentoo_system_cache_distfiles }}"
+    - "{{ gentoo_cache_binpkgs }}"
+    - "{{ gentoo_cache_distfiles }}"
   delegate_to: localhost
   become: false
   changed_when: false
@@ -18,7 +18,7 @@
     dest: "{{ item.dest }}/"
     use_ssh_args: true
   loop:
-    - { src: "{{ gentoo_system_cache_binpkgs }}", dest: /var/cache/binpkgs }
-    - { src: "{{ gentoo_system_cache_distfiles }}", dest: /var/cache/distfiles }
+    - { src: "{{ gentoo_cache_binpkgs }}", dest: /var/cache/binpkgs }
+    - { src: "{{ gentoo_cache_distfiles }}", dest: /var/cache/distfiles }
   failed_when: false
   changed_when: false

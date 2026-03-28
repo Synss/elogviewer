@@ -10,10 +10,29 @@
       register: gentoo_system_update_system
       changed_when: false
 
+    - name: Set Python targets
+      ansible.builtin.include_role:
+        name: gentoo_base
+        tasks_from: makeconf_python.yml
+
+    - name: Rebuild system with Python targets
+      community.general.portage:
+        package: "@system"
+        update: true
+        deep: true
+        changed_use: true
+      register: gentoo_system_rebuild_system
+      changed_when: false
+
     - name: Report cache hits [system]
       ansible.builtin.include_tasks: report_cache_hits.yml
       vars:
         _output: "{{ gentoo_system_update_system.msg }}"
+
+    - name: Report cache hits [system rebuild]
+      ansible.builtin.include_tasks: report_cache_hits.yml
+      vars:
+        _output: "{{ gentoo_system_rebuild_system.msg }}"
 
     - name: Update cache [system]
       ansible.posix.synchronize:
@@ -23,9 +42,9 @@
       become: false
       loop:
         - src: /var/cache/binpkgs
-          dest: "{{ gentoo_system_cache_binpkgs }}"
+          dest: "{{ gentoo_cache_binpkgs }}"
         - src: /var/cache/distfiles
-          dest: "{{ gentoo_system_cache_distfiles }}"
+          dest: "{{ gentoo_cache_distfiles }}"
       failed_when: false
       changed_when: false
 
