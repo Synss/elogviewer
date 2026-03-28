@@ -1,4 +1,11 @@
 ---
+- name: Create cache dirs # noqa: risky-file-permissions
+  ansible.builtin.file:
+    path: "/var/cache/{{ item }}"
+    state: directory
+  loop: ["binpkgs", "distfiles"]
+  changed_when: false
+
 - name: Trim cache
   ansible.builtin.command: "/usr/bin/eclean {{ item }}"
   loop: ["distfiles", "packages"]
