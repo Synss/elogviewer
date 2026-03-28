@@ -2,6 +2,9 @@
 name: e2e
 
 on:
+  push:
+    paths:
+      - 'vm/**'
   schedule:
     # First day of every month at 2:00 AM UTC.
     - cron: '0 2 1 * *'
