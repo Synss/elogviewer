@@ -14,6 +14,7 @@
         deep: true
         changed_use: true
       register: gentoo_system_update_world
+      changed_when: false
 
     - name: Report cache hits [world]
       ansible.builtin.include_tasks: report_cache_hits.yml
@@ -27,7 +28,8 @@
         dest: "{{ item.dest }}/"
       become: false
       loop:
-        - { src: /var/cache/binpkgs, dest: "{{ gentoo_system_cache_binpkgs }}" }
+        - src: /var/cache/binpkgs
+          dest: "{{ gentoo_system_cache_binpkgs }}"
         - src: /var/cache/distfiles
           dest: "{{ gentoo_system_cache_distfiles }}"
       failed_when: false
