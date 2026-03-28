@@ -13,6 +13,7 @@
         update: true
         deep: true
         changed_use: true
+        withbdeps: true
       register: gentoo_system_update_world
       changed_when: false
 
