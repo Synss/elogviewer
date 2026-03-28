@@ -10,6 +10,3 @@
 
 - name: "Configure per-package USE flags"
   ansible.builtin.import_tasks: package_use.yml
-
-- name: "Create cache dirs"
-  ansible.builtin.import_tasks: cache.yml
