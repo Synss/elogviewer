@@ -1,17 +1,16 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=80", "setuptools-scm[simple]>=9.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "elogviewer"
 description = "An elog viewer for Gentoo Linux"
-version = "3.3"
+dynamic = ["version", "readme"]
 authors = [
     {name = "Mathias Laurin", email = "Mathias.Laurin+gentoo.org@gmail.com"}
 ]
 license = "GPL-2.0-only"
 license-files = ["LICENSE*"]
-dynamic = ["readme"]
 urls = {source = "https://github.com/Synss/elogviewer"}
 gui-scripts = {elogviewer = "elogviewer:main"}
 dependencies = ["portage", "PyQt6"]
@@ -34,3 +33,5 @@ py-modules = ["elogviewer"]
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md"}
+
+[tool.setuptools_scm]

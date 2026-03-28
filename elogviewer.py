@@ -58,7 +58,12 @@ try:
 except ImportError:
     portage = None  # type: ignore
 
-__version__ = "3.3"
+try:
+    from importlib.metadata import version as _version
+
+    __version__ = _version("elogviewer")
+except Exception:
+    __version__ = "unknown"
 
 
 Qt = QtCore.Qt
