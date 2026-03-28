@@ -1,3 +1,1 @@
 ---
-gentoo_system_cache_binpkgs: .cache/vagrant/binpkgs
-gentoo_system_cache_distfiles: .cache/distfiles

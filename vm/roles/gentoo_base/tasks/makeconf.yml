@@ -1,9 +1,27 @@
 ---
-- name: Configure `make.conf` from template
+- name: Stat /etc/portage/make.conf
+  ansible.builtin.stat:
+    path: /etc/portage/make.conf
+  register: _gentoo_base_make_conf_stat
+
+- name: Remove make.conf file to replace with directory
+  ansible.builtin.file:
+    path: /etc/portage/make.conf
+    state: absent
+  when: _gentoo_base_make_conf_stat.stat.exists and
+    _gentoo_base_make_conf_stat.stat.isreg
+
+- name: Ensure /etc/portage/make.conf is a directory
+  ansible.builtin.file:
+    path: /etc/portage/make.conf
+    state: directory
+    mode: "0755"
+
+- name: Configure make.conf/00_base
   ansible.builtin.template:
-    src: make_conf.j2
-    dest: /etc/portage/make.conf
+    src: make_conf_base.j2
+    dest: /etc/portage/make.conf/00_base
     mode: "0644"
-    backup: true
   vars:
     ncpus: "{{ ansible_facts['processor_vcpus'] }}"
+  changed_when: false

@@ -7,3 +7,12 @@
     - role: gentoo_system
     - role: gentoo_packages
     - role: gentoo_user
+
+- name: Deploy
+  hosts: all
+  become: true
+  tasks:
+    - name: Download cache
+      ansible.builtin.include_role:
+        name: gentoo_deploy
+        tasks_from: download_cache.yml

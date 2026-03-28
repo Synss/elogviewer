@@ -3,12 +3,6 @@ MAKEOPTS="-j{{ ncpus }}"
 CFLAGS="-mtune=generic -O2 -pipe"
 CXXFLAGS="${CFLAGS}"
 
-{% if use_python is defined %}
-USE_PYTHON="{{ use_python }}"
-{% endif %}
-{% if python_targets is defined %}
-PYTHON_TARGETS="{{ python_targets }}"
-{% endif %}
 GRUB_PLATFORMS="emu efi-32 efi-64 pc"
 
 DISTDIR="/var/cache/distfiles"

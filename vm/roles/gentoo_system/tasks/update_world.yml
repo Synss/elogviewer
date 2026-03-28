@@ -30,9 +30,9 @@
       become: false
       loop:
         - src: /var/cache/binpkgs
-          dest: "{{ gentoo_system_cache_binpkgs }}"
+          dest: "{{ gentoo_cache_binpkgs }}"
         - src: /var/cache/distfiles
-          dest: "{{ gentoo_system_cache_distfiles }}"
+          dest: "{{ gentoo_cache_distfiles }}"
       failed_when: false
       changed_when: false
 
