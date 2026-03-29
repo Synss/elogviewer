@@ -49,7 +49,8 @@
       changed_when: false
 
 - name: "Request reboot after updates" # noqa: no-handler
-  ansible.builtin.meta: noop
+  ansible.builtin.debug:
+    msg: "Kernel update detected, requesting reboot"
   when:
     - gentoo_allow_reboot | default(true)
     - gentoo_system_update_system.msg is search('sys-kernel/')
