@@ -1,3 +1,12 @@
+Next
+----
+
+- Drop Python 3.11 support and modernize style.
+- Incorporate some of Fonic's 10yrs old feedback.
+- Add type annotations, avoiding `Any` where possible.
+
+- Large infra refactoring (leaves program untouched).
+
 Version 3.3
 -----------
 
