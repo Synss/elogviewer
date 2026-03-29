@@ -12,6 +12,11 @@ runs:
     - uses: ./.github/actions/setup-python
       with:
         python-version: ${{ inputs.python-version }}
+    - name: Cache ansible collections
+      uses: actions/cache@v5
+      with:
+        path: ~/.ansible/collections
+        key: ansible-collections-${{ hashFiles('uv.lock') }}
     - name: Install ansible collections
       shell: bash
       run: uv run --extra vm ansible-galaxy collection install ansible.posix community.general

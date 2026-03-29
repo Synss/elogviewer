@@ -5,9 +5,11 @@ on:
   push:
     paths:
       - 'vm/**'
+      - 'uv.lock'
   pull_request:
     paths:
       - 'vm/**'
+      - 'uv.lock'
   workflow_dispatch:
 
 env:
