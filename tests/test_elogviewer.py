@@ -30,9 +30,7 @@ class _FakeFilesystem(Protocol):
 
 
 def randomElogContent(eclass: _ev.EClass, stage: str) -> str:
-    return "\n".join(
-        ("{}: {}".format(eclass.value, stage), _fuzz.randomText(5, 10, 10))
-    )
+    return "\n".join((f"{eclass.value}: {stage}", _fuzz.randomText(5, 10, 10)))
 
 
 def randomElogFileName() -> str:
@@ -40,7 +38,7 @@ def randomElogFileName() -> str:
     return (
         ":".join(
             (
-                "{}-{}".format(_fuzz.randomString(3), _fuzz.randomString(10)),
+                f"{_fuzz.randomString(3)}-{_fuzz.randomString(10)}",
                 "{}-{}.{}.{}".format(
                     _fuzz.randomString(10),
                     random.randint(0, 9),
@@ -109,12 +107,12 @@ class TestParserFSM:
 class TestElogClassUnit:
     @pytest.mark.parametrize("eclass", _ev.EClass)
     def testGetClassValue(self, eclass: _ev.EClass) -> None:
-        content = "{}: xxx\n".format(eclass.value)
+        content = f"{eclass.value}: xxx\n"
         assert _ev.Elog.getClass(content) is eclass
 
     @pytest.mark.parametrize("eclass", _ev.EClass)
     def testGetClassWrongCaseDoesNotMatch(self, eclass: _ev.EClass) -> None:
-        content = "QA: xxx\n{}: xxx".format(eclass.value.lower())
+        content = f"QA: xxx\n{eclass.value.lower()}: xxx"
         assert _ev.Elog.getClass(content) is _ev.EClass.QA
 
     def testGetClassDefaultsToLog(self) -> None:
