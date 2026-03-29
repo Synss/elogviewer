@@ -28,7 +28,7 @@ jobs:
         run: cd vm/roles/gentoo_base && uv run --extra vm molecule test
       - name: Publish test results
         uses: mikepenz/action-junit-report@v6
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           report_paths: vm/roles/gentoo_base/junit/*.xml
 

@@ -25,7 +25,7 @@ jobs:
         run: cd vm/ && uv run --extra lint ansible-lint --sarif-file ansible-lint.sarif
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           sarif_file: vm/ansible-lint.sarif
           category: ansible-lint
@@ -56,7 +56,7 @@ jobs:
         run: uv run --extra lint ruff check --output-format sarif --output-file ruff.sarif
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           sarif_file: ruff.sarif
           category: ruff
