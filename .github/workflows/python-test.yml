@@ -25,7 +25,7 @@ jobs:
         run: uv run --extra lint ty check --output-format junit > ty.xml elogviewer.py tests/
       - name: Publish ty results
         uses: mikepenz/action-junit-report@v6
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           report_paths: ty.xml
 
@@ -45,7 +45,7 @@ jobs:
         run: PYTHONPATH=. QT_QPA_PLATFORM=offscreen uv run --extra test pytest --junit-xml=pytest.xml
       - name: Publish pytest results
         uses: mikepenz/action-junit-report@v6
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           report_paths: pytest.xml
 
