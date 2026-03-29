@@ -712,7 +712,7 @@ class Model(QtCore.QAbstractTableModel):
         return {  # type: ignore
             Column.ImportantState: "!!",
             Column.ReadState: "Read",
-            Column.Eclass: "Highest\neclass",
+            Column.Eclass: "Type",
         }.pop(section, Column(section).name)
 
     def flags(self, index: QtCore.QModelIndex) -> Qt.ItemFlag:
