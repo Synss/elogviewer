@@ -1,4 +1,6 @@
 ---
+gentoo_base_qt_use_flag: "qt6"
+
 gentoo_base_package_use_lines:
   # Check packages / use flag with `euse -I $USE`
   - app-crypt/pinentry -qt6
