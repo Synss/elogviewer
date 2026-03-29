@@ -152,7 +152,7 @@ class Elog:
                     """
                 )
             )
-        except IOError:
+        except OSError:
             _LOGGER.error("%s: could not open file", filename)
             return closing(
                 io.StringIO(
@@ -224,7 +224,7 @@ def _itemFromIndex(index: QtCore.QModelIndex) -> ElogItem:
 
 class TextToHtmlDelegate(QtWidgets.QItemDelegate):
     def __repr__(self) -> str:
-        return "elogviewer.%s(%r)" % (self.__class__.__name__, self.parent())
+        return f"elogviewer.{self.__class__.__name__}({self.parent()!r})"
 
     def setEditorData(
         self, editor: QtWidgets.QWidget | None, index: QtCore.QModelIndex
@@ -288,7 +288,7 @@ class HeaderState(AbstractState):
             "INFO": EClass.Info,
             "QA": EClass.QA,
         }[eclass]
-        return "{}: {}".format(self.context.eclass.name, stage)
+        return f"{self.context.eclass.name}: {stage}"
 
 
 class BodyState(AbstractState):
@@ -316,7 +316,7 @@ class BodyState(AbstractState):
         return Elog.AnsiColorPattern.sub("", line)
 
     def enter(self) -> str:
-        return '<p style="color: {}">'.format(self.context.eclass.htmlColor())
+        return f'<p style="color: {self.context.eclass.htmlColor()}">'
 
     def exit(self) -> str:
         return "</p>"
@@ -326,7 +326,7 @@ class BodyState(AbstractState):
         line = self._parse_link(line)
         line = self._parse_bug(line)
         line = self._parse_pkg(line)
-        return "{} <br />".format(line)
+        return f"{line} <br />"
 
 
 class ParserFSM:
@@ -478,7 +478,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         self._btn.hide()
 
     def __repr__(self) -> str:
-        return "elogviewer.%s(button=%r, parent=%r)" % (
+        return "elogviewer.{}(button={!r}, parent={!r})".format(
             self.__class__.__name__,
             self._btn,
             self.parent(),
@@ -747,7 +747,7 @@ class Model(QtCore.QAbstractTableModel):
             }.get(
                 index.column(), lambda: self.data(index, Qt.ItemDataRole.DisplayRole)
             )()
-            return "%s%s" % (key, item.isoTime())
+            return f"{key}{item.isoTime()}"
         return None
 
     def setData(
