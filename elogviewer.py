@@ -1067,6 +1067,28 @@ class Elogviewer(ElogviewerUi):
                 )
             self.model.setImportantState(sourceIndex, state)
 
+    def _confirmContinue(self, filename: str, exc: OSError, remaining: int) -> bool:
+        """Show a deletion error dialog; return True to continue, False to abort."""
+        msgbox = QtWidgets.QMessageBox(
+            QtWidgets.QMessageBox.Icon.Critical,
+            "Error",
+            "Error while trying to delete '%s':<br><b>%s</b>"
+            % (filename, exc.strerror),
+            QtWidgets.QMessageBox.StandardButton.NoButton,
+            self,
+        )
+        if remaining > 0:
+            msgbox.addButton("Continue", QtWidgets.QMessageBox.ButtonRole.AcceptRole)
+            abort_btn = msgbox.addButton(
+                "Abort", QtWidgets.QMessageBox.ButtonRole.RejectRole
+            )
+            msgbox.exec()
+            return msgbox.clickedButton() is not abort_btn
+        else:
+            msgbox.addButton(QtWidgets.QMessageBox.StandardButton.Close)
+            msgbox.exec()
+            return False
+
     def deleteSelected(self) -> None:
         sm = self.tableView.selectionModel()
         assert sm is not None
@@ -1086,27 +1108,8 @@ class Elogviewer(ElogviewerUi):
                     os.remove(filename)
                 self.model.removeRow(index.row())
             except OSError as exc:
-                msgbox = QtWidgets.QMessageBox(
-                    QtWidgets.QMessageBox.Icon.Critical,
-                    "Error",
-                    "Error while trying to delete '%s':<br><b>%s</b>"
-                    % (filename, exc.strerror),
-                    QtWidgets.QMessageBox.StandardButton.NoButton,
-                    self,
-                )
-                if pending:
-                    msgbox.addButton(
-                        "Continue", QtWidgets.QMessageBox.ButtonRole.AcceptRole
-                    )
-                    abort_btn = msgbox.addButton(
-                        "Abort", QtWidgets.QMessageBox.ButtonRole.RejectRole
-                    )
-                    msgbox.exec()
-                    if msgbox.clickedButton() is abort_btn:
-                        break
-                else:
-                    msgbox.addButton(QtWidgets.QMessageBox.StandardButton.Close)
-                    msgbox.exec()
+                if not self._confirmContinue(filename, exc, len(pending)):
+                    break
 
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
         self.updateStatus()

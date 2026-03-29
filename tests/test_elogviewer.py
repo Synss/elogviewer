@@ -371,3 +371,67 @@ class TestUI:
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Down)
 
         assert elogviewer.readCount() == readCount + 1
+
+
+class _ElogviewerNoDialog(_ev.Elogviewer):
+    def __init__(
+        self, *args: object, continue_on_error: bool, **kwargs: object
+    ) -> None:
+        super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+        self.continue_on_error = continue_on_error
+        self.delete_errors: list[tuple[str, OSError]] = []
+
+    def _confirmContinue(self, filename: str, exc: OSError, remaining: int) -> bool:
+        self.delete_errors.append((filename, exc))
+        return self.continue_on_error
+
+
+class TestDeleteError:
+    @pytest.fixture()
+    def elogPath(self) -> Iterator[Path]:
+        with Patcher(allow_root_user=False):
+            path = Path("/var/log/portage/elog/")
+            os.makedirs(str(path))
+            for eclass in _ev.EClass:
+                fake = FakeElog(
+                    randomElogFileName(),
+                    randomElogContent(eclass, _fuzz.randomString(10)),
+                )
+                (path / fake.fileName).write_text(fake.content)
+            yield path
+
+    def _make_viewer(
+        self, elogPath: Path, qtbot: QtBot, continue_on_error: bool
+    ) -> _ElogviewerNoDialog:
+        v = _ElogviewerNoDialog(
+            Config(elogpath=elogPath), continue_on_error=continue_on_error
+        )
+        v.populate()
+        qtbot.addWidget(v)
+        return v
+
+    def _select_all_and_delete(self, viewer: _ElogviewerNoDialog, qtbot: QtBot) -> None:
+        qtbot.keyClick(
+            viewer.tableView, Qt.Key.Key_A, Qt.KeyboardModifier.ControlModifier
+        )
+        qtbot.mouseClick(viewer.deleteButton, Qt.MouseButton.LeftButton)
+
+    def testContinueProcessesAllItems(self, elogPath: Path, qtbot: QtBot) -> None:
+        viewer = self._make_viewer(elogPath, qtbot, continue_on_error=True)
+        count = viewer.elogCount()
+        os.chmod(str(elogPath), 0o555)  # Read-only, deletion fails
+
+        self._select_all_and_delete(viewer, qtbot)
+
+        assert len(viewer.delete_errors) == count
+        assert viewer.elogCount() == count
+
+    def testAbortStopsAfterFirstError(self, elogPath: Path, qtbot: QtBot) -> None:
+        viewer = self._make_viewer(elogPath, qtbot, continue_on_error=False)
+        count = viewer.elogCount()
+        os.chmod(str(elogPath), 0o555)  # Read-only, deletion fails
+
+        self._select_all_and_delete(viewer, qtbot)
+
+        assert len(viewer.delete_errors) == 1
+        assert viewer.elogCount() == count
