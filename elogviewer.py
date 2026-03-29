@@ -910,13 +910,11 @@ class Elogviewer(ElogviewerUi):
                 self,
                 "About (k)elogviewer",
                 "<h1>(k)elogviewer %s</h1>"
-                "<center><small>"
                 "(k)elogviewer, copyright (c) 2007-2016 Mathias Laurin<br>"
                 "kelogviewer, copyright (c) 2007 Jeremy Wickersheimer<br>"
-                "GNU General Public License (GPL) version 2</small><br>"
+                "GNU General Public License (GPL) version 2<br>"
                 "<a href=http://sourceforge.net/projects/elogviewer>"
                 "http://sourceforge.net/projects/elogviewer</a>"
-                "</center>"
                 "<h2>Written by</h2>"
                 "Mathias Laurin (current maintainer)<br>"
                 "Timothy Kilbourn (initial author)<br>"
