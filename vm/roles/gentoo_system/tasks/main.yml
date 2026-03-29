@@ -10,8 +10,8 @@
   tags: sync
   when:
     - gentoo_run_sync | default(false)
-    - not gentoo_system_sync_timestamp.stat.exists or
-      (ansible_date_time.epoch | int) - (gentoo_system_sync_timestamp.stat.mtime | int) > 86400
+    - not gentoo_system_sync_timestamp.stat.exists or (ansible_date_time.epoch | int) -
+      (gentoo_system_sync_timestamp.stat.mtime | int) > 86400
   changed_when: false
   retries: 3 # rsync may be flaky in the CI.
   delay: 30
