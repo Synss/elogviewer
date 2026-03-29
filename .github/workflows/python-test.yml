@@ -3,15 +3,8 @@ name: python-test
 
 on:
   push:
-    paths:
-      - '**/*.py'
-      - 'pyproject.toml'
-      - 'uv.lock'
+    branches: [main]
   pull_request:
-    paths:
-      - '**/*.py'
-      - 'pyproject.toml'
-      - 'uv.lock'
   workflow_dispatch:
 
 env:

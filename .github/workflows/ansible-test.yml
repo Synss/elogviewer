@@ -3,13 +3,11 @@ name: ansible-test
 
 on:
   push:
+    branches: [main]
     paths:
       - 'vm/**'
       - 'uv.lock'
   pull_request:
-    paths:
-      - 'vm/**'
-      - 'uv.lock'
   workflow_dispatch:
 
 env:
