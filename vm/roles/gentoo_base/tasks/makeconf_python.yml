@@ -12,10 +12,8 @@
     dest: /etc/portage/make.conf/10_python_targets
     mode: "0644"
   vars:
-    _python_targets: "{{ python_targets | default(_gentoo_base_python_detected.stdout | default(''))
-      }}"
-    _python_single_target: "{{ python_single_target | default(python_targets | default(_gentoo_base_python_detected.stdout
-      | default(''))) }}"
+    _python_targets: "{{ python_targets | default(_gentoo_base_python_detected.stdout | default('')) }}"
+    _python_single_target: "{{ python_single_target | default(python_targets | default(_gentoo_base_python_detected.stdout | default(''))) }}"
   changed_when: false
   when: gentoo_manage_python_targets | default(true)
 

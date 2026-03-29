@@ -1,7 +1,7 @@
 ---
 - name: Render package_use
   ansible.builtin.template:
-    src: "{{ playbook_dir }}/../../templates/package_use.j2"  # noqa: no-relative-paths
+    src: "{{ playbook_dir }}/../../templates/package_use.j2" # noqa: no-relative-paths
     dest: /tmp/molecule_package_use
     mode: "0644"
   vars:

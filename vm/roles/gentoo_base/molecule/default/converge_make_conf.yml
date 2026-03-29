@@ -1,7 +1,7 @@
 ---
 - name: Render 00_base with qt6
   ansible.builtin.template:
-    src: "{{ playbook_dir }}/../../templates/make_conf_base.j2"  # noqa: no-relative-paths
+    src: "{{ playbook_dir }}/../../templates/make_conf_base.j2" # noqa: no-relative-paths
     dest: /tmp/molecule_make_conf_qt6_base
     mode: "0644"
   vars:
@@ -10,7 +10,7 @@
 
 - name: Render 00_base with qt5
   ansible.builtin.template:
-    src: "{{ playbook_dir }}/../../templates/make_conf_base.j2"  # noqa: no-relative-paths
+    src: "{{ playbook_dir }}/../../templates/make_conf_base.j2" # noqa: no-relative-paths
     dest: /tmp/molecule_make_conf_qt5_base
     mode: "0644"
   vars:
@@ -19,7 +19,7 @@
 
 - name: Render 10_python_targets with explicit override
   ansible.builtin.template:
-    src: "{{ playbook_dir }}/../../templates/make_conf_python_targets.j2"  # noqa: no-relative-paths
+    src: "{{ playbook_dir }}/../../templates/make_conf_python_targets.j2" # noqa: no-relative-paths
     dest: /tmp/molecule_make_conf_explicit_python
     mode: "0644"
   vars:
@@ -29,17 +29,17 @@
 - name: Detect system Python version for auto-detect test
   ansible.builtin.command:
     cmd: python3 -c "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
-  register: _molecule_python_detected
+  register: _gentoo_base_molecule_python_detected
   changed_when: false
 
 - name: Render 10_python_targets with auto-detected python
   ansible.builtin.template:
-    src: "{{ playbook_dir }}/../../templates/make_conf_python_targets.j2"  # noqa: no-relative-paths
+    src: "{{ playbook_dir }}/../../templates/make_conf_python_targets.j2" # noqa: no-relative-paths
     dest: /tmp/molecule_make_conf_auto_python
     mode: "0644"
   vars:
-    _python_targets: "{{ _molecule_python_detected.stdout }}"
-    _python_single_target: "{{ _molecule_python_detected.stdout }}"
+    _python_targets: "{{ _gentoo_base_molecule_python_detected.stdout }}"
+    _python_single_target: "{{ _gentoo_base_molecule_python_detected.stdout }}"
 
 - name: Ensure 10_python_targets is absent for disabled test
   ansible.builtin.file:
