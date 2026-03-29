@@ -4,7 +4,7 @@
     cmd: python3 -c "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
   register: _gentoo_base_python_detected
   changed_when: false
-  when: gentoo_base_manage_gentoo_manage_python_targets
+  when: gentoo_manage_python_targets | default(true)
 
 - name: Configure make.conf/10_python_targets
   ansible.builtin.template:
@@ -17,10 +17,10 @@
     _python_single_target: "{{ python_single_target | default(python_targets | default(_gentoo_base_python_detected.stdout
       | default(''))) }}"
   changed_when: false
-  when: gentoo_manage_python_targets
+  when: gentoo_manage_python_targets | default(true)
 
 - name: Remove make.conf/10_python_targets
   ansible.builtin.file:
     path: /etc/portage/make.conf/10_python_targets
     state: absent
-  when: not gentoo_manage_python_targets
+  when: not gentoo_manage_python_targets | default(true)
