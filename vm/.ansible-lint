@@ -1,0 +1,9 @@
+---
+exclude_paths:
+  - .ansible/
+  - .cache/
+  - .vagrant/
+
+kinds:
+  - tasks: "roles/*/molecule/*/converge_*.yml"
+  - tasks: "roles/*/molecule/*/verify_*.yml"

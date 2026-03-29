@@ -8,8 +8,7 @@
   ansible.builtin.file:
     path: /etc/portage/make.conf
     state: absent
-  when: _gentoo_base_make_conf_stat.stat.exists and
-    _gentoo_base_make_conf_stat.stat.isreg
+  when: _gentoo_base_make_conf_stat.stat.exists and _gentoo_base_make_conf_stat.stat.isreg
 
 - name: Ensure /etc/portage/make.conf is a directory
   ansible.builtin.file:
