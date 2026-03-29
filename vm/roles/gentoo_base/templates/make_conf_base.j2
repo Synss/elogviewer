@@ -22,4 +22,4 @@ EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --quiet"
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --load-average={{ ncpus }}"
 EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --jobs={{ ncpus }}"
 
-USE="${USE} -llvm elogind openssl {{ qt_use_flag }} X harfbuzz"
+USE="${USE} -llvm elogind openssl {{ gentoo_base_qt_use_flag }} X harfbuzz"

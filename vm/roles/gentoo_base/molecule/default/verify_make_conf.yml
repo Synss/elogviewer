@@ -43,7 +43,7 @@
       - gentoo_base_content_qt6_base is search('--load-average=4')
     fail_msg: "EMERGE_DEFAULT_OPTS should use ncpus=4"
 
-- name: Assert qt_use_flag appears in USE
+- name: Assert gentoo_base_qt_use_flag appears in USE
   ansible.builtin.assert:
     that:
       - gentoo_base_content_qt6_base is search('USE=.*qt6')

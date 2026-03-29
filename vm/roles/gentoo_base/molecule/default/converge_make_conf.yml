@@ -6,7 +6,7 @@
     mode: "0644"
   vars:
     ncpus: 4
-    qt_use_flag: qt6
+    gentoo_base_qt_use_flag: qt6
 
 - name: Render 00_base with qt5
   ansible.builtin.template:
@@ -15,7 +15,7 @@
     mode: "0644"
   vars:
     ncpus: 4
-    qt_use_flag: qt5
+    gentoo_base_qt_use_flag: qt5
 
 - name: Render 10_python_targets with explicit override
   ansible.builtin.template:

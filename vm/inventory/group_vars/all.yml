@@ -2,7 +2,7 @@
 gentoo_cache_binpkgs: .cache/vagrant/binpkgs
 gentoo_cache_distfiles: .cache/distfiles
 
-qt_use_flag: "qt6"
+gentoo_base_qt_use_flag: "qt6"
 
 gentoo_user_name: "gentoo"
 gentoo_user_password: "gentoo"
