@@ -1,6 +1,4 @@
 ---
-gentoo_base_manage_gentoo_manage_python_targets: true
-
 gentoo_base_package_use_lines:
   # Check packages / use flag with `euse -I $USE`
   - app-crypt/pinentry -qt6
