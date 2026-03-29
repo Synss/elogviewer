@@ -14,7 +14,7 @@ license-files = ["LICENSE*"]
 urls = {source = "https://github.com/Synss/elogviewer"}
 gui-scripts = {elogviewer = "elogviewer:main"}
 dependencies = ["portage", "PyQt6"]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
