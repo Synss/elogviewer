@@ -56,7 +56,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     #vb.gui = true
- 
+
     # Customize the amount of memory on the VM:
     vb.memory = "4096"
     vb.cpus = HOST_CPUS
@@ -76,6 +76,8 @@ Vagrant.configure("2") do |config|
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "site.yml"
     ansible.inventory_path = "inventory"
+    ansible.galaxy_role_file = "requirements.yml"
+    ansible.galaxy_command = "ansible-galaxy collection install -r %{role_file}"
     #ansible.verbose  = true
     #ansible.limit = "all"
     ansible.extra_vars = {
