@@ -1,0 +1,36 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]  # allow custom YAML tags used by Ansible
+
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --extra lint ruff format --check
+        language: system
+        types: [python]
+
+      - id: ruff
+        name: ruff lint
+        entry: uv run --extra lint ruff check
+        language: system
+        types: [python]
+
+      - id: yamllint
+        name: yamllint
+        entry: uv run --extra lint yamllint
+        language: system
+        types: [yaml]
+
+      - id: ansible-lint
+        name: ansible-lint
+        entry: bash -c 'cd vm && uv run --extra lint ansible-lint .'
+        language: system
+        files: ^vm/
+        pass_filenames: false
