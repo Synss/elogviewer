@@ -1,0 +1,17 @@
+---
+name: Setup Ansible
+description: Install uv and Ansible collections
+
+inputs:
+  python-version:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-python
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install ansible collections
+      shell: bash
+      run: uv run --extra vm ansible-galaxy collection install ansible.posix community.general
