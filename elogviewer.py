@@ -1077,19 +1077,36 @@ class Elogviewer(ElogviewerUi):
         currentRow = self.currentRow()
         sm.reset()
 
-        try:
-            for index in reversed(selection):
-                filename = self.model.itemFromIndex(index).filename()
+        pending = list(reversed(selection))
+        while pending:
+            index = pending.pop(0)
+            filename = self.model.itemFromIndex(index).filename()
+            try:
                 if os.path.exists(filename):
                     os.remove(filename)
                 self.model.removeRow(index.row())
-        except OSError as exc:
-            QtWidgets.QMessageBox.critical(
-                self,
-                "Error",
-                "Error while trying to delete"
-                "'%s':<br><b>%s</b>" % (filename, exc.strerror),
-            )
+            except OSError as exc:
+                msgbox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Icon.Critical,
+                    "Error",
+                    "Error while trying to delete '%s':<br><b>%s</b>"
+                    % (filename, exc.strerror),
+                    QtWidgets.QMessageBox.StandardButton.NoButton,
+                    self,
+                )
+                if pending:
+                    msgbox.addButton(
+                        "Continue", QtWidgets.QMessageBox.ButtonRole.AcceptRole
+                    )
+                    abort_btn = msgbox.addButton(
+                        "Abort", QtWidgets.QMessageBox.ButtonRole.RejectRole
+                    )
+                    msgbox.exec()
+                    if msgbox.clickedButton() is abort_btn:
+                        break
+                else:
+                    msgbox.addButton(QtWidgets.QMessageBox.StandardButton.Close)
+                    msgbox.exec()
 
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
         self.updateStatus()
