@@ -1,5 +1,5 @@
 ---
-- name: Set path for pipx
+- name: Set path for user-installed tools
   ansible.builtin.lineinfile:
     path: /home/{{ gentoo_user_name }}/.bashrc
     line: "PATH=$PATH:/home/{{ gentoo_user_name }}/.local/bin"
