@@ -1,0 +1,59 @@
+---
+name: python-test
+
+on:
+  push:
+    paths:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+  pull_request:
+    paths:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  ty:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run ty
+        run: uv run --extra lint ty check --output-format junit > ty.xml elogviewer.py tests/
+      - name: Publish ty results
+        uses: mikepenz/action-junit-report@v6
+        if: always()
+        with:
+          report_paths: ty.xml
+
+  pytest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install qt deps
+        run: sudo apt update && sudo apt install -y libegl1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run pytest
+        run: PYTHONPATH=. QT_QPA_PLATFORM=offscreen uv run --extra test pytest --junit-xml=pytest.xml
+      - name: Publish pytest results
+        uses: mikepenz/action-junit-report@v6
+        if: always()
+        with:
+          report_paths: pytest.xml

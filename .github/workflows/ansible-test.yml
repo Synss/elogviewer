@@ -1,0 +1,36 @@
+---
+name: ansible-test
+
+on:
+  push:
+    paths:
+      - 'vm/**'
+  pull_request:
+    paths:
+      - 'vm/**'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  ansible-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install ansible collections
+        run: uv run --extra vm ansible-galaxy collection install ansible.posix community.general
+      - name: Test ansible roles
+        run: cd vm/roles/gentoo_base && uv run --extra vm molecule test
+      - name: Publish test results
+        uses: mikepenz/action-junit-report@v6
+        if: always()
+        with:
+          report_paths: vm/roles/gentoo_base/junit/*.xml
