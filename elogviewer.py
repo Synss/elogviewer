@@ -136,7 +136,7 @@ class Elog:
                 io.StringIO(
                     """
                     <!-- set eclass: ERROR: -->
-                    <h2>Unsupported format</h2>
+                    <h3>Unsupported format</h3>
                     The selected elog is in an unsupported format.
                     """
                 )
@@ -147,7 +147,7 @@ class Elog:
                 io.StringIO(
                     """
                     <!-- set eclass: ERROR: -->
-                    <h2>File not found</h2>
+                    <h3>File not found</h3>
                     The selected elog could does not exist on the filesystem.
                     """
                 )
@@ -158,7 +158,7 @@ class Elog:
                 io.StringIO(
                     """
                     <!-- set eclass: ERROR: -->
-                    <h2>File does not open</h2>
+                    <h3>File does not open</h3>
                     The selected elog could not be opened.
                     """
                 )
@@ -269,10 +269,10 @@ class NoopState(AbstractState):
 
 class HeaderState(AbstractState):
     def enter(self) -> str:
-        return "<h2>"
+        return "<h3>"
 
     def exit(self) -> str:
-        return "</h2>"
+        return "</h3>"
 
     def parse(self, line: str) -> str:
         try:
@@ -616,7 +616,7 @@ class ElogItem:
         )
 
     def html(self) -> str:
-        header = "<h1>{category}/{package}</h1>".format(
+        header = "<h2>{category}/{package}</h2>".format(
             category=self.category(), package=self.package()
         )
         text = self._elog.html

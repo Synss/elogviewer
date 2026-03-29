@@ -168,9 +168,9 @@ class TestElogClass:
             # Regular logs
             (
                 "ERROR: error_stage\ntext",
-                "<h2>\n"
+                "<h3>\n"
                 "Error:  error_stage\n\n"
-                "</h2>\n"
+                "</h3>\n"
                 '<p style="color: #ff0000">\n'
                 "text <br />\n"
                 "</p>",
