@@ -30,6 +30,15 @@
       ansible.builtin.command: uv --version
       changed_when: false
 
+    - name: Get Gentoo Python version
+      ansible.builtin.command: python3 --version
+      register: _gentoo_python_version
+      changed_when: false
+
+    - name: Report Gentoo Python version
+      ansible.builtin.debug:
+        msg: "Gentoo Python version: {{ _gentoo_python_version.stdout }}"
+
     - name: Copy elogviewer source to container
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../../../{{ item }}"
