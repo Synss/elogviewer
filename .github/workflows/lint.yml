@@ -61,3 +61,16 @@ jobs:
         with:
           sarif_file: ruff.sarif
           category: ruff
+
+  yamllint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run yamllint
+        run: uv run --extra lint yamllint -f github .
