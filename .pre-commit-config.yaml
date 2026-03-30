@@ -34,3 +34,9 @@ repos:
         language: system
         files: ^vm/
         pass_filenames: false
+
+      - id: zizmor
+        name: zizmor
+        entry: zizmor .github
+        language: system
+        types: [yaml]
