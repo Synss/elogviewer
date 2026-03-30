@@ -1,6 +1,11 @@
-[![Build Status](https://travis-ci.org/Synss/elogviewer.svg?branch=master)](https://travis-ci.org/Synss/elogviewer)
+![Build Status](https://github.com/Synss/elogviewer/actions/workflows/python-test.yml/badge.svg?branch=main)
+![Build Status](https://github.com/Synss/elogviewer/actions/workflows/ansible-test.yml/badge.svg?branch=main)
+![Build Status](https://github.com/Synss/elogviewer/actions/workflows/e2e.yml/badge.svg?branch=main)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-[![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+![Gentoo](https://img.shields.io/badge/Gentoo-54487A?style=for-the-badge&logo=gentoo&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Ansible](https://img.shields.io/badge/ansible-%231A1918.svg?style=for-the-badge&logo=ansible&logoColor=white)
 
 # An elog viewer for Gentoo
 
