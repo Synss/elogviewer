@@ -23,7 +23,7 @@ classifiers = [
 
 [project.optional-dependencies]
 just = ["rust-just"]
-lint = ["ansible-lint", "ruff", "ty", "yamllint"]
+lint = ["ansible-lint", "pre-commit", "ruff", "ty", "yamllint"]
 test = ["pyfakefs", "pytest", "pytest-qt"]
 vm = ["ansible", "molecule", "molecule-docker", "passlib"]
 
