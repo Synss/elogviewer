@@ -9,6 +9,8 @@ updates:
     groups:
       all-dependencies:
         update-types: [minor, patch]
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: github-actions
     directory: /
@@ -18,3 +20,5 @@ updates:
     groups:
       all-dependencies:
         update-types: [minor, patch]
+    cooldown:
+      default-days: 7
