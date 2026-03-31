@@ -13,30 +13,31 @@ repos:
       - id: ruff-format
         name: ruff format
         entry: uv run --extra lint ruff format --check
-        language: system
+        language: unsupported
         types: [python]
 
       - id: ruff
         name: ruff lint
         entry: uv run --extra lint ruff check
-        language: system
+        language: unsupported
         types: [python]
 
       - id: yamllint
         name: yamllint
         entry: uv run --extra lint yamllint
-        language: system
+        language: unsupported
         types: [yaml]
 
       - id: ansible-lint
         name: ansible-lint
-        entry: bash -c 'cd vm && uv run --extra lint ansible-lint .'
-        language: system
+        entry: pre-commit hazmat cd vm uv run --extra lint ansible-lint . --
+        language: unsupported
         files: ^vm/
         pass_filenames: false
 
       - id: zizmor
         name: zizmor
         entry: zizmor .github
-        language: system
+        language: unsupported
         types: [yaml]
+        files: ^.github/
