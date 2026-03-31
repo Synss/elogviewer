@@ -10,6 +10,23 @@ on:
 env:
   PYTHON_VERSION: '3.13'
 
+anchors:
+  checkout: &checkout
+    name: Checkout
+    uses: actions/checkout@v6
+    with:
+      persist-credentials: false
+
+  setup-ansible: &setup-ansible
+    uses: ./.github/actions/setup-ansible
+    with:
+      python-version: ${{ env.PYTHON_VERSION }}
+
+  setup-python: &setup-python
+    uses: ./.github/actions/setup-python
+    with:
+      python-version: ${{ env.PYTHON_VERSION }}
+
 jobs:
   ansible-lint:
     runs-on: ubuntu-latest
@@ -17,12 +34,8 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-ansible
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+      - <<: *checkout
+      - <<: *setup-ansible
       - name: Run ansible-lint
         run: cd vm/ && uv run --extra lint ansible-lint --sarif-file ansible-lint.sarif
       - name: Upload SARIF
@@ -37,12 +50,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-python
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+      - <<: *checkout
+      - <<: *setup-python
       - name: Run ruff format
         run: uv run --extra lint ruff format --check --output-format github
 
@@ -52,12 +61,8 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-python
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+      - <<: *checkout
+      - <<: *setup-python
       - name: Run ruff check
         run: uv run --extra lint ruff check --output-format sarif --output-file ruff.sarif
       - name: Upload SARIF
@@ -72,12 +77,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-python
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+      - <<: *checkout
+      - <<: *setup-python
       - name: Run yamllint
         run: uv run --extra lint yamllint -f github .
 
