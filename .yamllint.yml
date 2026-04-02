@@ -15,6 +15,3 @@ rules:
     forbid-implicit-octal: true
     forbid-explicit-octal: true
   # end of ansible-lint compat
-  line-length:
-    max: 88
-    level: warning

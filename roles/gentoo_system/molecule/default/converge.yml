@@ -17,7 +17,9 @@
 
     - name: Detect system Python version for auto-detect test
       ansible.builtin.command:
-        cmd: python3 -c "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
+        cmd: >-
+          python3 -c
+          "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
       register: _gentoo_system_molecule_python_detected
       changed_when: false
 
@@ -28,7 +30,8 @@
         mode: "0644"
       vars:
         _python_targets: "{{ _gentoo_system_molecule_python_detected.stdout }}"
-        _python_single_target: "{{ _gentoo_system_molecule_python_detected.stdout }}"
+        _python_single_target: >-
+          {{ _gentoo_system_molecule_python_detected.stdout }}
 
     - name: Ensure 10_python_targets is absent for disabled test
       ansible.builtin.file:

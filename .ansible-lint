@@ -5,9 +5,6 @@ exclude_paths:
   - .github/
   - .vagrant/
 
-warn_list:
-  - yaml[line-length]
-
 kinds:
   - tasks: "roles/*/molecule/*/converge_*.yml"
   - tasks: "roles/*/molecule/*/verify_*.yml"

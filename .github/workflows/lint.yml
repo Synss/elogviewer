@@ -1,7 +1,7 @@
 ---
 name: lint
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
   pull_request:
@@ -59,7 +59,9 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Run ruff check
-        run: uv run --extra lint ruff check --output-format sarif --output-file ruff.sarif
+        run: >-
+          uv run --extra lint
+          ruff check --output-format sarif --output-file ruff.sarif
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v4
         if: ${{ !cancelled() }}

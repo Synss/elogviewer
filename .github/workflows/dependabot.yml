@@ -3,6 +3,7 @@
 
 name: dependabot
 
+# yamllint disable-line rule:truthy
 on: pull_request_target  # zizmor: ignore[dangerous-triggers]
 
 jobs:
