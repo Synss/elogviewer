@@ -5,7 +5,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'vm/**'
+      - 'roles/**'
+      - 'molecule/**'
       - 'uv.lock'
   pull_request:
   workflow_dispatch:
@@ -28,17 +29,17 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Test gentoo_base
         id: test_base
-        run: cd vm/roles/gentoo_base && uv run --extra vm molecule test
+        run: cd roles/gentoo_base && uv run --extra vm molecule test
         continue-on-error: true
       - name: Test gentoo_system
         id: test_system
-        run: cd vm/roles/gentoo_system && uv run --extra vm molecule test
+        run: cd roles/gentoo_system && uv run --extra vm molecule test
         continue-on-error: true
       - name: Publish test results
         uses: mikepenz/action-junit-report@v6
         if: ${{ !cancelled() }}
         with:
-          report_paths: vm/roles/*/junit/*.xml
+          report_paths: roles/*/junit/*.xml
       - name: Fail if any role failed
         if: steps.test_base.outcome == 'failure' || steps.test_system.outcome == 'failure'
         run: exit 1

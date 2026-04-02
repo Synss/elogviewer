@@ -1,0 +1,42 @@
+---
+- name: Read qt6 base output
+  ansible.builtin.slurp:
+    src: /tmp/molecule_make_conf_qt6_base
+  register: gentoo_base_conf_qt6_base
+
+- name: Read qt5 base output
+  ansible.builtin.slurp:
+    src: /tmp/molecule_make_conf_qt5_base
+  register: gentoo_base_conf_qt5_base
+
+- name: Set content facts
+  ansible.builtin.set_fact:
+    gentoo_base_content_qt6_base: "{{ gentoo_base_conf_qt6_base.content | b64decode }}"
+    gentoo_base_content_qt5_base: "{{ gentoo_base_conf_qt5_base.content | b64decode }}"
+
+- name: Assert vcpus substitution in MAKEOPTS
+  ansible.builtin.assert:
+    that: gentoo_base_content_qt6_base is search('MAKEOPTS="-j4"')
+    fail_msg: "MAKEOPTS should contain -j4 (ncpus=4)"
+
+- name: Assert vcpus substitution in EMERGE_DEFAULT_OPTS
+  ansible.builtin.assert:
+    that:
+      - gentoo_base_content_qt6_base is search('--jobs=4')
+      - gentoo_base_content_qt6_base is search('--load-average=4')
+    fail_msg: "EMERGE_DEFAULT_OPTS should use ncpus=4"
+
+- name: Assert gentoo_base_qt_use_flag appears in USE
+  ansible.builtin.assert:
+    that:
+      - gentoo_base_content_qt6_base is search('USE=.*qt6')
+      - gentoo_base_content_qt5_base is search('USE=.*qt5')
+      - gentoo_base_content_qt5_base is not search('USE=.*qt6')
+    fail_msg: "USE line should contain the correct qt flag"
+
+- name: Assert 00_base never contains PYTHON_TARGETS or PYTHON_SINGLE_TARGET
+  ansible.builtin.assert:
+    that:
+      - gentoo_base_content_qt6_base is not search('PYTHON_TARGETS=')
+      - gentoo_base_content_qt6_base is not search('PYTHON_SINGLE_TARGET=')
+    fail_msg: "00_base should never contain PYTHON_TARGETS or PYTHON_SINGLE_TARGET"

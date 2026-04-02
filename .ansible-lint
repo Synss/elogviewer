@@ -2,7 +2,11 @@
 exclude_paths:
   - .ansible/
   - .cache/
+  - .github/
   - .vagrant/
+
+warn_list:
+  - yaml[line-length]
 
 kinds:
   - tasks: "roles/*/molecule/*/converge_*.yml"
