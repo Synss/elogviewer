@@ -31,4 +31,5 @@ cd vm && uv run --extra vm molecule test --scenario-name e2e
 
 ```
 cd vm/roles/gentoo_base && uv run --extra vm molecule test
+cd vm/roles/gentoo_system && uv run --extra vm molecule test
 ```

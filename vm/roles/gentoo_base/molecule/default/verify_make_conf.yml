@@ -9,27 +9,10 @@
     src: /tmp/molecule_make_conf_qt5_base
   register: gentoo_base_conf_qt5_base
 
-- name: Read explicit python targets output
-  ansible.builtin.slurp:
-    src: /tmp/molecule_make_conf_explicit_python
-  register: gentoo_base_conf_explicit_python
-
-- name: Read auto-detected python targets output
-  ansible.builtin.slurp:
-    src: /tmp/molecule_make_conf_auto_python
-  register: gentoo_base_conf_auto_python
-
-- name: Stat disabled python targets path
-  ansible.builtin.stat:
-    path: /tmp/molecule_make_conf_no_python
-  register: gentoo_base_stat_no_python
-
 - name: Set content facts
   ansible.builtin.set_fact:
     gentoo_base_content_qt6_base: "{{ gentoo_base_conf_qt6_base.content | b64decode }}"
     gentoo_base_content_qt5_base: "{{ gentoo_base_conf_qt5_base.content | b64decode }}"
-    gentoo_base_content_explicit_python: "{{ gentoo_base_conf_explicit_python.content | b64decode }}"
-    gentoo_base_content_auto_python: "{{ gentoo_base_conf_auto_python.content | b64decode }}"
 
 - name: Assert vcpus substitution in MAKEOPTS
   ansible.builtin.assert:
@@ -57,22 +40,3 @@
       - gentoo_base_content_qt6_base is not search('PYTHON_TARGETS=')
       - gentoo_base_content_qt6_base is not search('PYTHON_SINGLE_TARGET=')
     fail_msg: "00_base should never contain PYTHON_TARGETS or PYTHON_SINGLE_TARGET"
-
-- name: Assert PYTHON_TARGETS and PYTHON_SINGLE_TARGET with explicit override
-  ansible.builtin.assert:
-    that:
-      - gentoo_base_content_explicit_python is search('PYTHON_TARGETS="python3_12"')
-      - gentoo_base_content_explicit_python is search('PYTHON_SINGLE_TARGET="python3_12"')
-    fail_msg: "PYTHON_TARGETS or PYTHON_SINGLE_TARGET missing with explicit override"
-
-- name: Assert PYTHON_TARGETS and PYTHON_SINGLE_TARGET when auto-detected
-  ansible.builtin.assert:
-    that:
-      - gentoo_base_content_auto_python is search('PYTHON_TARGETS=')
-      - gentoo_base_content_auto_python is search('PYTHON_SINGLE_TARGET=')
-    fail_msg: "PYTHON_TARGETS or PYTHON_SINGLE_TARGET missing when auto-detected"
-
-- name: Assert 10_python_targets is absent when disabled
-  ansible.builtin.assert:
-    that: not gentoo_base_stat_no_python.stat.exists
-    fail_msg: "10_python_targets should be absent when python targets are disabled"

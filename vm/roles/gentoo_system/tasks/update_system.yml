@@ -10,10 +10,29 @@
       register: gentoo_system_update_system
       changed_when: false
 
-    - name: Set Python targets
-      ansible.builtin.include_role:
-        name: gentoo_base
-        tasks_from: makeconf_python.yml
+    - name: Detect system Python version
+      ansible.builtin.command:
+        cmd: python3 -c "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
+      register: _gentoo_system_python_detected
+      changed_when: false
+      when: gentoo_manage_python_targets | default(true)
+
+    - name: Configure make.conf/10_python_targets
+      ansible.builtin.template:
+        src: make_conf_python_targets.j2
+        dest: /etc/portage/make.conf/10_python_targets
+        mode: "0644"
+      vars:
+        _python_targets: "{{ python_targets | default(_gentoo_system_python_detected.stdout | default('')) }}"
+        _python_single_target: "{{ python_single_target | default(python_targets | default(_gentoo_system_python_detected.stdout | default(''))) }}"
+      changed_when: false
+      when: gentoo_manage_python_targets | default(true)
+
+    - name: Remove make.conf/10_python_targets
+      ansible.builtin.file:
+        path: /etc/portage/make.conf/10_python_targets
+        state: absent
+      when: not gentoo_manage_python_targets | default(true)
 
     - name: Rebuild system with Python targets
       community.general.portage:
