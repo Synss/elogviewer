@@ -1,7 +1,7 @@
 ---
 - name: Render 00_base
   ansible.builtin.template:
-    src: "{{ playbook_dir }}/../../templates/make_conf_base.j2" # noqa: no-relative-paths
+    src: "{{ playbook_dir | dirname | dirname }}/templates/make_conf_base.j2"
     dest: "/tmp/molecule_make_conf_{{ item }}_base"
     mode: "0644"
   vars:
