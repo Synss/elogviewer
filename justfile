@@ -14,22 +14,25 @@ test:
     uv run pytest
 
 vm-test:
-    cd vm && just test
+    cd roles/gentoo_base && uv run --extra vm molecule test
+
+e2e:
+    uv run --extra vm molecule test --scenario-name e2e
 
 vm-start:
-    cd vm && just start
+    vagrant --provision up
 
 vm-stop:
-    cd vm && just stop
+    vagrant halt
 
-vm-provision:
-    cd vm && just provision
+vm-provision: vm-start
+    vagrant provision
 
-vm-reboot:
-    cd vm && just reboot
+vm-reboot: vm-start
+    ansible -i inventory gentoo -m ansible.builtin.reboot -b
 
 vm-destroy:
-    cd vm && just destroy
+    vagrant -f destroy
 
-vm-ssh:
-	cd vm && just ssh
+vm-ssh: vm-start
+	vagrant ssh

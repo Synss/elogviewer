@@ -17,19 +17,19 @@ ansible-playbook site.yml -e python_targets=python3_11 -e python_single_target=p
 ansible-playbook site.yml -e gentoo_manage_python_targets=false
 ```
 
-Log in with `just ssh`.
+Log in with `just vm-ssh`.
 
 
 ## Docker deployment/e2e tests
 
 ```
-cd vm && uv run --extra vm molecule test --scenario-name e2e
+uv run --extra vm molecule test --scenario-name e2e
 ```
 
 
 ## Unit tests
 
 ```
-cd vm/roles/gentoo_base && uv run --extra vm molecule test
-cd vm/roles/gentoo_system && uv run --extra vm molecule test
+cd roles/gentoo_base && uv run --extra vm molecule test
+cd roles/gentoo_system && uv run --extra vm molecule test
 ```

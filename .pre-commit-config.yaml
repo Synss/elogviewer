@@ -30,9 +30,9 @@ repos:
 
       - id: ansible-lint
         name: ansible-lint
-        entry: pre-commit hazmat cd vm uv run --extra lint ansible-lint . --
+        entry: uv run --extra lint ansible-lint .
         language: unsupported
-        files: ^vm/
+        files: ^(roles|molecule|inventory)/
         pass_filenames: false
 
       - id: zizmor

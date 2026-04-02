@@ -2,6 +2,6 @@
 .direnv/
 *.pyc
 .cache/
-vm/.vagrant
-vm/roles/gentoo_base/junit/
-vm/junit/
+.vagrant
+roles/gentoo_base/junit/
+junit/
