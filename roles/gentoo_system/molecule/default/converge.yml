@@ -2,10 +2,13 @@
 - name: Render templates
   hosts: all
   gather_facts: false
+  vars:
+    _gentoo_system_templates: >-
+      {{ playbook_dir | dirname | dirname }}/templates
   tasks:
     - name: Render 10_python_targets with explicit override
       ansible.builtin.template:
-        src: "{{ playbook_dir }}/../../../gentoo_base/templates/make_conf_python_targets.j2" # noqa: no-relative-paths
+        src: "{{ _gentoo_system_templates }}/make_conf_python_targets.j2"
         dest: /tmp/molecule_make_conf_explicit_python
         mode: "0644"
       vars:
@@ -20,7 +23,7 @@
 
     - name: Render 10_python_targets with auto-detected python
       ansible.builtin.template:
-        src: "{{ playbook_dir }}/../../../gentoo_base/templates/make_conf_python_targets.j2" # noqa: no-relative-paths
+        src: "{{ _gentoo_system_templates }}/make_conf_python_targets.j2"
         dest: /tmp/molecule_make_conf_auto_python
         mode: "0644"
       vars:
