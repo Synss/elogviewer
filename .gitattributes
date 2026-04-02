@@ -1,0 +1,7 @@
+**/*.yml linguist-language=YAML
+**/*.yaml linguist-language=YAML
+
+.github/actions/**/*.yml linguist-language=GitHub Actions
+.github/workflows/**/*.yml linguist-language=GitHub Actions
+
+roles/**/*.yml linguist-language=Ansible
