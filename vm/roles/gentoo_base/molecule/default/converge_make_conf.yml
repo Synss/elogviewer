@@ -1,18 +1,12 @@
 ---
-- name: Render 00_base with qt6
+- name: Render 00_base
   ansible.builtin.template:
     src: "{{ playbook_dir }}/../../templates/make_conf_base.j2" # noqa: no-relative-paths
-    dest: /tmp/molecule_make_conf_qt6_base
+    dest: "/tmp/molecule_make_conf_{{ item }}_base"
     mode: "0644"
   vars:
     ncpus: 4
-    gentoo_base_qt_use_flag: qt6
-
-- name: Render 00_base with qt5
-  ansible.builtin.template:
-    src: "{{ playbook_dir }}/../../templates/make_conf_base.j2" # noqa: no-relative-paths
-    dest: /tmp/molecule_make_conf_qt5_base
-    mode: "0644"
-  vars:
-    ncpus: 4
-    gentoo_base_qt_use_flag: qt5
+    gentoo_base_qt_use_flag: "{{ item }}"
+  loop:
+    - qt6
+    - qt5
