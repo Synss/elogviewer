@@ -1,7 +1,7 @@
 ---
 name: ansible-test
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
     paths:
@@ -41,7 +41,9 @@ jobs:
         with:
           report_paths: roles/*/junit/*.xml
       - name: Fail if any role failed
-        if: steps.test_base.outcome == 'failure' || steps.test_system.outcome == 'failure'
+        if: >-
+          steps.test_base.outcome == 'failure'
+          || steps.test_system.outcome == 'failure'
         run: exit 1
 
   all-checks:

@@ -19,4 +19,6 @@ runs:
         key: ansible-collections-${{ hashFiles('uv.lock') }}
     - name: Install ansible collections
       shell: bash
-      run: uv run --extra vm ansible-galaxy collection install ansible.posix community.general
+      run: >-
+        uv run --extra vm
+        ansible-galaxy collection install ansible.posix community.general

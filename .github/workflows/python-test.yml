@@ -1,7 +1,7 @@
 ---
 name: python-test
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
   pull_request:
@@ -24,7 +24,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Run ty
-        run: uv run --extra lint ty check --output-format junit > ty.xml elogviewer.py tests/
+        run: >-
+          uv run --extra lint
+          ty check --output-format junit elogviewer.py tests/ > ty.xml
       - name: Publish ty results
         uses: mikepenz/action-junit-report@v6
         if: ${{ !cancelled() }}
@@ -49,7 +51,10 @@ jobs:
       - name: Install qt deps
         run: sudo apt update && sudo apt install -y libegl1
       - name: Run pytest
-        run: PYTHONPATH=. QT_QPA_PLATFORM=offscreen uv run --extra test pytest --junit-xml=pytest.xml
+        env:
+          PYTHONPATH: .
+          QT_QPA_PLATFORM: offscreen
+        run: uv run --extra test pytest --junit-xml=pytest.xml
       - name: Publish pytest results
         uses: mikepenz/action-junit-report@v6
         if: ${{ !cancelled() }}
