@@ -1,0 +1,26 @@
+---
+driver:
+  name: default
+platforms:
+  - name: localhost
+provisioner:
+  name: ansible
+  env:
+    JUNIT_OUTPUT_DIR: "${MOLECULE_PROJECT_DIRECTORY}/junit"
+  config_options:
+    defaults:
+      callbacks_enabled: junit
+  inventory:
+    hosts:
+      all:
+        hosts:
+          localhost:
+            ansible_connection: local
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - syntax
+    - converge
+    - idempotence
+    - verify

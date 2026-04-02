@@ -16,32 +16,3 @@
   vars:
     ncpus: 4
     gentoo_base_qt_use_flag: qt5
-
-- name: Render 10_python_targets with explicit override
-  ansible.builtin.template:
-    src: "{{ playbook_dir }}/../../templates/make_conf_python_targets.j2" # noqa: no-relative-paths
-    dest: /tmp/molecule_make_conf_explicit_python
-    mode: "0644"
-  vars:
-    _python_targets: python3_12
-    _python_single_target: python3_12
-
-- name: Detect system Python version for auto-detect test
-  ansible.builtin.command:
-    cmd: python3 -c "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
-  register: _gentoo_base_molecule_python_detected
-  changed_when: false
-
-- name: Render 10_python_targets with auto-detected python
-  ansible.builtin.template:
-    src: "{{ playbook_dir }}/../../templates/make_conf_python_targets.j2" # noqa: no-relative-paths
-    dest: /tmp/molecule_make_conf_auto_python
-    mode: "0644"
-  vars:
-    _python_targets: "{{ _gentoo_base_molecule_python_detected.stdout }}"
-    _python_single_target: "{{ _gentoo_base_molecule_python_detected.stdout }}"
-
-- name: Ensure 10_python_targets is absent for disabled test
-  ansible.builtin.file:
-    path: /tmp/molecule_make_conf_no_python
-    state: absent
