@@ -215,7 +215,7 @@ class TestElogClass:
     ) -> None:
         monkeypatch.setattr(_ev.Elog, "file", closing(io.StringIO(elogText)))
         elog = _ev.Elog("", "", "", time.gmtime(0), _ev.EClass.Log)
-        assert elog.html == elogHtml
+        assert _ev.makeHtml(elog) == elogHtml
 
 
 class TestUI:

@@ -197,13 +197,13 @@ class Elog:
         with self.file as file:
             return file.read()
 
-    @property
-    def html(self) -> str:
-        parsed = []
-        with ParserFSM(parsed) as parser, self.file as file:
-            for line in file:
-                parser.parse(line)
-        return os.linesep.join(_ for _ in parsed if _ is not None)
+
+def makeHtml(elog: Elog) -> str:
+    parsed = []
+    with ParserFSM(parsed) as parser, elog.file as file:
+        for line in file:
+            parser.parse(line)
+    return os.linesep.join(_ for _ in parsed if _ is not None)
 
 
 class AbstractState(abc.ABC):
@@ -618,8 +618,7 @@ class ElogItem:
         header = "<h2>{category}/{package}</h2>".format(
             category=self.category(), package=self.package()
         )
-        text = self._elog.html
-        return header + text
+        return header + makeHtml(self._elog)
 
 
 class Model(QtCore.QAbstractTableModel):
