@@ -1,3 +1,5 @@
+_just := just_executable()
+
 default:
     just --list
 
@@ -13,6 +15,15 @@ test:
     uv run ruff check --select I --fix
     uv run ruff check --fix
     uv run pytest
+
+_build-path type:
+    @uv build --{{type}} 2>&1 | perl -ne 'print $1 if /Successfully built\s+(.+)/'
+
+@list-whl:
+    unzip -Z1 $({{ _just }} _build-path wheel)
+
+@list-tar:
+    tar --list -f $({{ _just }} _build-path sdist)
 
 vm-test:
     cd roles/gentoo_base && uv run --extra vm molecule test
