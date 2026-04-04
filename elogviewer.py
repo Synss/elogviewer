@@ -91,17 +91,15 @@ class EClass(str, enum.Enum):
     Info = "INFO"
     QA = "QA"
 
-    def color(self) -> QtGui.QColor:
-        return {
-            "Error": QtGui.QColor(QtGui.QColorConstants.Red),
-            "Warning": QtGui.QColor(229, 103, 23),
-            "Log": QtGui.QColor(QtGui.QColorConstants.DarkGreen),
-            "Info": QtGui.QColor(QtGui.QColorConstants.DarkGreen),
-            "QA": QtGui.QColor(QtGui.QColorConstants.DarkGreen),
-        }[self.name]
 
-    def htmlColor(self) -> str:
-        return self.color().name()
+def eclassColor(eclass: EClass) -> tuple[int, int, int]:
+    return {
+        EClass.Error: (0xFF, 0x00, 0x00),
+        EClass.Warning: (0xE5, 0x67, 0x17),
+        EClass.Log: (0x00, 0x80, 0x00),
+        EClass.Info: (0x00, 0x80, 0x00),
+        EClass.QA: (0x00, 0x80, 0x00),
+    }[eclass]
 
 
 @dataclass(frozen=True)
@@ -316,7 +314,8 @@ class BodyState(AbstractState):
         return Elog.AnsiColorPattern.sub("", line)
 
     def enter(self) -> str:
-        return f'<p style="color: {self.context.eclass.htmlColor()}">'
+        color = "".join(format(_, "02x") for _ in eclassColor(self.context.eclass))
+        return f'<p style="color: #{color}">'
 
     def exit(self) -> str:
         return "</p>"
@@ -383,7 +382,7 @@ class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
             return
         self.initStyleOption(option, index)
         try:
-            color = EClass[option.text].color()
+            color = QtGui.QColor(eclassColor(EClass[option.text]))
         except KeyError:
             pass
         else:
