@@ -22,6 +22,12 @@ repos:
         language: unsupported
         types: [python]
 
+      - id: ty
+        name: ty check
+        entry: uv run --extra lint --extra test ty check
+        language: unsupported
+        types: [python]
+
       - id: yamllint
         name: yamllint
         entry: uv run --extra lint yamllint
