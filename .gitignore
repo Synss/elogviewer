@@ -5,3 +5,4 @@
 .vagrant
 roles/gentoo_base/junit/
 junit/
+*.egg-info

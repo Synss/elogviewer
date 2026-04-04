@@ -1,4 +1,16 @@
-include LICENSE*
+exclude .*
+exclude *.lock *.yml
+exclude ansible.cfg ANSIBLE.md Vagrantfile
+exclude justfile
+
+prune .github/
+prune inventory/
+prune molecule/
+prune roles/
+
 include CHANGELOG*
+include LICENSE*
 include pyproject.toml
-recursive-include tests *.py
+
+recursive-include elogviewer/ *.py
+recursive-include tests/ *.py
