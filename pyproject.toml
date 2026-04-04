@@ -29,7 +29,7 @@ vm = ["ansible", "molecule", "molecule-docker", "passlib"]
 
 [tool.setuptools]
 include-package-data = true  # MANIFEST.in
-py-modules = ["elogviewer"]
+packages = ["elogviewer", "tests"]
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md"}
