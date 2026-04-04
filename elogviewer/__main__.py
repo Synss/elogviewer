@@ -40,7 +40,6 @@ def main() -> None:
 
     _LOGGER.debug("running on python %s", sys.version)
     if portage and not config.elogpath:
-        # pylint: disable=no-member
         logdir = portage.settings["PORT_LOGDIR"]  # type: ignore
         if not logdir:
             logdir = os.path.join(
