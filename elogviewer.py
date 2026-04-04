@@ -206,34 +206,6 @@ class Elog:
         return os.linesep.join(_ for _ in parsed if _ is not None)
 
 
-def _sourceIndex(index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-    model = index.model()
-    with suppress(AttributeError):
-        index = model.mapToSource(index)  # type: ignore  # proxy
-    return index
-
-
-def _itemFromIndex(index: QtCore.QModelIndex) -> ElogItem:
-    assert index.isValid()
-    model = _sourceIndex(index).model()
-    assert isinstance(model, Model)
-    return model.itemFromIndex(index)
-
-
-class TextToHtmlDelegate(QtWidgets.QItemDelegate):
-    def __repr__(self) -> str:
-        return f"elogviewer.{self.__class__.__name__}({self.parent()!r})"
-
-    def setEditorData(
-        self, editor: QtWidgets.QWidget | None, index: QtCore.QModelIndex
-    ) -> None:
-        if not index.isValid() or not isinstance(editor, QtWidgets.QTextEdit):
-            return
-        model = index.model()
-        assert isinstance(model, Model)
-        editor.setHtml(model.itemFromIndex(index).html())
-
-
 class AbstractState(abc.ABC):
     def __init__(self, context: ParserFSM) -> None:
         self.context = weakref.proxy(context)
@@ -369,6 +341,34 @@ class ParserFSM:
             return
         self.state = self._stateFor(line)
         self._results.append(self.state.parse(line))
+
+
+def _sourceIndex(index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+    model = index.model()
+    with suppress(AttributeError):
+        index = model.mapToSource(index)  # type: ignore  # proxy
+    return index
+
+
+def _itemFromIndex(index: QtCore.QModelIndex) -> ElogItem:
+    assert index.isValid()
+    model = _sourceIndex(index).model()
+    assert isinstance(model, Model)
+    return model.itemFromIndex(index)
+
+
+class TextToHtmlDelegate(QtWidgets.QItemDelegate):
+    def __repr__(self) -> str:
+        return f"elogviewer.{self.__class__.__name__}({self.parent()!r})"
+
+    def setEditorData(
+        self, editor: QtWidgets.QWidget | None, index: QtCore.QModelIndex
+    ) -> None:
+        if not index.isValid() or not isinstance(editor, QtWidgets.QTextEdit):
+            return
+        model = index.model()
+        assert isinstance(model, Model)
+        editor.setHtml(model.itemFromIndex(index).html())
 
 
 class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
