@@ -26,6 +26,4 @@ jobs:
       - name: Build
         run: uv build
       - name: Create GitHub release
-        run: gh release
-        with:
-          files: dist/*
+        run: gh release dist/*
