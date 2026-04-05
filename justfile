@@ -10,10 +10,12 @@ doc:
 upload-doc: doc
     rsync -avzP -e ssh html/ mathias_laurin@web.sourceforge.net:/home/project-web/elogviewer/htdocs/
 
-test:
+qa:
     uv run ruff format
     uv run ruff check --select I --fix
     uv run ruff check --fix
+
+test: qa
     uv run pytest
 
 _build-path type:
