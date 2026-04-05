@@ -1,0 +1,14 @@
+---
+required:
+  - elogviewer.1
+  - README.md
+  - LICENSE.TXT
+  - py.typed
+
+forbidden:
+  - uv.lock
+  - dist/
+  - build/
+  - inventory/
+  - junit/
+  - role/
