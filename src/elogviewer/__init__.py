@@ -10,3 +10,5 @@ without privileges.
 
 Read /etc/make.conf.example for more information.
 """
+
+from .__main__ import main as main

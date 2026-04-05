@@ -1,16 +1,17 @@
 [build-system]
-requires = ["setuptools>=80", "setuptools-scm[simple]>=9.2"]
-build-backend = "setuptools.build_meta"
+build-backend = 'hatchling.build'
+requires = ['hatchling']
 
 [project]
 name = "elogviewer"
+dynamic = ["version"]
 description = "An elog viewer for Gentoo Linux"
-dynamic = ["version", "readme"]
 authors = [
     {name = "Mathias Laurin", email = "Mathias.Laurin+gentoo.org@gmail.com"}
 ]
 license = "GPL-2.0-only"
-license-files = ["LICENSE*"]
+license-files = ["LICENSE.TXT"]
+readme = {"file" = "README.md", "content-type" = "text/markdown"}
 urls = {source = "https://github.com/Synss/elogviewer"}
 gui-scripts = {elogviewer = "elogviewer:main"}
 dependencies = ["portage", "PyQt6"]
@@ -27,11 +28,25 @@ lint = ["ansible-lint", "pre-commit", "ruff", "ty", "yamllint", "zizmor"]
 test = ["pyfakefs", "pytest", "pytest-qt"]
 vm = ["ansible", "molecule", "molecule-docker", "passlib"]
 
-[tool.setuptools]
-include-package-data = true  # MANIFEST.in
-packages = ["elogviewer", "tests"]
+[tool.hatch.version]
+path = "src/elogviewer/__version__.py"
 
-[tool.setuptools.dynamic]
-readme = {file = "README.md"}
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".*",
+    "/build/",
+]
+include = [
+    "/man/",
+    "/src/elogviewer/",
+    "/tests/",
+    "README.md",
+]
 
-[tool.setuptools_scm]
+[tool.hatch.build.targets.wheel]
+packages = [
+    "/man/",
+    "/src/elogviewer/",
+    "/tests/",
+    "README.md",
+]
