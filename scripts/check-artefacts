@@ -1,0 +1,101 @@
+#!/usr/bin/env perl
+use v5.20;
+use warnings;
+use utf8;
+use autodie;
+use feature 'signatures';
+no warnings 'experimental::signatures';
+
+use Getopt::Long qw(GetOptions);
+use YAML::XS     qw(LoadFile);
+
+my %FAIL_STRATEGIES = (
+  text => sub ( $missing, $hits, $colors ) {
+    say "$colors->{fail}FAIL: Verification Failed$colors->{default}";
+    if (@$missing) {
+      say "\n[Missing Required]";
+      say "  - $_->{name}" for @$missing;
+    }
+    if (@$hits) { say "\n[Forbidden Items Found]"; say "  - $_" for @$hits; }
+  },
+  github => sub ( $missing, $hits, $colors ) {
+    say "::error::Artefact Verification Failed";
+    say "::error::Missing: $_->{name}" for @$missing;
+    say "::error::Forbidden: $_"       for @$hits;
+  }
+);
+
+my %PASS_STRATEGIES = (
+  quiet => sub ( $req, $forb, $colors ) {
+    say "$colors->{ok}PASS: All checks passed$colors->{default}";
+  },
+  verbose => sub ( $req, $forb, $colors ) {
+    say "$colors->{ok}PASS: All checks passed$colors->{default}";
+    say "\n[Required Items Found]";
+    say "  - $_->{name}" for @$req;
+    say "\n[Forbidden Rules Cleared]";
+    say "  - $_->{name}" for @$forb;
+  },
+  github => sub ( $req, $forb, $colors ) {
+    say "::notice::Artefact Verification Passed";
+  }
+);
+
+sub get_config_rules ($path) {
+  my $data  = LoadFile($path);
+  my $to_rx = sub ($name) { qr{(?:^|/)\Q$name\E$}i };
+  my @req =
+    map { { name => $_, rx => $to_rx->($_) } } @{ $data->{required} // [] };
+  my @forb =
+    map { { name => $_, rx => $to_rx->($_) } } @{ $data->{forbidden} // [] };
+  return ( \@req, \@forb );
+}
+
+sub process_input ( $req_rules, $forb_rules ) {
+  my %results = ( found_reqs => {}, found_forb => [] );
+  while ( my $line = <> ) {
+    chomp $line;
+    $results{found_reqs}{ $_->{name} } = 1
+      for grep { $line =~ $_->{rx} } @$req_rules;
+    push @{ $results{found_forb} }, $line
+      for grep { $line =~ $_->{rx} } @$forb_rules;
+  }
+  return \%results;
+}
+
+sub main() {
+  my ( $config, $help, $verbose, $format ) = ( undef, undef, 0, 'text' );
+  GetOptions(
+    'config=s'  => \$config,
+    'format=s'  => \$format,
+    'verbose|v' => \$verbose,
+    'help'      => \$help
+  ) or exit 1;
+
+  die "Config file required: --config path/to/yaml\n"
+    unless $config && -f $config;
+
+  my %color =
+      ( -t STDOUT )
+    ? ( ok => "\e[1;32m", fail => "\e[1;31m", default => "\e[0m" )
+    : ( ok => "", fail => "", default => "" );
+
+  my ( $req_rules, $forb_rules ) = get_config_rules($config);
+  my $results   = process_input( $req_rules, $forb_rules );
+  my @missing   = grep { !$results->{found_reqs}{ $_->{name} } } @$req_rules;
+  my @forb_hits = @{ $results->{found_forb} };
+
+  if ( @missing || @forb_hits ) {
+    my $fail_sub = $FAIL_STRATEGIES{ lc $format } // $FAIL_STRATEGIES{text};
+    $fail_sub->( \@missing, \@forb_hits, \%color );
+    return 1;
+  }
+
+  my $pass_key =
+    ( lc $format eq 'github' ) ? 'github' : ( $verbose ? 'verbose' : 'quiet' );
+  $PASS_STRATEGIES{$pass_key}->( $req_rules, $forb_rules, \%color );
+
+  return 0;
+}
+
+exit main();
