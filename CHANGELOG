@@ -5,6 +5,8 @@ Next
 - Incorporate some of Fonic's 10yrs old feedback.
 - Add type annotations, avoiding `Any` where possible.
 - Split monolithic code into modules.
+- Adopt `src` layout.
+- Move man page to a subdirectory.
 
 - Large infra refactoring (leaves program untouched).
 

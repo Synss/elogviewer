@@ -12,16 +12,10 @@ from typing import Protocol
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
+from .__version__ import __version__
 from .eclass import EClass
 from .elog import Elog
 from .uimodel import Column, ElogItem, Model, Role
-
-try:
-    from importlib.metadata import version as _version
-
-    __version__ = _version("elogviewer")
-except Exception:
-    __version__ = "unknown"
 
 Qt = QtCore.Qt
 

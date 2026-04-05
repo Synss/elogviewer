@@ -1,6 +1,7 @@
 ._DS_Store
 .direnv/
 *.pyc
+build/
 .cache/
 .vagrant
 roles/gentoo_base/junit/
