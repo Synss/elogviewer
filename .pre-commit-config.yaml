@@ -8,6 +8,11 @@ repos:
       - id: check-yaml
         args: [--unsafe]  # allow custom YAML tags used by Ansible
 
+  - repo: https://github.com/instrumentl/pre-commit-just
+    rev: 'main'
+    hooks:
+      - id: format-justfile
+
   - repo: local
     hooks:
       - id: ruff-format
