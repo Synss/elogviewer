@@ -1,3 +1,4 @@
+[private]
 _just := just_executable()
 
 default:
@@ -19,7 +20,7 @@ test: qa
     uv run pytest
 
 _build-path type:
-    @uv build --{{type}} 2>&1 | perl -ne 'print $1 if /Successfully built\s+(.+)/'
+    @uv build --{{ type }} 2>&1 | perl -ne 'print $1 if /Successfully built\s+(.+)/'
 
 @list-whl:
     unzip -Z1 $({{ _just }} _build-path wheel)
@@ -50,4 +51,4 @@ vm-destroy:
     vagrant -f destroy
 
 vm-ssh: vm-start
-	vagrant ssh
+    vagrant ssh
