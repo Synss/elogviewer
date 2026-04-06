@@ -18,7 +18,7 @@ jobs:
       security-events: write
     strategy:
       matrix:
-        artefact: ['list-whl', 'list-tar']
+        artefact: ['wheel', 'sdist']
       fail-fast: false
     steps:
       - uses: actions/checkout@v6
@@ -34,7 +34,7 @@ jobs:
           install-modules-args: --cpanfile ./scripts/check-artefacts.cpan
       - name: Run check-artefacts for ${{ matrix.artefact }}
         run: >-
-          just ${{ matrix.artefact }}
+          just list-${{ matrix.artefact }}
           | ./scripts/check-artefacts --format github
           --config ./scripts/check-artefacts.yml -
 

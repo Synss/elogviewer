@@ -22,10 +22,10 @@ test: qa
 _build-path type:
     @uv build --{{ type }} 2>&1 | perl -ne 'print $1 if /Successfully built\s+(.+)/'
 
-@list-whl:
+@list-wheel:
     unzip -Z1 $({{ _just }} _build-path wheel)
 
-@list-tar:
+@list-sdist:
     tar --list -f $({{ _just }} _build-path sdist)
 
 vm-test:
