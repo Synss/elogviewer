@@ -36,6 +36,10 @@ lint = [
 test = ["pyfakefs", "pytest", "pytest-qt"]
 vm = ["ansible", "molecule", "molecule-docker", "passlib"]
 
+[tool.check-wheel-contents]
+toplevel = "elogviewer/"
+src_dir = "src/"
+
 [tool.hatch.version]
 path = "src/elogviewer/__version__.py"
 
