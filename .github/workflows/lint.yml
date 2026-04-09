@@ -32,6 +32,22 @@ jobs:
           sarif_file: ansible-lint.sarif
           category: ansible-lint
 
+  check-wheel-contents:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run check-wheel-contents
+        run: >-
+          uv build --wheel
+          && uv run --extra lint check-wheel-contents dist/
+
   ruff-format:
     runs-on: ubuntu-latest
     permissions:
