@@ -7,7 +7,7 @@ use feature 'signatures';
 no warnings 'experimental::signatures';
 
 use Getopt::Long qw(GetOptions);
-use YAML::XS     qw(LoadFile);
+use TOML::Tiny   qw(from_toml);
 
 my %FAIL_STRATEGIES = (
   text => sub ( $missing, $hits, $colors ) {
@@ -42,7 +42,10 @@ my %PASS_STRATEGIES = (
 );
 
 sub get_config_rules ($path) {
-  my $data  = LoadFile($path);
+  open my $fh, '<', $path;
+  my ( $toml, $err ) = from_toml( do { local $/; <$fh> } );
+  die "TOML parse error: $err\n" if $err;
+  my $data  = $toml->{tool}{'check-artefacts'};
   my $to_rx = sub ($name) { qr{(?:^|/)\Q$name\E$}i };
   my @req =
     map { { name => $_, rx => $to_rx->($_) } } @{ $data->{required} // [] };

@@ -31,12 +31,12 @@ jobs:
       - uses: shogo82148/actions-setup-perl@v1
         with:
           install-modules-with: cpm
-          install-modules-args: --cpanfile ./scripts/check-artefacts.cpan
+          install-modules: TOML::Tiny
       - name: Run check-artefacts for ${{ matrix.artefact }}
         run: >-
           just list-${{ matrix.artefact }}
           | ./scripts/check-artefacts --format github
-          --config ./scripts/check-artefacts.yml -
+          --config ./pyproject.toml -
 
   all-checks:
     if: ${{ !cancelled() }}
