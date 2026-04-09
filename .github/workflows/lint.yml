@@ -112,7 +112,13 @@ jobs:
 
   all-checks:
     if: ${{ !cancelled() }}
-    needs: [ansible-lint, ruff-format, ruff-lint, ty, yamllint]
+    needs:
+      - ansible-lint
+      - check-wheel-contents
+      - ruff-format
+      - ruff-lint
+      - ty
+      - yamllint
     runs-on: ubuntu-latest
     permissions: {}
     steps:
