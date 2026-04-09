@@ -36,6 +36,10 @@ lint = [
 test = ["pyfakefs", "pytest", "pytest-qt"]
 vm = ["ansible", "molecule", "molecule-docker", "passlib"]
 
+[tool.check-artefacts]
+required = ["elogviewer.1", "README.md", "LICENSE.TXT", "py.typed"]
+forbidden = ["uv.lock", "dist/", "build/", "inventory/", "junit/", "role/"]
+
 [tool.check-wheel-contents]
 toplevel = "elogviewer/"
 src_dir = "src/"
