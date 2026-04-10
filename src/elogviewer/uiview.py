@@ -15,7 +15,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from .__version__ import __version__
 from .eclass import EClass
 from .elog import Elog
-from .uimodel import Column, ElogModelItem, Model, Role
+from .uimodel import Column, ElogModelItem, ImportantState, Model, ReadState, Role
 
 Qt = QtCore.Qt
 
@@ -89,9 +89,7 @@ class ReadFontStyleDelegate(QtWidgets.QStyledItemDelegate):
         if not index.isValid():
             return
         self.initStyleOption(option, index)
-        option.font.setBold(
-            _itemFromIndex(index).readState() == Qt.CheckState.Unchecked,
-        )
+        option.font.setBold(not _itemFromIndex(index).isReadState())
         super().paint(painter, option, index)
 
 
@@ -459,10 +457,10 @@ class Elogviewer(ElogviewerUi):
         readFlag = set()
         importantFlag = set()
         for row in range(self.model.rowCount()):
-            item = self.model.item(row, Column.ReadState)
-            if item.readState() == Qt.CheckState.Checked:
+            item = self.model.item(row)
+            if item.isReadState():
                 readFlag.add(item.filename())
-            if item.importantState() == Qt.CheckState.Checked:
+            if item.isImportantState():
                 importantFlag.add(item.filename())
         self.settings.setValue("readFlag", readFlag)
         self.settings.setValue("importantFlag", importantFlag)
@@ -586,14 +584,14 @@ class Elogviewer(ElogviewerUi):
         ):
             item = ElogModelItem(Elog.fromFilename(filename))
             item.setReadState(
-                Qt.CheckState.Checked
+                ReadState(True)
                 if filename in self.settings.value("readFlag")
-                else Qt.CheckState.Unchecked,
+                else ReadState(False),
             )
             item.setImportantState(
-                Qt.CheckState.Checked
+                ImportantState(True)
                 if filename in self.settings.value("importantFlag")
-                else Qt.CheckState.Unchecked,
+                else ImportantState(False),
             )
             self.model.appendItem(item)
         self.model.endResetModel()

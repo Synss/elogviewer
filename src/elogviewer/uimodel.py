@@ -3,6 +3,7 @@
 import enum
 import os
 import time
+from typing import NewType
 
 from PyQt6 import QtCore
 
@@ -11,6 +12,9 @@ from .elog import Elog
 from .parser import ColorStrategy, ParserFSM
 
 Qt = QtCore.Qt
+
+ReadState = NewType("ReadState", bool)
+ImportantState = NewType("ImportantState", bool)
 
 
 def makeHtml(elog: Elog, *, colorStrategy: ColorStrategy) -> str:
@@ -38,8 +42,8 @@ class ElogModelItem:
     def __init__(
         self,
         elog: Elog,
-        readState: Qt.CheckState = Qt.CheckState.Unchecked,
-        importantState: Qt.CheckState = Qt.CheckState.Unchecked,
+        readState: ReadState = ReadState(False),
+        importantState: ImportantState = ImportantState(False),
     ) -> None:
         self._elog = elog
         self._readState = readState
@@ -63,34 +67,30 @@ class ElogModelItem:
     def eclass(self) -> EClass:
         return self._elog.eclass
 
-    def readState(self) -> Qt.CheckState:
+    def readState(self) -> ReadState:
         return self._readState
 
-    def setReadState(self, state: Qt.CheckState) -> None:
+    def setReadState(self, state: ReadState) -> None:
         self._readState = state
 
     def isReadState(self) -> bool:
-        return self.readState() == Qt.CheckState.Checked
+        return self.readState() == ReadState(True)
 
     def toggleReadState(self) -> None:
-        self.setReadState(
-            Qt.CheckState.Unchecked if self.isReadState() else Qt.CheckState.Checked,
-        )
+        self.setReadState(ReadState(False) if self.isReadState() else ReadState(True))
 
-    def importantState(self) -> Qt.CheckState:
+    def importantState(self) -> ImportantState:
         return self._importantState
 
-    def setImportantState(self, state: Qt.CheckState) -> None:
+    def setImportantState(self, state: ImportantState) -> None:
         self._importantState = state
 
     def isImportantState(self) -> bool:
-        return self.importantState() == Qt.CheckState.Checked
+        return self.importantState() == ImportantState(True)
 
     def toggleImportantState(self) -> None:
         self.setImportantState(
-            Qt.CheckState.Unchecked
-            if self.isImportantState()
-            else Qt.CheckState.Checked,
+            ImportantState(False) if self.isImportantState() else ImportantState(True)
         )
 
     def html(self, *, colorStrategy: ColorStrategy) -> str:
@@ -104,7 +104,11 @@ class Model(QtCore.QAbstractTableModel):
         self._data: list[ElogModelItem] = []  # A list of ElogModelItem.
 
     def importantState(self, index: QtCore.QModelIndex) -> Qt.CheckState:
-        return self.itemFromIndex(index).importantState()
+        return (
+            Qt.CheckState.Checked
+            if self.itemFromIndex(index).importantState()
+            else Qt.CheckState.Unchecked
+        )
 
     def setImportantState(
         self,
@@ -113,7 +117,11 @@ class Model(QtCore.QAbstractTableModel):
     ) -> bool:
         if index.column() != Column.ImportantState:
             return False
-        self.itemFromIndex(index).setImportantState(state)
+        self.itemFromIndex(index).setImportantState(
+            ImportantState(True)
+            if state is Qt.CheckState.Checked
+            else ImportantState(False)
+        )
         self.dataChanged.emit(index, index)
         return True
 
@@ -128,12 +136,18 @@ class Model(QtCore.QAbstractTableModel):
         )
 
     def readState(self, index: QtCore.QModelIndex) -> Qt.CheckState:
-        return self.itemFromIndex(index).readState()
+        return (
+            Qt.CheckState.Checked
+            if self.itemFromIndex(index).readState()
+            else Qt.CheckState.Unchecked
+        )
 
     def setReadState(self, index: QtCore.QModelIndex, state: Qt.CheckState) -> bool:
         if index.column() != Column.ReadState:
             return False
-        self.itemFromIndex(index).setReadState(state)
+        self.itemFromIndex(index).setReadState(
+            ReadState(True) if state is Qt.CheckState.Checked else ReadState(False)
+        )
         self.dataChanged.emit(
             self.index(index.row(), 0, index.parent()),
             self.index(index.row(), self.columnCount() - 1, index.parent()),
