@@ -214,6 +214,14 @@ class Model(QtCore.QAbstractTableModel):
             return super().flags(index) | Qt.ItemFlag.ItemIsEditable
         return super().flags(index)
 
+    def save(self, settings: StateStore) -> None:
+        settings.saveRead(
+            frozenset(item.filename() for item in self._data if item.isReadState())
+        )
+        settings.saveImportant(
+            frozenset(item.filename() for item in self._data if item.isImportantState())
+        )
+
     def populate(self, filenames: Iterable[Path], *, settings: StateStore) -> None:
         self.removeRows(0, self.rowCount())
         self.beginResetModel()

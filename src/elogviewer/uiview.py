@@ -483,16 +483,7 @@ class Elogviewer(ElogviewerUi):
         self.tableView.selectRow(0)
 
     def saveSettings(self) -> None:
-        readFlag = set()
-        importantFlag = set()
-        for row in range(self.model.rowCount()):
-            item = self.model.item(row)
-            if item.isReadState():
-                readFlag.add(item.filename())
-            if item.isImportantState():
-                importantFlag.add(item.filename())
-        self.settings.setValue("readFlag", readFlag)
-        self.settings.setValue("importantFlag", importantFlag)
+        self.model.save(StateStore(self.settings))
         hdr = self.tableView.horizontalHeader()
         assert hdr is not None
         self.settings.setValue("sortColumn", hdr.sortIndicatorSection())
