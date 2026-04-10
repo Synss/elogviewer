@@ -169,7 +169,7 @@ class TestElogClass:
         elogPath: Path,
         elogFile: FakeElog,
     ) -> None:
-        assert elogClassInstance.filename == str(elogPath / elogFile.fileName)
+        assert elogClassInstance.filename == elogPath / elogFile.fileName
 
     def testContents(self, elogClassInstance: Elog, elogFile: FakeElog) -> None:
         assert elogClassInstance.contents == elogFile.content
@@ -257,6 +257,7 @@ class TestUI:
         elogviewer = Elogviewer(Config(elogpath=elogPath))
         elogviewer.populate()
         qtbot.addWidget(elogviewer)
+        qtbot.wait(150)  # consume QTimer.singleShot(100) while pyfakefs is active
         yield elogviewer
         qtmodeltester.check(elogviewer.model)
         qtbot.keyClick(

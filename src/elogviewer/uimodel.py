@@ -5,6 +5,7 @@ import io
 import time
 from collections.abc import Iterable
 from contextlib import AbstractContextManager, closing
+from pathlib import Path
 from typing import IO, NewType
 
 from PyQt6 import QtCore
@@ -42,7 +43,7 @@ class ElogModelItem:
         self._readState = readState
         self._importantState = importantState
 
-    def filename(self) -> str:
+    def filename(self) -> Path:
         return self._elog.filename
 
     def category(self) -> str:
@@ -206,7 +207,9 @@ class Model(QtCore.QAbstractTableModel):
             return super().flags(index) | Qt.ItemFlag.ItemIsEditable
         return super().flags(index)
 
-    def populate(self, filenames: Iterable[str], *, settings: QtCore.QSettings) -> None:
+    def populate(
+        self, filenames: Iterable[Path], *, settings: QtCore.QSettings
+    ) -> None:
         self.removeRows(0, self.rowCount())
         self.beginResetModel()
         for filename in filenames:

@@ -6,11 +6,11 @@ import bz2
 import gzip
 import io
 import logging
-import os
 import re
 import time
 from contextlib import AbstractContextManager, closing
 from dataclasses import dataclass
+from pathlib import Path
 from typing import IO
 
 from .eclass import EClass
@@ -18,8 +18,8 @@ from .eclass import EClass
 _LOGGER = logging.getLogger("elogviewer")
 
 
-def _open(filename: str) -> AbstractContextManager[IO[str]]:
-    _, ext = os.path.splitext(filename)
+def _open(filename: Path) -> AbstractContextManager[IO[str]]:
+    ext = filename.suffix
     try:
         return {".gz": gzip.open, ".bz2": bz2.open, ".log": open}[ext](
             filename,
@@ -62,7 +62,7 @@ def _open(filename: str) -> AbstractContextManager[IO[str]]:
 
 @dataclass(frozen=True)
 class Elog:
-    filename: str
+    filename: Path
     category: str
     package: str
     date: time.struct_time
@@ -81,17 +81,14 @@ class Elog:
     )
 
     @classmethod
-    def fromFilename(cls, filename: str | os.PathLike[str]) -> Elog:
-        filename = os.fspath(filename)
+    def fromFilename(cls, filename: Path) -> Elog:
         _LOGGER.debug(filename)
-        basename = os.path.basename(filename)
         try:
-            category, package, rest = basename.split(":")
+            category, package, rest = filename.name.split(":")
         except ValueError:
-            category = os.path.dirname(filename).split(os.sep)[-1]
-            package, rest = basename.split(":")
-        date = rest.split(".")[0]
-        date = time.strptime(date, "%Y%m%d-%H%M%S")
+            category = filename.parent.name
+            package, rest = filename.name.split(":")
+        date = time.strptime(rest.split(".")[0], "%Y%m%d-%H%M%S")
         with _open(filename) as f:
             contents = f.read()
         return cls(filename, category, package, date, cls.getClass(contents), contents)

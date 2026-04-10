@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import glob
 import itertools
-import os
 from contextlib import AbstractContextManager, suppress
 from functools import partial
 from math import cos, sin
+from pathlib import Path
 from typing import IO, Protocol
 
 from PyQt6 import QtCore, QtGui, QtWidgets
@@ -41,7 +41,7 @@ def makeHtml(
     with ParserFSM(parsed, colorStrategy=colorStrategy) as parser, file as f:
         for line in f:
             parser.parse(line)
-    return os.linesep.join(_ for _ in parsed if _ is not None)
+    return "\n".join(_ for _ in parsed if _ is not None)
 
 
 def eclassColor(eclass: EClass) -> tuple[int, int, int]:
@@ -294,7 +294,7 @@ class ElogviewerUi(QtWidgets.QMainWindow):
 
 class _Config(Protocol):
     @property
-    def elogpath(self) -> str | os.PathLike[str]: ...
+    def elogpath(self) -> Path: ...
 
 
 class Elogviewer(ElogviewerUi):
@@ -569,8 +569,8 @@ class Elogviewer(ElogviewerUi):
         try:
             for index in reversed(selection):
                 filename = self.model.itemFromIndex(index).filename()
-                if os.path.exists(filename):
-                    os.remove(filename)
+                if filename.exists():
+                    filename.unlink()
                 self.model.removeRow(index.row())
         except OSError as exc:
             QtWidgets.QMessageBox.critical(
@@ -589,9 +589,12 @@ class Elogviewer(ElogviewerUi):
         assert sm is not None
         sm.reset()
         self.model.populate(
-            itertools.chain(
-                glob.iglob(os.path.join(self.config.elogpath, "*:*:*.log*")),
-                glob.iglob(os.path.join(self.config.elogpath, "*", "*:*.log*")),
+            (
+                Path(f)
+                for f in itertools.chain(
+                    glob.iglob(str(self.config.elogpath / "*:*:*.log*")),
+                    glob.iglob(str(self.config.elogpath / "*" / "*:*.log*")),
+                )
             ),
             settings=self.settings,
         )
