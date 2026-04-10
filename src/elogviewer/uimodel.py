@@ -6,7 +6,7 @@ import time
 from collections.abc import Iterable
 from contextlib import AbstractContextManager, closing
 from pathlib import Path
-from typing import IO, NewType
+from typing import IO, NewType, Protocol
 
 from PyQt6 import QtCore
 
@@ -89,6 +89,13 @@ class ElogModelItem:
 
     def file(self) -> AbstractContextManager[IO[str]]:
         return closing(io.StringIO(self._elog.contents))
+
+
+class StateStore(Protocol):
+    def loadRead(self) -> frozenset[Path]: ...
+    def loadImportant(self) -> frozenset[Path]: ...
+    def saveRead(self, names: frozenset[Path]) -> None: ...
+    def saveImportant(self, names: frozenset[Path]) -> None: ...
 
 
 class Model(QtCore.QAbstractTableModel):
@@ -207,21 +214,19 @@ class Model(QtCore.QAbstractTableModel):
             return super().flags(index) | Qt.ItemFlag.ItemIsEditable
         return super().flags(index)
 
-    def populate(
-        self, filenames: Iterable[Path], *, settings: QtCore.QSettings
-    ) -> None:
+    def populate(self, filenames: Iterable[Path], *, settings: StateStore) -> None:
         self.removeRows(0, self.rowCount())
         self.beginResetModel()
         for filename in filenames:
             item = ElogModelItem(Elog.fromFilename(filename))
             item.setReadState(
                 ReadState(True)
-                if filename in settings.value("readFlag")
+                if filename in settings.loadRead()
                 else ReadState(False),
             )
             item.setImportantState(
                 ImportantState(True)
-                if filename in settings.value("importantFlag")
+                if filename in settings.loadImportant()
                 else ImportantState(False),
             )
             self.appendItem(item)

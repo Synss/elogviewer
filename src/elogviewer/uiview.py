@@ -8,7 +8,7 @@ from contextlib import AbstractContextManager, suppress
 from functools import partial
 from math import cos, sin
 from pathlib import Path
-from typing import IO, Protocol
+from typing import IO, Final, Protocol
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
@@ -250,6 +250,23 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
             self.commitData.emit(self._btn)
             return True
         return False
+
+
+class StateStore:
+    def __init__(self, settings: QtCore.QSettings) -> None:
+        self.settings: Final = settings
+
+    def loadRead(self) -> frozenset[Path]:
+        return frozenset(Path(p) for p in self.settings.value("readFlag"))
+
+    def loadImportant(self) -> frozenset[Path]:
+        return frozenset(Path(p) for p in self.settings.value("importantFlag"))
+
+    def saveRead(self, names: frozenset[Path]) -> None:
+        self.settings.setValue("readFlag", frozenset(str(p) for p in names))
+
+    def saveImportant(self, names: frozenset[Path]) -> None:
+        self.settings.setValue("importantFlag", frozenset(str(p) for p in names))
 
 
 class ElogviewerUi(QtWidgets.QMainWindow):
@@ -596,6 +613,6 @@ class Elogviewer(ElogviewerUi):
                     glob.iglob(str(self.config.elogpath / "*" / "*:*.log*")),
                 )
             ),
-            settings=self.settings,
+            settings=StateStore(self.settings),
         )
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
