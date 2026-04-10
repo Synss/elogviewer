@@ -26,6 +26,19 @@
     package: app-portage/gentoolkit
     state: present
 
+- name: "Ensure /etc/portage/profile directory exists"
+  ansible.builtin.file:
+    path: /etc/portage/profile
+    state: directory
+    mode: "0755"
+
+- name: "Drop moved packages from @system profile"
+  ansible.builtin.copy:
+    dest: /etc/portage/profile/packages
+    content: "{{ gentoo_system_profile_packages | join('\n') }}\n"
+    mode: "0644"
+  when: gentoo_system_profile_packages | default([]) | length > 0
+
 - name: "Update system"
   ansible.builtin.import_tasks: "update_system.yml"
 
