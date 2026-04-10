@@ -21,10 +21,17 @@
 - name: "Upload cache"
   ansible.builtin.import_tasks: "upload_cache.yml"
 
-- name: Install `equery` (for portage module)
-  community.general.portage:
-    package: app-portage/gentoolkit
-    state: present
+- name: "Gather package facts"
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: "Install `equery` (for portage module)"
+  become: true
+  ansible.builtin.command: /usr/bin/emerge app-portage/gentoolkit
+  environment:
+    PYTHON_TARGETS: "{{ python_single_target }}"
+  when: "'app-portage/gentoolkit' not in ansible_facts.packages"
+  changed_when: true
 
 - name: "Ensure /etc/portage/profile directory exists"
   ansible.builtin.file:
