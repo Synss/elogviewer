@@ -1,4 +1,6 @@
 ---
+ansible_python_interpreter: /usr/bin/python3.13
+
 gentoo_cache_binpkgs: .cache/vagrant/binpkgs
 gentoo_cache_distfiles: .cache/distfiles
 
