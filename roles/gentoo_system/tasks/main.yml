@@ -33,6 +33,19 @@
   when: "'app-portage/gentoolkit' not in ansible_facts.packages"
   changed_when: true
 
+- name: "Ensure /etc/portage/package.mask directory exists"
+  ansible.builtin.file:
+    path: /etc/portage/package.mask
+    state: directory
+    mode: "0755"
+
+- name: "Mask ebuilds broken by portage 3.x strict USE checking"
+  ansible.builtin.copy:
+    dest: /etc/portage/package.mask/broken-ebuilds
+    content: "{{ gentoo_system_masked_packages | join('\n') }}\n"
+    mode: "0644"
+  when: gentoo_system_masked_packages | default([]) | length > 0
+
 - name: "Ensure /etc/portage/profile directory exists"
   ansible.builtin.file:
     path: /etc/portage/profile
