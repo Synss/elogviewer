@@ -1,4 +1,12 @@
 ---
+# Ebuilds that call `use kernel_Hurd` (or similar flags absent from their
+# IUSE) and therefore fail under portage 3.0.77+'s strict USE checking.
+# Override in group_vars/host_vars to add or remove entries as the tree
+# ships fixed revisions.
+gentoo_system_masked_packages:
+  - "=sys-apps/sysvinit-3.15"
+  - "=sys-apps/openrc-0.63-r1"
+
 # Profile package overrides written to /etc/portage/profile/packages.
 # Use the standard /etc/portage/profile/packages atom syntax, e.g. "-*cat/pkg"
 # to remove an atom from @system.  Override per host/group as the tree is fixed.
