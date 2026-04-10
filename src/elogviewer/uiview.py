@@ -5,16 +5,17 @@ from __future__ import annotations
 import glob
 import itertools
 import os
-from contextlib import suppress
+from contextlib import AbstractContextManager, suppress
 from functools import partial
 from math import cos, sin
-from typing import Protocol
+from typing import IO, Protocol
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from .__version__ import __version__
 from .eclass import EClass
 from .elog import Elog
+from .parser import ColorStrategy, ParserFSM
 from .uimodel import Column, ElogModelItem, ImportantState, Model, ReadState, Role
 
 Qt = QtCore.Qt
@@ -32,6 +33,16 @@ def _itemFromIndex(index: QtCore.QModelIndex) -> ElogModelItem:
     model = _sourceIndex(index).model()
     assert isinstance(model, Model)
     return model.itemFromIndex(index)
+
+
+def makeHtml(
+    file: AbstractContextManager[IO[str]], *, colorStrategy: ColorStrategy
+) -> str:
+    parsed = []
+    with ParserFSM(parsed, colorStrategy=colorStrategy) as parser, file as f:
+        for line in f:
+            parser.parse(line)
+    return os.linesep.join(_ for _ in parsed if _ is not None)
 
 
 def eclassColor(eclass: EClass) -> tuple[int, int, int]:
@@ -57,7 +68,9 @@ class TextToHtmlDelegate(QtWidgets.QItemDelegate):
             return
         model = index.model()
         assert isinstance(model, Model)
-        editor.setHtml(model.itemFromIndex(index).html(colorStrategy=eclassColor))
+        item = model.itemFromIndex(index)
+        header = f"<h2>{item.category()}/{item.package()}</h2>"
+        editor.setHtml(header + makeHtml(item.file(), colorStrategy=eclassColor))
 
 
 class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
