@@ -1,20 +1,11 @@
 ---
 - name: Update @system
   block:
-    - name: Update system
-      community.general.portage:
-        package: "@system"
-        update: true
-        deep: true
-        changed_use: true
-      register: gentoo_system_update_system
-      changed_when: false
-
     - name: Detect system Python version
       ansible.builtin.command:
         cmd: >-
-          python3 -c
-          "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
+          {{ ansible_python_interpreter }}
+          -c "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
       register: _gentoo_system_python_detected
       changed_when: false
       when: gentoo_manage_python_targets | default(true)
@@ -39,6 +30,29 @@
         state: absent
       when: not gentoo_manage_python_targets | default(true)
 
+    - name: Rebuild python-exec with updated PYTHON_TARGETS
+      community.general.portage:
+        package: dev-lang/python-exec
+        oneshot: true
+        newuse: true
+      changed_when: false
+
+    - name: Update system
+      ansible.builtin.command: >-
+        /usr/bin/emerge --update --deep --changed-use --noreplace --ask=n
+        --ignore-built-slot-operator-deps=y
+        @system
+      register: gentoo_system_update_system
+      changed_when: false
+      failed_when: gentoo_system_update_system.rc != 0
+
+    - name: Rebuild packages broken by slot changes
+      community.general.portage:
+        package: "@preserved-rebuild"
+        state: present
+      changed_when: false
+      failed_when: false
+
     - name: Rebuild system with Python targets
       community.general.portage:
         package: "@system"
@@ -51,7 +65,7 @@
     - name: Report cache hits [system]
       ansible.builtin.include_tasks: report_cache_hits.yml
       vars:
-        _output: "{{ gentoo_system_update_system.msg }}"
+        _output: "{{ gentoo_system_update_system.stdout }}"
 
     - name: Report cache hits [system rebuild]
       ansible.builtin.include_tasks: report_cache_hits.yml
@@ -77,5 +91,5 @@
     msg: "Kernel update detected, requesting reboot"
   when:
     - gentoo_allow_reboot | default(true)
-    - gentoo_system_update_system.msg is search('sys-kernel/')
+    - gentoo_system_update_system.stdout is search('sys-kernel/')
   notify: Reboot system
