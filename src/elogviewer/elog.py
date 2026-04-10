@@ -18,6 +18,48 @@ from .eclass import EClass
 _LOGGER = logging.getLogger("elogviewer")
 
 
+def _open(filename: str) -> AbstractContextManager[IO[str]]:
+    _, ext = os.path.splitext(filename)
+    try:
+        return {".gz": gzip.open, ".bz2": bz2.open, ".log": open}[ext](
+            filename,
+            "rt",
+        )
+    except KeyError:
+        _LOGGER.error("%s: unsupported format", filename)
+        return closing(
+            io.StringIO(
+                """
+                <!-- set eclass: ERROR: -->
+                <h3>Unsupported format</h3>
+                The selected elog is in an unsupported format.
+                """,
+            ),
+        )
+    except FileNotFoundError:
+        _LOGGER.error("%s: file not found", filename)
+        return closing(
+            io.StringIO(
+                """
+                <!-- set eclass: ERROR: -->
+                <h3>File not found</h3>
+                The selected elog could does not exist on the filesystem.
+                """,
+            ),
+        )
+    except OSError:
+        _LOGGER.error("%s: could not open file", filename)
+        return closing(
+            io.StringIO(
+                """
+                <!-- set eclass: ERROR: -->
+                <h3>File does not open</h3>
+                The selected elog could not be opened.
+                """,
+            ),
+        )
+
+
 @dataclass(frozen=True)
 class Elog:
     filename: str
@@ -25,6 +67,7 @@ class Elog:
     package: str
     date: time.struct_time
     eclass: EClass
+    contents: str
 
     HeaderPattern = re.compile(
         r"({}):\s+(\S+)".format("|".join(_.value for _ in EClass)),
@@ -36,53 +79,6 @@ class Elog:
         r"([a-z0-9]+-[a-z0-9]+/[a-z0-9]+)-([0-9.]+)",
         re.IGNORECASE,
     )
-
-    @staticmethod
-    def __file(filename: str) -> AbstractContextManager[IO[str]]:
-        # Static so that it may be called *before* instantiation.
-        _, ext = os.path.splitext(filename)
-        try:
-            return {".gz": gzip.open, ".bz2": bz2.open, ".log": open}[ext](
-                filename,
-                "rt",
-            )
-        except KeyError:
-            _LOGGER.error("%s: unsupported format", filename)
-            return closing(
-                io.StringIO(
-                    """
-                    <!-- set eclass: ERROR: -->
-                    <h3>Unsupported format</h3>
-                    The selected elog is in an unsupported format.
-                    """,
-                ),
-            )
-        except FileNotFoundError:
-            _LOGGER.error("%s: file not found", filename)
-            return closing(
-                io.StringIO(
-                    """
-                    <!-- set eclass: ERROR: -->
-                    <h3>File not found</h3>
-                    The selected elog could does not exist on the filesystem.
-                    """,
-                ),
-            )
-        except OSError:
-            _LOGGER.error("%s: could not open file", filename)
-            return closing(
-                io.StringIO(
-                    """
-                    <!-- set eclass: ERROR: -->
-                    <h3>File does not open</h3>
-                    The selected elog could not be opened.
-                    """,
-                ),
-            )
-
-    @property
-    def file(self) -> AbstractContextManager[IO[str]]:
-        return self.__file(self.filename)
 
     @classmethod
     def fromFilename(cls, filename: str | os.PathLike[str]) -> Elog:
@@ -96,9 +92,9 @@ class Elog:
             package, rest = basename.split(":")
         date = rest.split(".")[0]
         date = time.strptime(date, "%Y%m%d-%H%M%S")
-        with cls.__file(filename) as elogFile:
-            eclass = cls.getClass(elogFile.read())
-        return cls(filename, category, package, date, eclass)
+        with _open(filename) as f:
+            contents = f.read()
+        return cls(filename, category, package, date, cls.getClass(contents), contents)
 
     @classmethod
     def getClass(cls, elogBody: str) -> EClass:
@@ -109,8 +105,3 @@ class Elog:
                 return eClass
         _LOGGER.error("elog has no identifiable eclass")
         return EClass.Log
-
-    @property
-    def contents(self) -> str:
-        with self.file as file:
-            return file.read()
