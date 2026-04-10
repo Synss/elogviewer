@@ -14,9 +14,8 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 from .__version__ import __version__
 from .eclass import EClass
-from .elog import Elog
 from .parser import ColorStrategy, ParserFSM
-from .uimodel import Column, ElogModelItem, ImportantState, Model, ReadState, Role
+from .uimodel import Column, ElogModelItem, Model, Role
 
 Qt = QtCore.Qt
 
@@ -589,23 +588,11 @@ class Elogviewer(ElogviewerUi):
         sm = self.tableView.selectionModel()
         assert sm is not None
         sm.reset()
-        self.model.removeRows(0, self.model.rowCount())
-        self.model.beginResetModel()
-        for filename in itertools.chain(
-            glob.iglob(os.path.join(self.config.elogpath, "*:*:*.log*")),
-            glob.iglob(os.path.join(self.config.elogpath, "*", "*:*.log*")),
-        ):
-            item = ElogModelItem(Elog.fromFilename(filename))
-            item.setReadState(
-                ReadState(True)
-                if filename in self.settings.value("readFlag")
-                else ReadState(False),
-            )
-            item.setImportantState(
-                ImportantState(True)
-                if filename in self.settings.value("importantFlag")
-                else ImportantState(False),
-            )
-            self.model.appendItem(item)
-        self.model.endResetModel()
+        self.model.populate(
+            itertools.chain(
+                glob.iglob(os.path.join(self.config.elogpath, "*:*:*.log*")),
+                glob.iglob(os.path.join(self.config.elogpath, "*", "*:*.log*")),
+            ),
+            settings=self.settings,
+        )
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
