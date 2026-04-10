@@ -175,6 +175,26 @@ class Model(QtCore.QAbstractTableModel):
     def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return len(self._data)
 
+    def elogCount(self) -> int:
+        return self.rowCount()
+
+    def readCount(self) -> int:
+        count = 0
+        for row in range(self.rowCount()):
+            if self.item(row).isReadState():
+                count += 1
+        return count
+
+    def unreadCount(self) -> int:
+        return self.elogCount() - self.readCount()
+
+    def importantCount(self) -> int:
+        count = 0
+        for row in range(self.rowCount()):
+            if self.item(row).isImportantState():
+                count += 1
+        return count
+
     def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return len(Column)
 

@@ -267,25 +267,25 @@ class TestUI:
         )
         qtbot.mouseClick(elogviewer.markUnreadButton, Qt.MouseButton.LeftButton)
         qtbot.mouseClick(elogviewer.toggleImportantButton, Qt.MouseButton.LeftButton)
-        if elogviewer.importantCount():
+        if elogviewer.model.importantCount():
             qtbot.mouseClick(
                 elogviewer.toggleImportantButton,
                 Qt.MouseButton.LeftButton,
             )
 
     def testHasElogs(self, elogviewer: Elogviewer, elogPath: Path) -> None:
-        assert elogviewer.elogCount() == _count(elogPath.glob("*.log")) > 0
+        assert elogviewer.model.elogCount() == _count(elogPath.glob("*.log")) > 0
 
     def testOneRead(self, elogviewer: Elogviewer, qtbot: QtBot) -> None:
-        assert elogviewer.readCount() == 0
+        assert elogviewer.model.readCount() == 0
 
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
         qtbot.mouseClick(elogviewer.markReadButton, Qt.MouseButton.LeftButton)
 
-        assert elogviewer.readCount() == 1
+        assert elogviewer.model.readCount() == 1
 
     def testAllRead(self, elogviewer: Elogviewer, qtbot: QtBot) -> None:
-        assert elogviewer.readCount() == 0
+        assert elogviewer.model.readCount() == 0
 
         qtbot.keyClick(
             elogviewer.tableView,
@@ -293,7 +293,7 @@ class TestUI:
             Qt.KeyboardModifier.ControlModifier,
         )
         qtbot.mouseClick(elogviewer.markReadButton, Qt.MouseButton.LeftButton)
-        assert elogviewer.readCount() == elogviewer.elogCount()
+        assert elogviewer.model.readCount() == elogviewer.model.elogCount()
 
     def testAllUnread(self, elogviewer: Elogviewer, qtbot: QtBot) -> None:
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
@@ -303,7 +303,7 @@ class TestUI:
             Qt.KeyboardModifier.ControlModifier,
         )
         qtbot.mouseClick(elogviewer.markReadButton, Qt.MouseButton.LeftButton)
-        assert elogviewer.readCount() == elogviewer.elogCount()
+        assert elogviewer.model.readCount() == elogviewer.model.elogCount()
 
         qtbot.keyClick(
             elogviewer.tableView,
@@ -311,18 +311,18 @@ class TestUI:
             Qt.KeyboardModifier.ControlModifier,
         )
         qtbot.mouseClick(elogviewer.markUnreadButton, Qt.MouseButton.LeftButton)
-        assert elogviewer.readCount() == 0
+        assert elogviewer.model.readCount() == 0
 
     def testOneImportant(self, elogviewer: Elogviewer, qtbot: QtBot) -> None:
-        assert elogviewer.importantCount() == 0
+        assert elogviewer.model.importantCount() == 0
 
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
         qtbot.mouseClick(elogviewer.toggleImportantButton, Qt.MouseButton.LeftButton)
 
-        assert elogviewer.importantCount() == 1
+        assert elogviewer.model.importantCount() == 1
 
     def testAllImportant(self, elogviewer: Elogviewer, qtbot: QtBot) -> None:
-        assert elogviewer.importantCount() == 0
+        assert elogviewer.model.importantCount() == 0
 
         qtbot.keyClick(
             elogviewer.tableView,
@@ -331,7 +331,7 @@ class TestUI:
         )
         qtbot.mouseClick(elogviewer.toggleImportantButton, Qt.MouseButton.LeftButton)
 
-        assert elogviewer.importantCount() == elogviewer.elogCount()
+        assert elogviewer.model.importantCount() == elogviewer.model.elogCount()
 
     @pytest.mark.skip
     def testRefreshButton(
@@ -340,7 +340,7 @@ class TestUI:
         elogPath: Path,
         qtbot: QtBot,
     ) -> None:
-        count = elogviewer.elogCount()
+        count = elogviewer.model.elogCount()
         qtbot.keyClick(
             elogviewer.tableView,
             Qt.Key.Key_A,
@@ -351,7 +351,7 @@ class TestUI:
         qtbot.mouseClick(elogviewer.refreshButton, Qt.MouseButton.LeftButton)
 
         assert _count(elogPath.glob("*.log")) == count
-        assert elogviewer.elogCount() == count
+        assert elogviewer.model.elogCount() == count
 
     def testDeleteOne(
         self,
@@ -360,12 +360,12 @@ class TestUI:
         qtbot: QtBot,
     ) -> None:
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
-        count = elogviewer.elogCount()
+        count = elogviewer.model.elogCount()
 
         qtbot.mouseClick(elogviewer.deleteButton, Qt.MouseButton.LeftButton)
 
-        assert elogviewer.elogCount() == count - 1
-        assert elogviewer.elogCount() == _count(elogPath.glob("*.log"))
+        assert elogviewer.model.elogCount() == count - 1
+        assert elogviewer.model.elogCount() == _count(elogPath.glob("*.log"))
 
     def testDeleteTwo(
         self,
@@ -374,13 +374,13 @@ class TestUI:
         qtbot: QtBot,
     ) -> None:
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
-        count = elogviewer.elogCount()
+        count = elogviewer.model.elogCount()
 
         qtbot.mouseClick(elogviewer.deleteButton, Qt.MouseButton.LeftButton)
         qtbot.mouseClick(elogviewer.deleteButton, Qt.MouseButton.LeftButton)
 
-        assert elogviewer.elogCount() == count - 2
-        assert elogviewer.elogCount() == _count(elogPath.glob("*.log"))
+        assert elogviewer.model.elogCount() == count - 2
+        assert elogviewer.model.elogCount() == _count(elogPath.glob("*.log"))
 
     def testDeleteAll(
         self,
@@ -395,7 +395,7 @@ class TestUI:
         )
         qtbot.mouseClick(elogviewer.deleteButton, Qt.MouseButton.LeftButton)
 
-        assert elogviewer.elogCount() == _count(elogPath.glob("*.log")) == 0
+        assert elogviewer.model.elogCount() == _count(elogPath.glob("*.log")) == 0
 
     def testDeleteAllPlusOne(
         self,
@@ -413,17 +413,17 @@ class TestUI:
 
         qtbot.mouseClick(elogviewer.deleteButton, Qt.MouseButton.LeftButton)
 
-        assert elogviewer.elogCount() == _count(elogPath.glob("*.log"))
+        assert elogviewer.model.elogCount() == _count(elogPath.glob("*.log"))
 
     def testDecreaseCountOnLeavingRow(
         self,
         elogviewer: Elogviewer,
         qtbot: QtBot,
     ) -> None:
-        readCount = elogviewer.readCount()
+        readCount = elogviewer.model.readCount()
         assert readCount == 0
 
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Down)
 
-        assert elogviewer.readCount() == readCount + 1
+        assert elogviewer.model.readCount() == readCount + 1
