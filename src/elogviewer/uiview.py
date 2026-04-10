@@ -507,11 +507,11 @@ class Elogviewer(ElogviewerUi):
         self.updateUnreadCount()
 
     def updateStatus(self) -> None:
-        text = "%i of %i elogs" % (self.currentRow() + 1, self.elogCount())
+        text = "%i of %i elogs" % (self.currentRow() + 1, self.model.elogCount())
         self.statusLabel.setText(text)
 
     def updateUnreadCount(self) -> None:
-        text = "%i unread" % self.unreadCount()
+        text = "%i unread" % self.model.unreadCount()
         self.unreadLabel.setText(text)
         self.setWindowTitle("Elogviewer (%s)" % text)
 
@@ -522,26 +522,6 @@ class Elogviewer(ElogviewerUi):
 
     def rowCount(self) -> int:
         return self.proxyModel.rowCount()
-
-    def elogCount(self) -> int:
-        return self.model.rowCount()
-
-    def readCount(self) -> int:
-        count = 0
-        for row in range(self.model.rowCount()):
-            if self.model.item(row).isReadState():
-                count += 1
-        return count
-
-    def unreadCount(self) -> int:
-        return self.elogCount() - self.readCount()
-
-    def importantCount(self) -> int:
-        count = 0
-        for row in range(self.model.rowCount()):
-            if self.model.item(row).isImportantState():
-                count += 1
-        return count
 
     def setSelectedReadState(self, state: Qt.CheckState) -> None:
         sm = self.tableView.selectionModel()
