@@ -245,18 +245,12 @@ class Model(QtCore.QAbstractTableModel):
     def populate(self, filenames: Iterable[Path], *, settings: StateStore) -> None:
         self.removeRows(0, self.rowCount())
         self.beginResetModel()
+        readNames = settings.loadRead()
+        importantNames = settings.loadImportant()
         for filename in filenames:
             item = ElogModelItem(Elog.fromFilename(filename))
-            item.setReadState(
-                ReadState(True)
-                if filename in settings.loadRead()
-                else ReadState(False),
-            )
-            item.setImportantState(
-                ImportantState(True)
-                if filename in settings.loadImportant()
-                else ImportantState(False),
-            )
+            item.setReadState(ReadState(filename in readNames))
+            item.setImportantState(ImportantState(filename in importantNames))
             self.appendItem(item)
         self.endResetModel()
 
