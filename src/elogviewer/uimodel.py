@@ -1,28 +1,19 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import enum
-import os
 import time
-from typing import NewType
+from contextlib import AbstractContextManager
+from typing import IO, NewType
 
 from PyQt6 import QtCore
 
 from .eclass import EClass
 from .elog import Elog
-from .parser import ColorStrategy, ParserFSM
 
 Qt = QtCore.Qt
 
 ReadState = NewType("ReadState", bool)
 ImportantState = NewType("ImportantState", bool)
-
-
-def makeHtml(elog: Elog, *, colorStrategy: ColorStrategy) -> str:
-    parsed = []
-    with ParserFSM(parsed, colorStrategy=colorStrategy) as parser, elog.file as file:
-        for line in file:
-            parser.parse(line)
-    return os.linesep.join(_ for _ in parsed if _ is not None)
 
 
 class Column(enum.IntEnum):
@@ -93,9 +84,8 @@ class ElogModelItem:
             ImportantState(False) if self.isImportantState() else ImportantState(True)
         )
 
-    def html(self, *, colorStrategy: ColorStrategy) -> str:
-        header = f"<h2>{self.category()}/{self.package()}</h2>"
-        return header + makeHtml(self._elog, colorStrategy=colorStrategy)
+    def file(self) -> AbstractContextManager[IO[str]]:
+        return self._elog.file
 
 
 class Model(QtCore.QAbstractTableModel):

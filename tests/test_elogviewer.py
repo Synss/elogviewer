@@ -23,8 +23,7 @@ from elogviewer.parser import (
     NoopState,
     ParserFSM,
 )
-from elogviewer.uimodel import makeHtml
-from elogviewer.uiview import Elogviewer, eclassColor
+from elogviewer.uiview import Elogviewer, eclassColor, makeHtml
 
 from . import fuzz as _fuzz
 
@@ -230,11 +229,11 @@ class TestElogClass:
         self,
         elogText: str,
         elogHtml: str,
-        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        monkeypatch.setattr(Elog, "file", closing(io.StringIO(elogText)))
-        elog = Elog("", "", "", time.gmtime(0), EClass.Log)
-        assert makeHtml(elog, colorStrategy=eclassColor) == elogHtml
+        assert (
+            makeHtml(closing(io.StringIO(elogText)), colorStrategy=eclassColor)
+            == elogHtml
+        )
 
 
 class TestUI:
