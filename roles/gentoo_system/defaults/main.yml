@@ -1,1 +1,7 @@
 ---
+# Profile package overrides written to /etc/portage/profile/packages.
+# Use the standard /etc/portage/profile/packages atom syntax, e.g. "-*cat/pkg"
+# to remove an atom from @system.  Override per host/group as the tree is fixed.
+gentoo_system_profile_packages:
+  # sys-devel/make was moved to dev-build/make; drop the old atom from @system.
+  - "-*sys-devel/make"
