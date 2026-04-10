@@ -3,6 +3,7 @@
 import enum
 import io
 import time
+from collections.abc import Iterable
 from contextlib import AbstractContextManager, closing
 from typing import IO, NewType
 
@@ -204,6 +205,24 @@ class Model(QtCore.QAbstractTableModel):
         if index.column() in (Column.ImportantState, Column.ReadState):
             return super().flags(index) | Qt.ItemFlag.ItemIsEditable
         return super().flags(index)
+
+    def populate(self, filenames: Iterable[str], *, settings: QtCore.QSettings) -> None:
+        self.removeRows(0, self.rowCount())
+        self.beginResetModel()
+        for filename in filenames:
+            item = ElogModelItem(Elog.fromFilename(filename))
+            item.setReadState(
+                ReadState(True)
+                if filename in settings.value("readFlag")
+                else ReadState(False),
+            )
+            item.setImportantState(
+                ImportantState(True)
+                if filename in settings.value("importantFlag")
+                else ImportantState(False),
+            )
+            self.appendItem(item)
+        self.endResetModel()
 
     def data(
         self,
