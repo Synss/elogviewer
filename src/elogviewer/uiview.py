@@ -14,8 +14,9 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 from .__version__ import __version__
 from .eclass import EClass
+from .model import Column, ElogModelItem
 from .parser import ColorStrategy, ParserFSM
-from .uimodel import Column, ElogModelItem, Model, Role
+from .uimodel import Model, Role
 
 Qt = QtCore.Qt
 
@@ -29,9 +30,10 @@ def _sourceIndex(index: QtCore.QModelIndex) -> QtCore.QModelIndex:
 
 def _itemFromIndex(index: QtCore.QModelIndex) -> ElogModelItem:
     assert index.isValid()
-    model = _sourceIndex(index).model()
+    sourceIndex = _sourceIndex(index)
+    model = sourceIndex.model()
     assert isinstance(model, Model)
-    return model.itemFromIndex(index)
+    return model.itemFromIndex(sourceIndex)
 
 
 def makeHtml(
@@ -212,7 +214,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
     ) -> None:
         assert painter is not None
         self._btn.setChecked(
-            index.data(role=Qt.ItemDataRole.CheckStateRole) == Qt.CheckState.Checked,
+            bool(index.data(role=Qt.ItemDataRole.CheckStateRole)),
         )
         self._btn.setGeometry(option.rect)
         if option.state & QtWidgets.QStyle.StateFlag.State_Selected:
