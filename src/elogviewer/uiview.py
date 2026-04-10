@@ -15,7 +15,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from .__version__ import __version__
 from .eclass import EClass
 from .elog import Elog
-from .uimodel import Column, ElogItem, Model, Role
+from .uimodel import Column, ElogModelItem, Model, Role
 
 Qt = QtCore.Qt
 
@@ -27,7 +27,7 @@ def _sourceIndex(index: QtCore.QModelIndex) -> QtCore.QModelIndex:
     return index
 
 
-def _itemFromIndex(index: QtCore.QModelIndex) -> ElogItem:
+def _itemFromIndex(index: QtCore.QModelIndex) -> ElogModelItem:
     assert index.isValid()
     model = _sourceIndex(index).model()
     assert isinstance(model, Model)
@@ -584,7 +584,7 @@ class Elogviewer(ElogviewerUi):
             glob.iglob(os.path.join(self.config.elogpath, "*:*:*.log*")),
             glob.iglob(os.path.join(self.config.elogpath, "*", "*:*.log*")),
         ):
-            item = ElogItem(Elog.fromFilename(filename))
+            item = ElogModelItem(Elog.fromFilename(filename))
             item.setReadState(
                 Qt.CheckState.Checked
                 if filename in self.settings.value("readFlag")

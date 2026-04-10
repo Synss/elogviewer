@@ -34,7 +34,7 @@ class Role(enum.IntEnum):
     SortRole = Qt.ItemDataRole.UserRole + 1
 
 
-class ElogItem:
+class ElogModelItem:
     def __init__(
         self,
         elog: Elog,
@@ -101,7 +101,7 @@ class ElogItem:
 class Model(QtCore.QAbstractTableModel):
     def __init__(self, parent: QtCore.QObject | None = None) -> None:
         super().__init__(parent)
-        self._data: list[ElogItem] = []  # A list of ElogItem.
+        self._data: list[ElogModelItem] = []  # A list of ElogModelItem.
 
     def importantState(self, index: QtCore.QModelIndex) -> Qt.CheckState:
         return self.itemFromIndex(index).importantState()
@@ -149,13 +149,13 @@ class Model(QtCore.QAbstractTableModel):
             else Qt.CheckState.Checked,
         )
 
-    def itemFromIndex(self, index: QtCore.QModelIndex) -> ElogItem:
+    def itemFromIndex(self, index: QtCore.QModelIndex) -> ElogModelItem:
         return self._data[index.row()]
 
-    def item(self, row: int, _column: int = 0) -> ElogItem:
+    def item(self, row: int, _column: int = 0) -> ElogModelItem:
         return self._data[row]
 
-    def appendItem(self, item: ElogItem) -> None:
+    def appendItem(self, item: ElogModelItem) -> None:
         self._data.append(item)
 
     def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
