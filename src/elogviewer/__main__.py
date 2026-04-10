@@ -2,8 +2,8 @@
 
 import argparse
 import logging
-import os
 import sys
+from pathlib import Path
 
 from PyQt6 import QtGui, QtWidgets
 
@@ -42,13 +42,15 @@ def main() -> None:
     if portage and not config.elogpath:
         logdir = portage.settings["PORT_LOGDIR"]  # type: ignore
         if not logdir:
-            logdir = os.path.join(
-                portage.settings["EPREFIX"] if portage.settings["EPREFIX"] else os.sep,  # type: ignore
-                "var",
-                "log",
-                "portage",
+            logdir = (
+                Path(portage.settings["EPREFIX"] or "/")  # type: ignore
+                / "var"
+                / "log"
+                / "portage"
             )
-        config.elogpath = os.path.join(logdir, "elog")
+        config.elogpath = Path(logdir) / "elog"
+    else:
+        config.elogpath = Path(config.elogpath)
 
     _LOGGER.debug("elogpath is set to %r", config.elogpath)
 
