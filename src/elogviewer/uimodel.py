@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import enum
+import io
 import time
-from contextlib import AbstractContextManager
+from contextlib import AbstractContextManager, closing
 from typing import IO, NewType
 
 from PyQt6 import QtCore
@@ -85,7 +86,7 @@ class ElogModelItem:
         )
 
     def file(self) -> AbstractContextManager[IO[str]]:
-        return self._elog.file
+        return closing(io.StringIO(self._elog.contents))
 
 
 class Model(QtCore.QAbstractTableModel):
