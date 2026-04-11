@@ -249,7 +249,6 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         ):
             self._btn.toggle()
             self.setModelData(self._btn, model, index)
-            self.commitData.emit(self._btn)
             return True
         return False
 
