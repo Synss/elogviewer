@@ -465,22 +465,43 @@ class Elogviewer(ElogviewerUi):
     def setSelectedReadState(self, state: Qt.CheckState) -> None:
         sm = self.tableView.selectionModel()
         assert sm is not None
-        for index in sm.selectedIndexes():
-            self.model.setReadState(_sourceIndex(index), state)
+        rows = sm.selectedRows(Column.ReadState)
+        if not rows:
+            return
+        self.model.blockSignals(True)
+        try:
+            for index in rows:
+                self.model.setReadState(_sourceIndex(index), state)
+        finally:
+            self.model.blockSignals(False)
+        self.model.dataChanged.emit(
+            self.model.index(0, 0),
+            self.model.index(self.model.rowCount() - 1, self.model.columnCount() - 1),
+        )
         self.updateUnreadCount()
 
     def toggleSelectedImportantState(self) -> None:
         sm = self.tableView.selectionModel()
         assert sm is not None
-        state: Qt.CheckState | None = None
-        for index in sm.selectedRows(Column.ImportantState):
-            sourceIndex = _sourceIndex(index)
-            state = (
-                Qt.CheckState.Unchecked
-                if self.model.importantState(sourceIndex) is Qt.CheckState.Checked
-                else Qt.CheckState.Checked
-            )
-            self.model.setImportantState(sourceIndex, state)
+        rows = sm.selectedRows(Column.ImportantState)
+        if not rows:
+            return
+        firstSourceIndex = _sourceIndex(rows[0])
+        state = (
+            Qt.CheckState.Unchecked
+            if self.model.importantState(firstSourceIndex) is Qt.CheckState.Checked
+            else Qt.CheckState.Checked
+        )
+        self.model.blockSignals(True)
+        try:
+            for index in rows:
+                self.model.setImportantState(_sourceIndex(index), state)
+        finally:
+            self.model.blockSignals(False)
+        self.model.dataChanged.emit(
+            self.model.index(0, Column.ImportantState),
+            self.model.index(self.model.rowCount() - 1, Column.ImportantState),
+        )
 
     def deleteSelected(self) -> None:
         sm = self.tableView.selectionModel()
