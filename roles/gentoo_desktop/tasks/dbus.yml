@@ -1,4 +1,17 @@
 ---
+- name: Stat machine-id
+  ansible.builtin.stat:
+    path: /var/lib/dbus/machine-id
+  register: _gentoo_desktop_machine_id
+
+- name: Remove invalid machine-id so dbus-uuidgen can recreate it
+  ansible.builtin.file:
+    path: /var/lib/dbus/machine-id
+    state: absent
+  when:
+    - _gentoo_desktop_machine_id.stat.exists
+    - _gentoo_desktop_machine_id.stat.size < 32
+
 - name: Set machine-id for dbus
   ansible.builtin.command: >-
     /usr/bin/dbus-uuidgen --ensure=/var/lib/dbus/machine-id
