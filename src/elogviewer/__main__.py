@@ -55,6 +55,19 @@ def main() -> None:
     _LOGGER.debug("elogpath is set to %r", config.elogpath)
 
     app = QtWidgets.QApplication(sys.argv)
+    _fsPaths = [
+        Path(p) for p in QtGui.QIcon.themeSearchPaths() if not p.startswith(":")
+    ]
+    _fallback = next(
+        (
+            theme
+            for theme in ("breeze", "Adwaita", "gnome")
+            if any((p / theme / "index.theme").exists() for p in _fsPaths)
+        ),
+        None,
+    )
+    if _fallback:
+        QtGui.QIcon.setFallbackThemeName(_fallback)
     app.setWindowIcon(QtGui.QIcon.fromTheme("applications-system"))
 
     elogviewer = Elogviewer(config)

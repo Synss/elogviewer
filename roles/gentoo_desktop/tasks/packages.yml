@@ -2,6 +2,8 @@
 - name: Install desktop packages
   community.general.portage:
     name:
+      - gui-apps/qt6ct
+      - kde-frameworks/breeze-icons
       - media-fonts/dejavu
       - media-fonts/ttf-bitstream-vera
       - x11-base/xorg-server
@@ -10,3 +12,34 @@
       - x11-wm/openbox
       - x11-wm/twm
     state: present
+
+- name: Configure qt6ct platform theme env var
+  become: true
+  ansible.builtin.lineinfile:
+    path: /home/{{ gentoo_user_name }}/.bash_profile
+    line: "export QT_QPA_PLATFORMTHEME=qt6ct"
+    state: present
+    create: true
+    mode: "0644"
+    owner: "{{ gentoo_user_name }}"
+    group: "{{ gentoo_user_name }}"
+
+- name: Create qt6ct config directory
+  ansible.builtin.file:
+    path: /home/{{ gentoo_user_name }}/.config/qt6ct
+    state: directory
+    mode: "0755"
+    owner: "{{ gentoo_user_name }}"
+    group: "{{ gentoo_user_name }}"
+  become: true
+
+- name: Configure qt6ct icon theme
+  community.general.ini_file:
+    path: /home/{{ gentoo_user_name }}/.config/qt6ct/qt6ct.conf
+    section: Appearance
+    option: icon_theme
+    value: breeze
+    mode: "0644"
+    owner: "{{ gentoo_user_name }}"
+    group: "{{ gentoo_user_name }}"
+  become: true

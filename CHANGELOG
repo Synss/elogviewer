@@ -3,6 +3,7 @@ Next
 
 - Replace start and bullet drawing with UTF-8 equivalent.
   Symbols require `media-fonts/dejavu` or similar.
+- Improve icon detection and fallback.
 - Drop Python 3.11 support and modernize style.
 - Incorporate some of Fonic's 10yrs old feedback.
 - Add type annotations, avoiding `Any` where possible.
