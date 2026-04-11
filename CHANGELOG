@@ -1,6 +1,11 @@
 Next
 ----
 
+- Performance improvements on bulk operations.
+- Improved consistency and predictability on bulk operations:
+  The important state is computed once and applied uniformly.
+  Before this change, each row was toggled independently,
+  potentially leaving the selection in a mixed state.
 - Replace start and bullet drawing with UTF-8 equivalent.
   Symbols require `media-fonts/dejavu` or similar.
 - Improve icon detection and fallback.
