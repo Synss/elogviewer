@@ -85,7 +85,7 @@ class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
             return
         self.initStyleOption(option, index)
         try:
-            color = QtGui.QColor(eclassColor(EClass[option.text]))
+            color = QtGui.QColor(*eclassColor(EClass[option.text]))
         except KeyError:
             pass
         else:
