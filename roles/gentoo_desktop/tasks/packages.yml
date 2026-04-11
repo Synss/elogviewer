@@ -2,6 +2,8 @@
 - name: Install desktop packages
   community.general.portage:
     name:
+      - media-fonts/dejavu
+      - media-fonts/ttf-bitstream-vera
       - x11-base/xorg-server
       - x11-misc/menumaker
       - x11-terms/xterm

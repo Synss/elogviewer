@@ -6,7 +6,6 @@ import glob
 import itertools
 from contextlib import AbstractContextManager, suppress
 from functools import partial
-from math import cos, sin
 from pathlib import Path
 from typing import IO, Final, Protocol
 
@@ -107,104 +106,37 @@ class ReadFontStyleDelegate(QtWidgets.QStyledItemDelegate):
         super().paint(painter, option, index)
 
 
-class Bullet(QtWidgets.QAbstractButton):
-    _scaleFactor = 20
-
-    def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
-        super().__init__(parent)
-        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground)
-        self.setCheckable(True)
-
-    def paintEvent(self, e: QtGui.QPaintEvent | None) -> None:
-        assert e is not None
-        painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
-        painter.setPen(Qt.PenStyle.NoPen)
-        green = QtGui.QBrush(QtGui.QColorConstants.DarkGreen)
-        painter.setBrush(self.palette().dark() if self.isChecked() else green)
-        rect = e.rect()
-        painter.translate(rect.x(), rect.y())
-        painter.scale(self._scaleFactor, self._scaleFactor)
-        painter.drawEllipse(QtCore.QRectF(0.5, 0.5, 0.5, 0.5))
-
-    def sizeHint(self) -> QtCore.QSize:
-        return self._scaleFactor * QtCore.QSize(1, 1)
-
-
-class Star(QtWidgets.QAbstractButton):
-    # Largely inspired by Nokia's stardelegate example.
-
-    _scaleFactor = 20
-
-    def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
-        super().__init__(parent)
-        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground)
-        self.setCheckable(True)
-        self._starPolygon = QtGui.QPolygonF([QtCore.QPointF(1.0, 0.5)])
-        for i in range(5):
-            self._starPolygon.append(
-                QtCore.QPointF(
-                    0.5 + 0.5 * cos(0.8 * i * 3.14),
-                    0.5 + 0.5 * sin(0.8 * i * 3.14),
-                ),
-            )
-
-    def paintEvent(self, e: QtGui.QPaintEvent | None) -> None:
-        assert e is not None
-        painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
-        painter.setPen(Qt.PenStyle.NoPen)
-        red = QtGui.QBrush(QtGui.QColorConstants.Red)
-        painter.setBrush(red if self.isChecked() else self.palette().dark())
-        rect = e.rect()
-        yOffset = (rect.height() - self._scaleFactor) / 2.0
-        painter.translate(rect.x(), rect.y() + yOffset)
-        painter.scale(self._scaleFactor, self._scaleFactor)
-        painter.drawPolygon(self._starPolygon, Qt.FillRule.WindingFill)
-
-    def sizeHint(self) -> QtCore.QSize:
-        return self._scaleFactor * QtCore.QSize(1, 1)
-
-
 class ButtonDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(
         self,
-        button: QtWidgets.QAbstractButton | None = None,
+        checked: str,
+        unchecked: str,
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self._btn = QtWidgets.QPushButton() if button is None else button
-        self._btn.setCheckable(True)
-        self._btn.setParent(parent)
-        self._btn.hide()
+        self._checked = checked
+        self._unchecked = unchecked
 
-    def __repr__(self) -> str:
-        return f"elogviewer.{self.__class__.__name__}(button={self._btn!r}, parent={self.parent()!r})"
-
-    def sizeHint(
+    def initStyleOption(
         self,
-        option: QtWidgets.QStyleOptionViewItem,
-        index: QtCore.QModelIndex,
-    ) -> QtCore.QSize:
-        return super().sizeHint(option, index)
-
-    def createEditor(
-        self,
-        parent: QtWidgets.QWidget | None,
-        option: QtWidgets.QStyleOptionViewItem,
-        index: QtCore.QModelIndex,
-    ) -> QtWidgets.QWidget | None:
-        return None
-
-    def setModelData(
-        self,
-        editor: QtWidgets.QWidget | None,
-        model: QtCore.QAbstractItemModel | None,
+        option: QtWidgets.QStyleOptionViewItem | None,
         index: QtCore.QModelIndex,
     ) -> None:
-        assert editor is not None and model is not None
-        data = Qt.CheckState.Checked if editor.isChecked() else Qt.CheckState.Unchecked  # type: ignore
-        model.setData(index, data, role=Qt.ItemDataRole.CheckStateRole)
+        super().initStyleOption(option, index)
+        if option is None:
+            return
+        option.features &= (
+            ~QtWidgets.QStyleOptionViewItem.ViewItemFeature.HasCheckIndicator
+        )
+        option.text = (
+            self._checked
+            if bool(index.data(role=Qt.ItemDataRole.CheckStateRole))
+            else self._unchecked
+        )
+        option.displayAlignment = Qt.AlignmentFlag.AlignCenter
+        option.font.setFamilies(
+            ["Noto Sans Symbols", "Symbola", "DejaVu Sans", option.font.family()]
+        )
 
     def paint(
         self,
@@ -212,15 +144,16 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         option: QtWidgets.QStyleOptionViewItem,
         index: QtCore.QModelIndex,
     ) -> None:
-        assert painter is not None
-        self._btn.setChecked(
-            bool(index.data(role=Qt.ItemDataRole.CheckStateRole)),
+        if not index.isValid():
+            return
+        self.initStyleOption(option, index)
+        widget = self.parent()
+        assert isinstance(widget, QtWidgets.QWidget)
+        style = widget.style() or QtWidgets.QApplication.style()
+        assert style is not None
+        style.drawControl(
+            QtWidgets.QStyle.ControlElement.CE_ItemViewItem, option, painter, widget
         )
-        self._btn.setGeometry(option.rect)
-        if option.state & QtWidgets.QStyle.StateFlag.State_Selected:
-            painter.fillRect(option.rect, option.palette.highlight())
-        pixmap = self._btn.grab()
-        painter.drawPixmap(option.rect.x(), option.rect.y(), pixmap)
 
     def editorEvent(
         self,
@@ -232,7 +165,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         if event is None or model is None:
             return False
         if (
-            index.flags() & Qt.ItemFlag.ItemIsEditable
+            index.flags() & Qt.ItemFlag.ItemIsUserCheckable
             and (
                 event.type()
                 in (
@@ -247,8 +180,11 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
             and isinstance(event, QtGui.QKeyEvent)
             and event.key() in (Qt.Key.Key_Space, Qt.Key.Key_Select)
         ):
-            self._btn.toggle()
-            self.setModelData(self._btn, model, index)
+            current = index.data(role=Qt.ItemDataRole.CheckStateRole)
+            new_state = (
+                Qt.CheckState.Unchecked if bool(current) else Qt.CheckState.Checked
+            )
+            model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
             return True
         return False
 
@@ -350,8 +286,8 @@ class Elogviewer(ElogviewerUi):
         horizontalHeader.sortIndicatorChanged.connect(self.proxyModel.sort)
 
         for column, delegate in (
-            (Column.ImportantState, ButtonDelegate(Star(), self.tableView)),
-            (Column.ReadState, ButtonDelegate(Bullet(), self.tableView)),
+            (Column.ImportantState, ButtonDelegate("★", "☆", self.tableView)),
+            (Column.ReadState, ButtonDelegate("●", "○", self.tableView)),
             (Column.Eclass, SeverityColorDelegate(self.tableView)),
         ):
             self.tableView.setItemDelegateForColumn(column, delegate)
@@ -537,12 +473,11 @@ class Elogviewer(ElogviewerUi):
         state: Qt.CheckState | None = None
         for index in sm.selectedRows(Column.ImportantState):
             sourceIndex = _sourceIndex(index)
-            if state is None:
-                state = (
-                    Qt.CheckState.Unchecked
-                    if self.model.importantState(sourceIndex) is Qt.CheckState.Checked
-                    else Qt.CheckState.Checked
-                )
+            state = (
+                Qt.CheckState.Unchecked
+                if self.model.importantState(sourceIndex) is Qt.CheckState.Checked
+                else Qt.CheckState.Checked
+            )
             self.model.setImportantState(sourceIndex, state)
 
     def deleteSelected(self) -> None:

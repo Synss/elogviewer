@@ -142,14 +142,14 @@ class Model(QtCore.QAbstractTableModel):
         ):
             return super().headerData(section, orientation, role)
         return {  # type: ignore
-            Column.ImportantState: "!!",
+            Column.ImportantState: "‼",
             Column.ReadState: "Read",
             Column.Eclass: "Type",
         }.pop(section, Column(section).name)
 
     def flags(self, index: QtCore.QModelIndex) -> Qt.ItemFlag:
         if index.column() in (Column.ImportantState, Column.ReadState):
-            return super().flags(index) | Qt.ItemFlag.ItemIsEditable
+            return super().flags(index) | Qt.ItemFlag.ItemIsUserCheckable
         return super().flags(index)
 
     def save(self, settings: StateStore) -> None:
