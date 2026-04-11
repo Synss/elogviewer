@@ -18,9 +18,6 @@
   retries: 3 # rsync may be flaky in the CI.
   delay: 30
 
-- name: "Upload cache"
-  ansible.builtin.import_tasks: "upload_cache.yml"
-
 - name: "Gather package facts"
   ansible.builtin.package_facts:
     manager: auto

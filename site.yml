@@ -4,9 +4,11 @@
   become: true
   roles:
     - role: gentoo_base
+    - role: gentoo_upload_cache
     - role: gentoo_system
     - role: gentoo_packages
     - role: gentoo_user
     - role: gentoo_virtualbox
     - role: gentoo_desktop
+    - role: gentoo_download_cache
     - role: gentoo_deploy

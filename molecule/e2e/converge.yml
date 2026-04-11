@@ -5,6 +5,8 @@
     gentoo_allow_reboot: false
   roles:
     - role: gentoo_base
+    - role: gentoo_upload_cache
     - role: gentoo_system
     - role: gentoo_packages
     - role: gentoo_user
+    - role: gentoo_download_cache
