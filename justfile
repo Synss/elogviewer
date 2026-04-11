@@ -11,13 +11,17 @@ doc:
 upload-doc: doc
     rsync -avzP -e ssh html/ mathias_laurin@web.sourceforge.net:/home/project-web/elogviewer/htdocs/
 
-qa:
+format:
     uv run ruff format
+
+lint:
     uv run ruff check --select I --fix
     uv run ruff check --fix
 
-test: qa
+test:
     uv run pytest
+
+qa: format lint test
 
 _build-path type:
     @uv build --{{ type }} 2>&1 | perl -ne 'print $1 if /Successfully built\s+(.+)/'
