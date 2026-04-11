@@ -12,3 +12,4 @@
     - role: gentoo_desktop
     - role: gentoo_download_cache
     - role: gentoo_deploy
+      tags: deploy
