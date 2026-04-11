@@ -36,19 +36,19 @@ e2e:
     uv run --extra vm molecule test --scenario-name e2e
 
 vm-start:
-    vagrant --provision up
+    uv run --extra vm vagrant --provision up
 
 vm-stop:
-    vagrant halt
+    uv run --extra vm vagrant halt
 
 vm-provision: vm-start
-    vagrant provision
+    uv run --extra vm vagrant provision
 
 vm-reboot: vm-start
     ansible -i inventory gentoo -m ansible.builtin.reboot -b
 
 vm-destroy:
-    vagrant -f destroy
+    uv run --extra vm vagrant -f destroy
 
 vm-ssh: vm-start
     vagrant ssh
