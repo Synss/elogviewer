@@ -1,7 +1,7 @@
 ---
 - name: Create local dist directory
   ansible.builtin.file:
-    path: '{{ gentoo_dist_src | default("../dist") }}'
+    path: '{{ gentoo_dist_src | default("dist") }}'
     state: directory
     mode: "0755"
   delegate_to: localhost
@@ -10,7 +10,7 @@
 - name: Copy dist
   ansible.posix.synchronize:
     mode: push
-    src: '{{ gentoo_dist_src | default("../dist") }}'
+    src: '{{ gentoo_dist_src | default("dist") }}'
     dest: "/home/{{ gentoo_user_name }}/"
     group: false
     owner: false

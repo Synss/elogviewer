@@ -44,6 +44,10 @@ vm-stop:
 vm-provision: vm-start
     uv run --extra vm vagrant provision
 
+vm-deploy: vm-start
+    uv build --wheel
+    ansible-playbook -i inventory site.yml --tags deploy
+
 vm-reboot: vm-start
     ansible -i inventory gentoo -m ansible.builtin.reboot -b
 
