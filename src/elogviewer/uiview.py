@@ -283,7 +283,9 @@ class Elogviewer(ElogviewerUi):
 
         horizontalHeader = self.tableView.horizontalHeader()
         assert horizontalHeader is not None
-        horizontalHeader.sortIndicatorChanged.connect(self.proxyModel.sort)
+        horizontalHeader.sortIndicatorChanged.connect(
+            lambda column, order: self.proxyModel.sort(column, order)
+        )
 
         for column, delegate in (
             (Column.ImportantState, ButtonDelegate("★", "☆", self.tableView)),
