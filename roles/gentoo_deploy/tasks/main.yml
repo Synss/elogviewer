@@ -1,6 +1,18 @@
 ---
-- name: Download cache
-  ansible.builtin.import_tasks: download_cache.yml
+- name: Create local dist directory
+  ansible.builtin.file:
+    path: '{{ gentoo_dist_src | default("../dist") }}'
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+  become: false
 
 - name: Copy dist
-  ansible.builtin.import_tasks: dist.yml
+  ansible.posix.synchronize:
+    mode: push
+    src: '{{ gentoo_dist_src | default("../dist") }}'
+    dest: "/home/{{ gentoo_user_name }}/"
+    group: false
+    owner: false
+  become: true
+  become_user: "{{ gentoo_user_name }}"
