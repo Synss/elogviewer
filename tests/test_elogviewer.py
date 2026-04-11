@@ -12,10 +12,12 @@ from typing import Any, Protocol, TypeAlias
 
 import pytest
 from pyfakefs.fake_filesystem_unittest import Patcher
+from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 
 from elogviewer.eclass import EClass
 from elogviewer.elog import Elog
+from elogviewer.model import Column
 from elogviewer.parser import (
     AbstractState,
     BodyState,
@@ -414,6 +416,57 @@ class TestUI:
         qtbot.mouseClick(elogviewer.deleteButton, Qt.MouseButton.LeftButton)
 
         assert elogviewer.model.elogCount() == _count(elogPath.glob("*.log"))
+
+    def testReadFontStyleDelegatePaintRespectsSortOrder(
+        self,
+        elogviewer: Elogviewer,
+        qtbot: QtBot,
+    ) -> None:
+        elogviewer.tableView.sortByColumn(Column.Package, Qt.SortOrder.AscendingOrder)
+        elogviewer.model.setReadState(
+            elogviewer.model.index(0, Column.ReadState), Qt.CheckState.Checked
+        )
+        delegate = elogviewer.tableView.itemDelegate()
+        assert delegate is not None
+        pixmap = QtGui.QPixmap(100, 20)
+        for row in range(elogviewer.proxyModel.rowCount()):
+            proxyIdx = elogviewer.proxyModel.index(row, Column.Package)
+            sourceIdx = elogviewer.proxyModel.mapToSource(proxyIdx)
+            option = QtWidgets.QStyleOptionViewItem()
+            painter = QtGui.QPainter(pixmap)
+            delegate.paint(painter, option, proxyIdx)
+            painter.end()
+            assert option.font.bold() == (
+                not elogviewer.model.item(sourceIdx.row()).isReadState()
+            )
+
+    def testButtonDelegatePaintReflectsCheckState(
+        self,
+        elogviewer: Elogviewer,
+        qtbot: QtBot,
+    ) -> None:
+        delegate = elogviewer.tableView.itemDelegateForColumn(Column.ReadState)
+        assert delegate is not None
+        proxyIdx = elogviewer.proxyModel.index(0, Column.ReadState)
+        option = QtWidgets.QStyleOptionViewItem()
+        option.rect = QtCore.QRect(0, 0, 20, 20)
+        pixmap = QtGui.QPixmap(20, 20)
+
+        pixmap.fill(Qt.GlobalColor.white)
+        painter = QtGui.QPainter(pixmap)
+        delegate.paint(painter, option, proxyIdx)
+        painter.end()
+        image = pixmap.toImage()
+
+        elogviewer.tableView.selectRow(0)
+        qtbot.mouseClick(elogviewer.markReadButton, Qt.MouseButton.LeftButton)
+
+        pixmap.fill(Qt.GlobalColor.white)
+        painter = QtGui.QPainter(pixmap)
+        delegate.paint(painter, option, proxyIdx)
+        painter.end()
+
+        assert image != pixmap.toImage()
 
     def testDecreaseCountOnLeavingRow(
         self,
