@@ -9,12 +9,19 @@ repos:
         args: [--unsafe]  # allow custom YAML tags used by Ansible
 
   - repo: https://github.com/instrumentl/pre-commit-just
-    rev: 'main'
+    rev: 'v0.1'
     hooks:
       - id: format-justfile
 
   - repo: local
     hooks:
+      - id: just-fmt
+        name: just --fmt
+        entry: uv run --extra just just --fmt --unstable
+        language: unsupported
+        files: ^justfile$
+        pass_filenames: false
+
       - id: ruff-format
         name: ruff format
         entry: uv run --extra lint ruff format --check
@@ -22,8 +29,14 @@ repos:
         types: [python]
 
       - id: ruff
-        name: ruff lint
+        name: ruff check
         entry: uv run --extra lint ruff check
+        language: unsupported
+        types: [python]
+
+      - id: ruff-isort
+        name: ruff check-isort
+        entry: uv run --extra lint ruff check --select I
         language: unsupported
         types: [python]
 
