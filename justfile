@@ -2,7 +2,7 @@
 _just := just_executable()
 
 default:
-    just --list
+    @just --list
 
 doc:
     mkdir -p html
@@ -11,17 +11,24 @@ doc:
 upload-doc: doc
     rsync -avzP -e ssh html/ mathias_laurin@web.sourceforge.net:/home/project-web/elogviewer/htdocs/
 
-format:
-    uv run ruff format
-
 lint:
-    uv run ruff check --select I --fix
-    uv run ruff check --fix
+    uv run pre-commit run
+
+lint-all:
+    uv run pre-commit run --all-files
+
+update-linters:
+    uv run pre-commit autoupdate
+
+update-dependencies:
+    uv sync
+
+update: update-linters update-dependencies
 
 test:
     uv run pytest
 
-qa: format lint test
+qa: lint test
 
 _build-path type:
     @uv build --{{ type }} 2>&1 | perl -ne 'print $1 if /Successfully built\s+(.+)/'
