@@ -39,7 +39,7 @@ jobs:
           key: gentoo-e2e-${{ github.run_id }}
           restore-keys: gentoo-e2e-
       - name: Run e2e scenario
-        run: uv run --extra vm molecule test --scenario-name e2e
+        run: uv run --group vm molecule test --scenario-name e2e
       - name: Save cache
         uses: actions/cache/save@v5
         if: ${{ !cancelled() }}
