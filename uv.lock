@@ -444,6 +444,11 @@ vm = [
     { name = "passlib" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "pyqt6-stubs" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "ansible", marker = "extra == 'vm'" },
@@ -465,6 +470,9 @@ requires-dist = [
     { name = "zizmor", marker = "extra == 'lint'" },
 ]
 provides-extras = ["just", "lint", "test", "vm"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pyqt6-stubs", specifier = ">=20250824" }]
 
 [[package]]
 name = "enrich"
@@ -926,6 +934,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/1f/43/0a648469a7e4f07df1c4ad6443f892e55631f24f7af30c7c946e458a82d1/pyqt6_sip-13.10.3-cp314-cp314-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3286a98e93608d51048e9046f557117424c8366be266b33ff852ee54ffa7b9bf", size = 324062, upload-time = "2025-12-06T13:19:40.308Z" },
     { url = "https://files.pythonhosted.org/packages/f3/0d/67d2095a932c007210437318c31fbc8376deb4e4491907861c4b9ac4ad9e/pyqt6_sip-13.10.3-cp314-cp314-win_amd64.whl", hash = "sha256:4fc6229ba7276266e3805b5517e7413cba79538f0c3ce7d2042a2027a90f99cf", size = 55076, upload-time = "2025-12-06T13:19:42.61Z" },
     { url = "https://files.pythonhosted.org/packages/f8/cd/f121be0271dc73d54f3580584103c046a8d2c06a2686b594b77fd677a5ef/pyqt6_sip-13.10.3-cp314-cp314-win_arm64.whl", hash = "sha256:efef47667ca009557d7ecf985b15f0bf440584fd634ee0eab19ec296effc7cca", size = 49464, upload-time = "2025-12-06T13:19:43.638Z" },
+]
+
+[[package]]
+name = "pyqt6-stubs"
+version = "20250824"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/eb/08/a5061968fed399314bd83f1b225092ff8102d9bdc9fd13b70010aaf7fb7e/pyqt6_stubs-20250824.tar.gz", hash = "sha256:f56958e34fb69e52c19ce24f5b59f181dde9a1e2fe0738aa8780e6b9a9b809d9", size = 331916, upload-time = "2025-08-24T12:04:49.343Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/57/08d3a5c19f2d2fd773d2329d19692e682ab9e2a6620c1a586a744d50b52b/pyqt6_stubs-20250824-py3-none-any.whl", hash = "sha256:4b77dc40f5dab7ca4ba899fff4c1db8de9cc73799ee98f56cae63349f18a6e52", size = 369983, upload-time = "2025-08-24T12:04:47.605Z" },
 ]
 
 [[package]]
