@@ -58,3 +58,8 @@ include = [
     "/tests/",
     "README.md",
 ]
+
+[dependency-groups]
+dev = [
+    "pyqt6-stubs>=20250824",
+]
