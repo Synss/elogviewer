@@ -40,20 +40,20 @@ _build-path type:
     tar --list -f $({{ _just }} _build-path sdist)
 
 vm-test:
-    cd roles/gentoo_base && uv run --extra vm molecule test
-    cd roles/gentoo_system && uv run --extra vm molecule test
+    cd roles/gentoo_base && uv run --group vm molecule test
+    cd roles/gentoo_system && uv run --group vm molecule test
 
 e2e:
-    uv run --extra vm molecule test --scenario-name e2e
+    uv run --group vm molecule test --scenario-name e2e
 
 vm-start:
-    uv run --extra vm vagrant --provision up
+    uv run --group vm vagrant --provision up
 
 vm-stop:
-    uv run --extra vm vagrant halt
+    uv run --group vm vagrant halt
 
 vm-provision: vm-start
-    uv run --extra vm vagrant provision
+    uv run --group vm vagrant provision
 
 vm-deploy: vm-start
     uv build --wheel
@@ -63,7 +63,7 @@ vm-reboot: vm-start
     ansible -i inventory gentoo -m ansible.builtin.reboot -b
 
 vm-destroy:
-    uv run --extra vm vagrant -f destroy
+    uv run --group vm vagrant -f destroy
 
 vm-ssh: vm-start
     vagrant ssh

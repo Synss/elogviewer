@@ -20,5 +20,5 @@ runs:
     - name: Install ansible collections
       shell: bash
       run: >-
-        uv run --extra vm
+        uv run --group vm
         ansible-galaxy collection install ansible.posix community.general

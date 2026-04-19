@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Run pre-commit
-        run: uv run --all-extras pre-commit run --all-files
+        run: uv run --all-groups pre-commit run --all-files
 
   check-wheel-contents:
     runs-on: ubuntu-latest
@@ -40,7 +40,7 @@ jobs:
       - name: Run check-wheel-contents
         run: >-
           uv build --wheel
-          && uv run --extra lint check-wheel-contents dist/
+          && uv run --group dev check-wheel-contents dist/
 
   all-checks:
     if: ${{ !cancelled() }}

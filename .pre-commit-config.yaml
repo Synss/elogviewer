@@ -8,60 +8,55 @@ repos:
       - id: check-yaml
         args: [--unsafe]  # allow custom YAML tags used by Ansible
 
-  - repo: https://github.com/instrumentl/pre-commit-just
-    rev: 'v0.1'
-    hooks:
-      - id: format-justfile
-
   - repo: local
     hooks:
       - id: just-fmt
         name: just --fmt
-        entry: uv run --extra just just --fmt --unstable
+        entry: uv run --group dev just --fmt --unstable
         language: unsupported
         files: ^justfile$
         pass_filenames: false
 
       - id: ruff-format
         name: ruff format
-        entry: uv run --extra lint ruff format --check
+        entry: uv run --group dev ruff format --check
         language: unsupported
         types: [python]
 
       - id: ruff
         name: ruff check
-        entry: uv run --extra lint ruff check
+        entry: uv run --group dev ruff check
         language: unsupported
         types: [python]
 
       - id: ruff-isort
         name: ruff check-isort
-        entry: uv run --extra lint ruff check --select I
+        entry: uv run --group dev ruff check --select I
         language: unsupported
         types: [python]
 
       - id: ty
         name: ty check
-        entry: uv run --extra lint --extra test ty check
+        entry: uv run --group dev ty check
         language: unsupported
         types: [python]
 
       - id: yamllint
         name: yamllint
-        entry: uv run --extra lint yamllint
+        entry: uv run --group vm yamllint
         language: unsupported
         types: [yaml]
 
       - id: ansible-lint
         name: ansible-lint
-        entry: uv run --extra lint ansible-lint .
+        entry: uv run --group vm ansible-lint .
         language: unsupported
         files: ^(roles|molecule|inventory)/
         pass_filenames: false
 
       - id: zizmor
         name: zizmor
-        entry: zizmor .github
+        entry: uv run --group dev zizmor .github
         language: unsupported
         types: [yaml]
         files: ^.github/

@@ -22,19 +22,20 @@ classifiers = [
     "Environment :: X11 Applications :: Qt",
 ]
 
-[project.optional-dependencies]
-just = ["rust-just"]
-lint = [
-    "ansible-lint",
+[dependency-groups]
+dev = [
     "check-wheel-contents",
+    "pyfakefs",
     "pre-commit",
+    "pytest",
+    "pytest-qt",
+    "pyqt6-stubs>=20250824",
     "ruff",
+    "rust-just",
     "ty",
-    "yamllint",
     "zizmor",
 ]
-test = ["pyfakefs", "pytest", "pytest-qt"]
-vm = ["ansible", "molecule", "molecule-docker", "passlib"]
+vm = ["ansible", "ansible-lint", "molecule", "molecule-docker", "passlib", "yamllint"]
 
 [tool.check-artefacts]
 required = ["elogviewer.1", "README.md", "LICENSE.TXT", "py.typed"]
@@ -57,9 +58,4 @@ include = [
     "/src/elogviewer/",
     "/tests/",
     "README.md",
-]
-
-[dependency-groups]
-dev = [
-    "pyqt6-stubs>=20250824",
 ]

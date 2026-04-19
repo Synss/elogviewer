@@ -29,11 +29,11 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Test gentoo_base
         id: test_base
-        run: cd roles/gentoo_base && uv run --extra vm molecule test
+        run: cd roles/gentoo_base && uv run --group vm molecule test
         continue-on-error: true
       - name: Test gentoo_system
         id: test_system
-        run: cd roles/gentoo_system && uv run --extra vm molecule test
+        run: cd roles/gentoo_system && uv run --group vm molecule test
         continue-on-error: true
       - name: Publish test results
         uses: mikepenz/action-junit-report@v6
