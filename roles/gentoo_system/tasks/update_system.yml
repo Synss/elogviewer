@@ -4,7 +4,7 @@
     - name: Detect system Python version
       ansible.builtin.command:
         cmd: >-
-          {{ ansible_python_interpreter }}
+          {{ ansible_python_interpreter | default('/usr/bin/python3') }}
           -c "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
       register: _gentoo_system_python_detected
       changed_when: false
