@@ -65,12 +65,12 @@
     - name: Report cache hits [system]
       ansible.builtin.include_tasks: report_cache_hits.yml
       vars:
-        _output: "{{ gentoo_system_update_system.stdout }}"
+        _output: "{{ gentoo_system_update_system.stdout }}{{ gentoo_system_update_system.stderr }}"
 
     - name: Report cache hits [system rebuild]
       ansible.builtin.include_tasks: report_cache_hits.yml
       vars:
-        _output: "{{ gentoo_system_rebuild_system.msg }}"
+        _output: "{{ gentoo_system_rebuild_system.stdout }}{{ gentoo_system_rebuild_system.stderr }}"
 
     - name: Update cache [system]
       ansible.posix.synchronize:
