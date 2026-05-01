@@ -23,10 +23,8 @@
     manager: auto
 
 - name: "Install `equery` (for portage module)"
-  become: true
   ansible.builtin.command: /usr/bin/emerge app-portage/gentoolkit
-  environment:
-    PYTHON_TARGETS: "{{ python_single_target }}"
+  environment: "{{ {'PYTHON_TARGETS': python_single_target} if python_single_target is defined else {} }}"
   when: "'app-portage/gentoolkit' not in ansible_facts.packages"
   changed_when: true
 
