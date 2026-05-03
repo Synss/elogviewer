@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import abc
 import weakref
-from typing import Protocol, TypeAlias
+from typing import Protocol, TypeAlias, override
 
 from .eclass import EClass
 from .elog import Elog
@@ -20,6 +20,7 @@ class AbstractState(abc.ABC):
     def __init__(self, context: ParserFSM) -> None:
         self.context = weakref.proxy(context)
 
+    @override
     def __str__(self) -> str:
         return type(self).__name__
 
@@ -37,23 +38,29 @@ class AbstractState(abc.ABC):
 
 
 class NoopState(AbstractState):
+    @override
     def enter(self) -> None:
         pass
 
+    @override
     def exit(self) -> None:
         pass
 
+    @override
     def parse(self, line: str) -> str:
         return line
 
 
 class HeaderState(AbstractState):
+    @override
     def enter(self) -> str:
         return "<h3>"
 
+    @override
     def exit(self) -> str:
         return "</h3>"
 
+    @override
     def parse(self, line: str) -> str:
         try:
             eclass, stage = line.split(":")
@@ -96,15 +103,18 @@ class BodyState(AbstractState):
     def _parse_ansi_colors(cls, line: str) -> str:
         return Elog.AnsiColorPattern.sub("", line)
 
+    @override
     def enter(self) -> str:
         color = "".join(
             format(_, "02x") for _ in self.context.colorStrategy(self.context.eclass)
         )
         return f'<p style="color: #{color}">'
 
+    @override
     def exit(self) -> str:
         return "</p>"
 
+    @override
     def parse(self, line: str) -> str:
         line = self._parse_ansi_colors(line)
         line = self._parse_link(line)
@@ -138,6 +148,7 @@ class ParserFSM:
             self.__dict__["state"] = state
             self._results.append(self.state.enter())
 
+    @override
     def __str__(self) -> str:
         return f"{type(self).__name__}: {self.state}"
 
