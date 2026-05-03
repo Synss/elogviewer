@@ -3,14 +3,25 @@
 import enum
 from collections.abc import Iterable
 from pathlib import Path
-from typing import override
+from typing import Final, override
 
 from PyQt6 import QtCore
 
 from .elog import Elog
-from .model import Column, ElogModelItem, ImportantState, ReadState, StateStore
+from .model import (
+    IMPORTANT,
+    READ,
+    UNIMPORTANT,
+    UNREAD,
+    Column,
+    ElogModelItem,
+    ImportantState,
+    ReadState,
+    StateStore,
+)
 
 Qt = QtCore.Qt
+_MODEL_INDEX: Final = QtCore.QModelIndex()
 
 
 class Role(enum.IntEnum):
@@ -37,9 +48,7 @@ class Model(QtCore.QAbstractTableModel):
         if index.column() != Column.ImportantState:
             return False
         self.itemFromIndex(index).setImportantState(
-            ImportantState(True)
-            if state is Qt.CheckState.Checked
-            else ImportantState(False)
+            IMPORTANT if state is Qt.CheckState.Checked else UNIMPORTANT
         )
         self.dataChanged.emit(index, index)
         return True
@@ -65,7 +74,7 @@ class Model(QtCore.QAbstractTableModel):
         if index.column() != Column.ReadState:
             return False
         self.itemFromIndex(index).setReadState(
-            ReadState(True) if state is Qt.CheckState.Checked else ReadState(False)
+            READ if state is Qt.CheckState.Checked else UNREAD
         )
         self.dataChanged.emit(
             self.index(index.row(), 0, index.parent()),
@@ -92,7 +101,7 @@ class Model(QtCore.QAbstractTableModel):
         self._data.append(item)
 
     @override
-    def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
+    def rowCount(self, parent: QtCore.QModelIndex = _MODEL_INDEX) -> int:
         return len(self._data)
 
     def elogCount(self) -> int:
@@ -116,7 +125,7 @@ class Model(QtCore.QAbstractTableModel):
         return count
 
     @override
-    def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
+    def columnCount(self, parent: QtCore.QModelIndex = _MODEL_INDEX) -> int:
         return len(Column)
 
     @override
@@ -124,7 +133,7 @@ class Model(QtCore.QAbstractTableModel):
         self,
         row: int,
         count: int,
-        parent: QtCore.QModelIndex = QtCore.QModelIndex(),
+        parent: QtCore.QModelIndex = _MODEL_INDEX,
     ) -> bool:
         last = min(self.rowCount(), row + count)
         self.beginRemoveRows(parent, row, max(row, last - 1))
