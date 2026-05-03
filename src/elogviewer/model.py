@@ -5,13 +5,18 @@ import io
 import time
 from contextlib import AbstractContextManager, closing
 from pathlib import Path
-from typing import IO, NewType, Protocol
+from typing import IO, Final, NewType, Protocol, final
 
 from .eclass import EClass
 from .elog import Elog
 
 ReadState = NewType("ReadState", bool)
+READ: Final = ReadState(True)
+UNREAD: Final = ReadState(False)
+
 ImportantState = NewType("ImportantState", bool)
+IMPORTANT: Final = ImportantState(True)
+UNIMPORTANT: Final = ImportantState(False)
 
 
 class Column(enum.IntEnum):
@@ -23,12 +28,13 @@ class Column(enum.IntEnum):
     Date = 5
 
 
+@final
 class ElogModelItem:
     def __init__(
         self,
         elog: Elog,
-        readState: ReadState = ReadState(False),
-        importantState: ImportantState = ImportantState(False),
+        readState: ReadState = UNREAD,
+        importantState: ImportantState = UNIMPORTANT,
     ) -> None:
         self._elog = elog
         self._readState = readState
@@ -59,10 +65,10 @@ class ElogModelItem:
         self._readState = state
 
     def isReadState(self) -> bool:
-        return self.readState() == ReadState(True)
+        return self.readState() == READ
 
     def toggleReadState(self) -> None:
-        self.setReadState(ReadState(False) if self.isReadState() else ReadState(True))
+        self.setReadState(UNREAD if self.isReadState() else READ)
 
     def importantState(self) -> ImportantState:
         return self._importantState
@@ -71,12 +77,10 @@ class ElogModelItem:
         self._importantState = state
 
     def isImportantState(self) -> bool:
-        return self.importantState() == ImportantState(True)
+        return self.importantState() == IMPORTANT
 
     def toggleImportantState(self) -> None:
-        self.setImportantState(
-            ImportantState(False) if self.isImportantState() else ImportantState(True)
-        )
+        self.setImportantState(UNIMPORTANT if self.isImportantState() else IMPORTANT)
 
     def file(self) -> AbstractContextManager[IO[str]]:
         return closing(io.StringIO(self._elog.contents))
