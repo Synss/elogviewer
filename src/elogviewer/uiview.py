@@ -7,7 +7,7 @@ import itertools
 from contextlib import AbstractContextManager, suppress
 from functools import partial
 from pathlib import Path
-from typing import IO, Final, Protocol
+from typing import IO, Final, Protocol, override
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
@@ -56,9 +56,11 @@ def eclassColor(eclass: EClass) -> tuple[int, int, int]:
 
 
 class TextToHtmlDelegate(QtWidgets.QItemDelegate):
+    @override
     def __repr__(self) -> str:
         return f"elogviewer.{self.__class__.__name__}({self.parent()!r})"
 
+    @override
     def setEditorData(
         self,
         editor: QtWidgets.QWidget | None,
@@ -74,6 +76,7 @@ class TextToHtmlDelegate(QtWidgets.QItemDelegate):
 
 
 class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
+    @override
     def paint(
         self,
         painter: QtGui.QPainter | None,
@@ -95,6 +98,7 @@ class SeverityColorDelegate(QtWidgets.QStyledItemDelegate):
 
 
 class ReadFontStyleDelegate(QtWidgets.QStyledItemDelegate):
+    @override
     def paint(
         self,
         painter: QtGui.QPainter | None,
@@ -119,6 +123,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         self._checked = checked
         self._unchecked = unchecked
 
+    @override
     def initStyleOption(
         self,
         option: QtWidgets.QStyleOptionViewItem | None,
@@ -140,6 +145,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
             ["Noto Sans Symbols", "Symbola", "DejaVu Sans", option.font.family()]
         )
 
+    @override
     def paint(
         self,
         painter: QtGui.QPainter | None,
@@ -157,6 +163,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
             QtWidgets.QStyle.ControlElement.CE_ItemViewItem, option, painter, widget
         )
 
+    @override
     def editorEvent(
         self,
         event: QtCore.QEvent | None,

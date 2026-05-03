@@ -3,6 +3,7 @@
 import enum
 from collections.abc import Iterable
 from pathlib import Path
+from typing import override
 
 from PyQt6 import QtCore
 
@@ -90,6 +91,7 @@ class Model(QtCore.QAbstractTableModel):
     def appendItem(self, item: ElogModelItem) -> None:
         self._data.append(item)
 
+    @override
     def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return len(self._data)
 
@@ -113,9 +115,11 @@ class Model(QtCore.QAbstractTableModel):
                 count += 1
         return count
 
+    @override
     def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return len(Column)
 
+    @override
     def removeRows(
         self,
         row: int,
@@ -130,6 +134,7 @@ class Model(QtCore.QAbstractTableModel):
         self.endRemoveRows()
         return idx > -1
 
+    @override
     def headerData(
         self,
         section: int,
@@ -147,6 +152,7 @@ class Model(QtCore.QAbstractTableModel):
             Column.Eclass: "Type",
         }.pop(section, Column(section).name)
 
+    @override
     def flags(self, index: QtCore.QModelIndex) -> Qt.ItemFlag:
         if index.column() in (Column.ImportantState, Column.ReadState):
             return super().flags(index) | Qt.ItemFlag.ItemIsUserCheckable
@@ -172,6 +178,7 @@ class Model(QtCore.QAbstractTableModel):
             self.appendItem(item)
         self.endResetModel()
 
+    @override
     def data(
         self,
         index: QtCore.QModelIndex,
@@ -205,6 +212,7 @@ class Model(QtCore.QAbstractTableModel):
             return f"{key}{item.isoTime()}"
         return None
 
+    @override
     def setData(
         self,
         index: QtCore.QModelIndex,
