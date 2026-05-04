@@ -32,7 +32,7 @@ dev = [
     "pyqt6-stubs>=20250824",
     "ruff",
     "rust-just",
-    "ty",
+    "basedpyright",
     "zizmor",
 ]
 vm = ["ansible", "ansible-lint", "molecule", "molecule-docker", "passlib", "yamllint"]
@@ -40,6 +40,29 @@ vm = ["ansible", "ansible-lint", "molecule", "molecule-docker", "passlib", "yaml
 [tool.check-artefacts]
 required = ["elogviewer.1", "README.md", "LICENSE.TXT", "py.typed"]
 forbidden = ["uv.lock", "dist/", "build/", "inventory/", "junit/", "role/"]
+
+[tool.basedpyright]
+pythonPlatform = "Linux"
+pythonVersion = "3.12"
+
+reportAny = "none"
+reportArgumentType = "none"
+reportAttributeAccessIssue = "none"
+reportCallInDefaultInitializer = "none"
+reportCallIssue = "none"
+reportExplicitAny = "none"
+reportImplicitOverride = "none"
+reportImplicitStringConcatenation = "none"
+reportMissingTypeStubs = "none"
+reportOptionalMemberAccess = "none"
+reportPossiblyUnboundVariable = "none"
+reportUnannotatedClassAttribute = "none"
+reportUnknownArgumentType = "none"
+reportUnusedCallResult = "none"
+reportUnknownLambdaType = "none"
+reportUnknownMemberType = "none"
+reportUnusedParameter = "none"
+reportUnknownVariableType = "none"
 
 [tool.check-wheel-contents]
 toplevel = "elogviewer/"
