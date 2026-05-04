@@ -537,6 +537,7 @@ class Elogviewer(ElogviewerUi):
         currentRow = self.currentRow()
         sm.reset()
 
+        filename: Path | None = None
         try:
             for index in reversed(selection):
                 filename = self.model.itemFromIndex(index).filename()
