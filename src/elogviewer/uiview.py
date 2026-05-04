@@ -359,24 +359,33 @@ class Elogviewer(ElogviewerUi):
                 QtWidgets.QMessageBox.about,
                 self,
                 "About (k)elogviewer",
-                "<h1>(k)elogviewer %s</h1>"
-                "(k)elogviewer, copyright (c) 2007-2016 Mathias Laurin<br>"
-                "kelogviewer, copyright (c) 2007 Jeremy Wickersheimer<br>"
-                "GNU General Public License (GPL) version 2<br>"
-                "<a href=http://sourceforge.net/projects/elogviewer>"
-                "http://sourceforge.net/projects/elogviewer</a>"
-                "<h2>Written by</h2>"
-                "Mathias Laurin (current maintainer)<br>"
-                "Timothy Kilbourn (initial author)<br>"
-                "Jeremy Wickersheimer (qt3/KDE port)<br>"
-                "David Radice, gentoo bug #187595<br>"
-                "Christian Faulhammer, gentoo bug #192701<br>"
-                "Fonic (<a href=https://github.com/fonic>github.com/fonic</a>),"
-                "github issues 2-3, 6-8<br>"
-                "<h2>Documented by</h2>"
-                "Christian Faulhammer"
-                '<a href="mailto:opfer@gentoo.org">&lt;opfer@gentoo.org&gt;</a>'
-                % __version__,
+                (
+                    f"<h1>(k)elogviewer {__version__}</h1>"
+                    + "<br>".join(
+                        [
+                            "(k)elogviewer, copyright (c) 2007-2016 Mathias Laurin",
+                            "kelogviewer, copyright (c) 2007 Jeremy Wickersheimer",
+                            "GNU General Public License (GPL) version 2"
+                            + "<a href=http://sourceforge.net/projects/elogviewer>"
+                            + "http://sourceforge.net/projects/elogviewer</a>",
+                        ]
+                    )
+                    + "<h2>Written by</h2>"
+                    + "<br>".join(
+                        [
+                            "Mathias Laurin (current maintainer)",
+                            "Timothy Kilbourn (initial author)",
+                            "Jeremy Wickersheimer (qt3/KDE port)",
+                            "David Radice, gentoo bug #187595",
+                            "Christian Faulhammer, gentoo bug #192701",
+                            "Fonic (<a href=https://github.com/fonic>github.com/fonic</a>),"
+                            + "github issues 2-3, 6-8",
+                        ]
+                    )
+                    + "<h2>Documented by</h2>"
+                    + "Christian Faulhammer"
+                    + '<a href="mailto:opfer@gentoo.org">&lt;opfer@gentoo.org&gt;</a>'
+                ),
             ),
         )
         self.exitAction = QtGui.QAction(  # type: ignore
@@ -532,8 +541,7 @@ class Elogviewer(ElogviewerUi):
             QtWidgets.QMessageBox.critical(
                 self,
                 "Error",
-                "Error while trying to delete"
-                "'%s':<br><b>%s</b>" % (filename, exc.strerror),
+                f"Error while trying to delete '{filename}':<br><b>{exc.strerror}</b>",
             )
 
         self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
