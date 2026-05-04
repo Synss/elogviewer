@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import argparse
+import dataclasses
 import logging
 import sys
 from pathlib import Path
@@ -18,6 +19,11 @@ except ImportError:
 _LOGGER = logging.getLogger("elogviewer")
 
 
+@dataclasses.dataclass
+class _Args:
+    elogpath: Path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -33,24 +39,21 @@ def main() -> None:
         help="set logging level",
     )
 
-    config = parser.parse_args()
+    args = parser.parse_args()
 
     logging.basicConfig()
-    _LOGGER.setLevel(getattr(logging, config.log))
+    _LOGGER.setLevel(getattr(logging, args.log))
 
     _LOGGER.debug("running on python %s", sys.version)
-    if portage and not config.elogpath:
-        logdir = portage.settings["PORT_LOGDIR"]  # type: ignore
+    if portage and not args.elogpath:
+        logdir = portage.settings["PORT_LOGDIR"]
         if not logdir:
             logdir = (
-                Path(portage.settings["EPREFIX"] or "/")  # type: ignore
-                / "var"
-                / "log"
-                / "portage"
+                Path(portage.settings["EPREFIX"] or "/") / "var" / "log" / "portage"
             )
-        config.elogpath = Path(logdir) / "elog"
+        config = _Args(elogpath=Path(logdir) / "elog")
     else:
-        config.elogpath = Path(config.elogpath)
+        config = _Args(elogpath=Path(args.elogpath))
 
     _LOGGER.debug("elogpath is set to %r", config.elogpath)
 

@@ -46,7 +46,6 @@ pythonPlatform = "Linux"
 pythonVersion = "3.12"
 
 reportAny = "none"
-reportArgumentType = "none"
 reportAttributeAccessIssue = "none"
 reportExplicitAny = "none"
 reportMissingTypeStubs = "none"
