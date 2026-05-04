@@ -155,11 +155,12 @@ class Model(QtCore.QAbstractTableModel):
             or role != Qt.ItemDataRole.DisplayRole
         ):
             return super().headerData(section, orientation, role)
-        return {  # type: ignore
+        col = Column(section)
+        return {
             Column.ImportantState: "‼",
             Column.ReadState: "Read",
             Column.Eclass: "Type",
-        }.pop(section, Column(section).name)
+        }.pop(col, col.name)
 
     @override
     def flags(self, index: QtCore.QModelIndex) -> Qt.ItemFlag:
@@ -194,30 +195,28 @@ class Model(QtCore.QAbstractTableModel):
         role: int = Qt.ItemDataRole.DisplayRole,
     ) -> object:
         item = self._data[index.row()]
+        col = Column(index.column())
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
-            return {  # type: ignore
+            return {
                 Column.Category: item.category(),
                 Column.Package: item.package(),
                 Column.Eclass: item.eclass().name,
                 Column.Date: item.localeTime(),
-            }.get(index.column(), "")
+            }.get(col, "")
         if role == Qt.ItemDataRole.CheckStateRole:
             return {
                 Column.ImportantState: item.importantState(),
                 Column.ReadState: item.readState(),
-            }.get(index.column())  # type: ignore
+            }.get(col)
         if role == Role.SortRole:
-            key = {  # type: ignore
+            key = {
                 Column.ImportantState: item.importantState,
                 Column.ReadState: item.readState,
                 Column.Date: item.isoTime,
                 Column.Eclass: lambda: item.eclass().value,
                 Column.Category: item.category().lower,
                 Column.Package: item.package().lower,
-            }.get(
-                index.column(),
-                lambda: self.data(index, Qt.ItemDataRole.DisplayRole),
-            )()
+            }.get(col, lambda: self.data(index, Qt.ItemDataRole.DisplayRole))()
             return f"{key}{item.isoTime()}"
         return None
 
