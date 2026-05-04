@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import glob
 import itertools
-from contextlib import AbstractContextManager, suppress
+from contextlib import AbstractContextManager
 from functools import partial
 from pathlib import Path
 from typing import IO, Final, Protocol, override
@@ -22,9 +22,9 @@ Qt = QtCore.Qt
 
 def _sourceIndex(index: QtCore.QModelIndex) -> QtCore.QModelIndex:
     model = index.model()
-    with suppress(AttributeError):
-        index = model.mapToSource(index)  # type: ignore  # proxy
-    return index
+    if not model:
+        return index
+    return model.mapToSource(index)
 
 
 def _itemFromIndex(index: QtCore.QModelIndex) -> ElogModelItem:
