@@ -44,9 +44,9 @@ forbidden = ["uv.lock", "dist/", "build/", "inventory/", "junit/", "role/"]
 [tool.basedpyright]
 pythonPlatform = "Linux"
 pythonVersion = "3.12"
+stubPath = "typings"
 
 reportAny = "none"
-reportAttributeAccessIssue = "none"
 reportExplicitAny = "none"
 reportMissingTypeStubs = "none"
 reportUnannotatedClassAttribute = "none"
