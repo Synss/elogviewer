@@ -228,10 +228,11 @@ class Model(QtCore.QAbstractTableModel):
         role: int = Qt.ItemDataRole.EditRole,
     ) -> bool:
         try:
-            {  # type: ignore
+            col = Column(index.column())
+            {
                 Column.ImportantState: self.toggleImportantState,
                 Column.ReadState: self.toggleReadState,
-            }[index.column()](index)
+            }[col](index)
         except KeyError:
             return super().setData(index, value, role)
         else:
