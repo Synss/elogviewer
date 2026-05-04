@@ -139,7 +139,7 @@ class Model(QtCore.QAbstractTableModel):
         self.beginRemoveRows(parent, row, max(row, last - 1))
         idx = -1
         for idx in range(row, row + count):
-            self._data.pop(row)
+            del self._data[row]
         self.endRemoveRows()
         return idx > -1
 
@@ -160,7 +160,7 @@ class Model(QtCore.QAbstractTableModel):
             Column.ImportantState: "‼",
             Column.ReadState: "Read",
             Column.Eclass: "Type",
-        }.pop(col, col.name)
+        }.get(col, col.name)
 
     @override
     def flags(self, index: QtCore.QModelIndex) -> Qt.ItemFlag:
@@ -233,7 +233,7 @@ class Model(QtCore.QAbstractTableModel):
                 Column.ImportantState: self.toggleImportantState,
                 Column.ReadState: self.toggleReadState,
             }[col](index)
-        except KeyError:
+        except (KeyError, ValueError):
             return super().setData(index, value, role)
         else:
             return True
