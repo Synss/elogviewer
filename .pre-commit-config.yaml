@@ -35,11 +35,12 @@ repos:
         language: unsupported
         types: [python]
 
-      - id: ty
-        name: ty check
-        entry: uv run --group dev ty check
+      - id: basedpyright
+        name: basedpyright
+        entry: uv run --group dev basedpyright
         language: unsupported
         types: [python]
+        pass_filenames: false
 
       - id: yamllint
         name: yamllint
