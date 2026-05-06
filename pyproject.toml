@@ -53,7 +53,6 @@ reportUnannotatedClassAttribute = "none"
 reportUnknownArgumentType = "none"
 reportUnusedCallResult = "none"
 reportUnknownLambdaType = "none"
-reportUnknownMemberType = "none"
 
 [tool.check-wheel-contents]
 toplevel = "elogviewer/"
