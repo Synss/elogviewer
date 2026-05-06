@@ -49,7 +49,6 @@ stubPath = "typings"
 reportAny = "none"
 reportExplicitAny = "none"
 reportMissingTypeStubs = "none"
-reportUnannotatedClassAttribute = "none"
 reportUnusedCallResult = "none"
 
 [tool.check-wheel-contents]

@@ -11,7 +11,7 @@ import time
 from contextlib import AbstractContextManager, closing
 from dataclasses import dataclass
 from pathlib import Path
-from typing import IO
+from typing import IO, final
 
 from .eclass import EClass
 
@@ -60,6 +60,7 @@ def _open(filename: Path) -> AbstractContextManager[IO[str]]:
         )
 
 
+@final
 @dataclass(frozen=True)
 class Elog:
     filename: Path
