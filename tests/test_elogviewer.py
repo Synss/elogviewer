@@ -444,7 +444,6 @@ class TestUI:
     def testReadFontStyleDelegatePaintRespectsSortOrder(
         self,
         elogviewer: Elogviewer,
-        qtbot: QtBot,
     ) -> None:
         elogviewer.tableView.sortByColumn(Column.Package, Qt.SortOrder.AscendingOrder)
         elogviewer.model.setReadState(
