@@ -50,9 +50,7 @@ reportAny = "none"
 reportExplicitAny = "none"
 reportMissingTypeStubs = "none"
 reportUnannotatedClassAttribute = "none"
-reportUnknownArgumentType = "none"
 reportUnusedCallResult = "none"
-reportUnknownLambdaType = "none"
 
 [tool.check-wheel-contents]
 toplevel = "elogviewer/"
