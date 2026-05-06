@@ -24,7 +24,7 @@ def _sourceIndex(index: QtCore.QModelIndex) -> QtCore.QModelIndex:
     model = index.model()
     if not model:
         return index
-    return model.mapToSource(index)
+    return model.mapToSource(index)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
 
 
 def _itemFromIndex(index: QtCore.QModelIndex) -> ElogModelItem:
@@ -38,7 +38,7 @@ def _itemFromIndex(index: QtCore.QModelIndex) -> ElogModelItem:
 def makeHtml(
     file: AbstractContextManager[IO[str]], *, colorStrategy: ColorStrategy
 ) -> str:
-    parsed = []
+    parsed: list[str | None] = []
     with ParserFSM(parsed, colorStrategy=colorStrategy) as parser, file as f:
         for line in f:
             parser.parse(line)
