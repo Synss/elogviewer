@@ -55,7 +55,6 @@ reportUnusedCallResult = "none"
 reportUnknownLambdaType = "none"
 reportUnknownMemberType = "none"
 reportUnusedParameter = "none"
-reportUnknownVariableType = "none"
 
 [tool.check-wheel-contents]
 toplevel = "elogviewer/"
