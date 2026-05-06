@@ -292,9 +292,7 @@ class Elogviewer(ElogviewerUi):
 
         horizontalHeader = self.tableView.horizontalHeader()
         assert horizontalHeader is not None
-        horizontalHeader.sortIndicatorChanged.connect(
-            lambda column, order: self.proxyModel.sort(column, order)
-        )
+        horizontalHeader.sortIndicatorChanged.connect(self.proxyModel.sort)
 
         for column, delegate in (
             (Column.ImportantState, ButtonDelegate("★", "☆", self.tableView)),
@@ -312,9 +310,9 @@ class Elogviewer(ElogviewerUi):
         selectionModel = self.tableView.selectionModel()
         assert selectionModel is not None
         selectionModel.currentRowChanged.connect(
-            lambda curr, prev: self.textEditMapper.setCurrentModelIndex(
-                _sourceIndex(curr),
-            ),
+            lambda curr, prev: self.textEditMapper.setCurrentModelIndex(  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+                _sourceIndex(curr),  # pyright: ignore[reportUnknownArgumentType]
+            )
         )
 
         iconFromTheme = QtGui.QIcon.fromTheme
