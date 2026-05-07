@@ -8,12 +8,14 @@ from collections.abc import Iterable, Iterator
 from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol, TypeAlias
+from typing import Protocol
 
 import pytest
 from pyfakefs.fake_filesystem_unittest import Patcher
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
+from pytestqt.modeltest import ModelTester as QtModelTester
+from pytestqt.qtbot import QtBot
 
 from elogviewer.eclass import EClass
 from elogviewer.elog import Elog
@@ -28,9 +30,6 @@ from elogviewer.parser import (
 from elogviewer.uiview import Elogviewer, eclassColor, makeHtml
 
 from . import fuzz as _fuzz
-
-QtBot: TypeAlias = Any
-QtModelTester: TypeAlias = Any
 
 
 class _FakeFilesystem(Protocol):
