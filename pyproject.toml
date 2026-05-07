@@ -47,7 +47,7 @@ pythonVersion = "3.12"
 stubPath = "typings"
 
 reportAny = "none"
-reportMissingTypeStubs = "none"
+reportMissingTypeStubs = "none"  # PyQt6 stubs -- maybe missing `__init__.pyi`
 reportUnknownMemberType = "none"
 reportUnannotatedClassAttribute = "none"
 reportUnusedCallResult = "none"
