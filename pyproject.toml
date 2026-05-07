@@ -47,8 +47,9 @@ pythonVersion = "3.12"
 stubPath = "typings"
 
 reportAny = "none"
-reportExplicitAny = "none"
 reportMissingTypeStubs = "none"
+reportUnknownMemberType = "none"
+reportUnannotatedClassAttribute = "none"
 reportUnusedCallResult = "none"
 
 [tool.check-wheel-contents]

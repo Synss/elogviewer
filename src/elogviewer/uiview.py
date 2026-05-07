@@ -24,7 +24,7 @@ def _sourceIndex(index: QtCore.QModelIndex) -> QtCore.QModelIndex:
     model = index.model()
     if not model:
         return index
-    return model.mapToSource(index)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownVariableType]
+    return model.mapToSource(index)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
 
 
 def _itemFromIndex(index: QtCore.QModelIndex) -> ElogModelItem:
