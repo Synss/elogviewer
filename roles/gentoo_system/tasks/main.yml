@@ -18,15 +18,16 @@
   retries: 3 # rsync may be flaky in the CI.
   delay: 30
 
-- name: "Gather package facts"
-  ansible.builtin.package_facts:
-    manager: auto
+- name: "Check if equery is installed"
+  ansible.builtin.stat:
+    path: /usr/bin/equery
+  register: _gentoo_system_equery
 
 - name: "Install `equery` (for portage module)"
   ansible.builtin.command: /usr/bin/emerge app-portage/gentoolkit
   environment: "{{ {'PYTHON_TARGETS': python_single_target} if python_single_target is defined else {} }}"
-  when: "'app-portage/gentoolkit' not in ansible_facts.packages"
-  changed_when: true
+  when: not _gentoo_system_equery.stat.exists
+  changed_when: not _gentoo_system_equery.stat.exists
 
 - name: "Ensure /etc/portage/package.mask directory exists"
   ansible.builtin.file:
