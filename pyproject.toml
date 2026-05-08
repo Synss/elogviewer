@@ -45,6 +45,7 @@ forbidden = ["uv.lock", "dist/", "build/", "inventory/", "junit/", "role/"]
 pythonPlatform = "Linux"
 pythonVersion = "3.12"
 stubPath = "typings"
+include = ["src", "tests"]
 
 reportAny = "none"
 reportMissingTypeStubs = "none"  # PyQt6 stubs -- maybe missing `__init__.pyi`
