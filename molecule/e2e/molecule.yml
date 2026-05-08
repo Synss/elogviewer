@@ -28,6 +28,7 @@ provisioner:
         hosts:
           gentoo-e2e:
             ansible_connection: docker
+            ansible_become_method: su
   playbooks:
     prepare: prepare.yml
     converge: converge.yml
