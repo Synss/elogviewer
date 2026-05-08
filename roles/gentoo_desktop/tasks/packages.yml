@@ -6,6 +6,7 @@
       - kde-frameworks/breeze-icons
       - media-fonts/dejavu
       - media-fonts/ttf-bitstream-vera
+      - x11-apps/xrandr
       - x11-base/xorg-server
       - x11-misc/menumaker
       - x11-terms/xterm

@@ -16,11 +16,19 @@
         withbdeps: true
       register: gentoo_system_update_world
       changed_when: false
+      failed_when: gentoo_system_update_world.rc != 0
+
+    - name: Rebuild packages broken by slot changes
+      community.general.portage:
+        package: "@preserved-rebuild"
+        state: present
+      changed_when: false
+      failed_when: false
 
     - name: Report cache hits [world]
       ansible.builtin.include_tasks: report_cache_hits.yml
       vars:
-        _output: "{{ gentoo_system_update_world.msg }}"
+        _output: "{{ gentoo_system_update_world.stdout }}{{ gentoo_system_update_world.stderr }}"
 
     - name: Update cache [world]
       ansible.posix.synchronize:
@@ -46,5 +54,5 @@
     msg: "Kernel update detected, requesting reboot"
   when:
     - gentoo_system_update_world is defined
-    - gentoo_system_update_world.msg is search('sys-kernel/')
+    - gentoo_system_update_world.stdout is search('sys-kernel/')
   notify: Reboot system

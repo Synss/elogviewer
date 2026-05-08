@@ -13,3 +13,4 @@ gentoo_base_package_use_lines:
   - x11-base/xorg-server suid
   - x11-libs/libxcb xkb
   - x11-wm/openbox session
+  - app-emulation/virtualbox-guest-additions gui

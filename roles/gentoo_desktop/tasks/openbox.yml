@@ -11,6 +11,28 @@
   when: not gentoo_desktop_openbox_menu.stat.exists
   changed_when: true
 
+- name: Remove VBoxClient --display from OpenBox autostart
+  ansible.builtin.lineinfile:
+    path: /home/{{ gentoo_user_name }}/.config/openbox/autostart
+    line: "/usr/bin/VBoxClient --display &"
+    state: absent
+
+- name: Remove VBoxDRMClient from OpenBox autostart
+  ansible.builtin.lineinfile:
+    path: /home/{{ gentoo_user_name }}/.config/openbox/autostart
+    line: "/usr/bin/VBoxDRMClient &"
+    state: absent
+
+- name: Configure VBoxClient-all in OpenBox autostart
+  ansible.builtin.lineinfile:
+    path: /home/{{ gentoo_user_name }}/.config/openbox/autostart
+    line: "/usr/bin/VBoxClient-all &"
+    state: present
+    create: true
+    mode: "0644"
+    owner: "{{ gentoo_user_name }}"
+    group: "{{ gentoo_user_name }}"
+
 - name: Set xsession env
   ansible.builtin.lineinfile:
     path: /home/{{ gentoo_user_name }}/.bashrc
