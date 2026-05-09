@@ -39,18 +39,50 @@
       ansible.builtin.debug:
         msg: "Gentoo Python version: {{ _gentoo_python_version.stdout }}"
 
-    - name: Copy elogviewer source to container
+    - name: Build sdist
+      ansible.builtin.command:
+        cmd: uv build --sdist
+        chdir: "{{ playbook_dir | dirname | dirname }}"
+      delegate_to: localhost
+      changed_when: true
+
+    - name: Find sdist
+      ansible.builtin.find:
+        paths: "{{ playbook_dir | dirname | dirname }}/dist"
+        patterns: "elogviewer-*.tar.gz"
+      delegate_to: localhost
+      register: _sdist
+
+    - name: Copy sdist to container
       ansible.builtin.copy:
-        src: "{{ playbook_dir | dirname | dirname }}/{{ item }}"
-        dest: /tmp/{{ item }}
+        src: "{{ (_sdist.files | sort(attribute='mtime') | last).path }}"
+        dest: /tmp/elogviewer.tar.gz
         mode: "0644"
-      loop:
-        - elogviewer.py
-        - tests/
+
+    - name: Create extraction directory
+      ansible.builtin.file:
+        path: /tmp/elogviewer-src
+        state: directory
+        mode: "0755"
+
+    - name: Extract sdist
+      ansible.builtin.unarchive:
+        src: /tmp/elogviewer.tar.gz
+        dest: /tmp/elogviewer-src
+        remote_src: true
+        extra_opts: ["--strip-components=1"]
+
+    - name: Create venv
+      ansible.builtin.command: python3 -m venv --system-site-packages /tmp/elogviewer-venv
+      changed_when: true
+
+    - name: Install elogviewer into venv
+      ansible.builtin.command: >-
+        uv pip install --python /tmp/elogviewer-venv/bin/python /tmp/elogviewer-src
+      changed_when: true
 
     - name: Run pytest suite
-      ansible.builtin.command: python -m pytest /tmp/tests/
+      ansible.builtin.command: /tmp/elogviewer-venv/bin/python -m pytest /tmp/elogviewer-src/tests/
       environment:
         QT_QPA_PLATFORM: offscreen
-        PYTHONPATH: /tmp
       changed_when: false
