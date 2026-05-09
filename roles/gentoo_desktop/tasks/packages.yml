@@ -6,10 +6,12 @@
       - kde-frameworks/breeze-icons
       - media-fonts/dejavu
       - media-fonts/ttf-bitstream-vera
+      - media-gfx/feh
       - x11-apps/xrandr
       - x11-base/xorg-server
       - x11-misc/menumaker
       - x11-terms/xterm
+      - x11-themes/gentoo-artwork
       - x11-wm/openbox
       - x11-wm/twm
     state: present
