@@ -8,4 +8,5 @@
       - dev-python/pytest
       - dev-python/pytest-qt
       - dev-python/pyqt6
+      - media-libs/libglvnd
     state: present

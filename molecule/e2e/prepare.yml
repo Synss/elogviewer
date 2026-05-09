@@ -8,3 +8,16 @@
         path: "{{ lookup('env', 'JUNIT_OUTPUT_DIR') }}"
         state: directory
         mode: "0755"
+
+- name: Bootstrap container
+  hosts: all
+  gather_facts: false
+  become: false
+  vars:
+    ansible_pipelining: true
+  tasks:
+    - name: Create Ansible temp directory
+      ansible.builtin.file:
+        path: /tmp/.ansible
+        state: directory
+        mode: "0700"
