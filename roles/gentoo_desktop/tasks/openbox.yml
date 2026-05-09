@@ -33,6 +33,16 @@
     owner: "{{ gentoo_user_name }}"
     group: "{{ gentoo_user_name }}"
 
+- name: Configure wallpaper in OpenBox autostart
+  ansible.builtin.lineinfile:
+    path: /home/{{ gentoo_user_name }}/.config/openbox/autostart
+    line: "feh --bg-fill /usr/share/pixmaps/gentoo/1024x768 &"
+    state: present
+    create: true
+    mode: "0644"
+    owner: "{{ gentoo_user_name }}"
+    group: "{{ gentoo_user_name }}"
+
 - name: Set xsession env
   ansible.builtin.lineinfile:
     path: /home/{{ gentoo_user_name }}/.bashrc
