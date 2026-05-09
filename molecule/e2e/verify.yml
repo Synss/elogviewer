@@ -76,9 +76,10 @@
       ansible.builtin.command: python3 -m venv --system-site-packages /tmp/elogviewer-venv
       changed_when: true
 
-    - name: Install elogviewer into venv
+    - name: Install elogviewer and test dependencies into venv
       ansible.builtin.command: >-
-        uv pip install --python /tmp/elogviewer-venv/bin/python /tmp/elogviewer-src
+        uv pip install --python /tmp/elogviewer-venv/bin/python
+        /tmp/elogviewer-src pytest pytest-qt pyfakefs
       changed_when: true
 
     - name: Run pytest suite
