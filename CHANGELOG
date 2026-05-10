@@ -1,5 +1,5 @@
-Next
-----
+Version 3.4
+-----------
 
 - Performance improvements on bulk operations.
 - Improved consistency and predictability on bulk operations:
