@@ -21,14 +21,14 @@ jobs:
         artefact: ['sdist']
       fail-fast: false
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-python
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - uses: extractions/setup-just@v4
-      - uses: shogo82148/actions-setup-perl@v1.40.1
+      - uses: shogo82148/actions-setup-perl@v1.41.1
         with:
           install-modules-with: cpm
           install-modules: TOML::Tiny
