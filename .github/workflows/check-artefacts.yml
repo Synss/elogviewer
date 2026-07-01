@@ -21,7 +21,7 @@ jobs:
         artefact: ['sdist']
       fail-fast: false
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-python
