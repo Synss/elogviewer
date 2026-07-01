@@ -30,7 +30,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Restore cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         with:
           path: |
             .cache/docker/binpkgs
@@ -41,7 +41,7 @@ jobs:
       - name: Run e2e scenario
         run: uv run --group vm molecule test --scenario-name e2e
       - name: Save cache
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6.1.0
         if: ${{ !cancelled() }}
         with:
           path: |
