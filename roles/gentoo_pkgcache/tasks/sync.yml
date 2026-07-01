@@ -1,0 +1,11 @@
+---
+- name: "Sync package cache ({{ gentoo_pkgcache_direction }})"
+  ansible.posix.synchronize:
+    mode: "{{ gentoo_pkgcache_direction }}"
+    src: "{{ item.src }}/"
+    dest: "{{ item.dest }}/"
+    delete: "{{ gentoo_pkgcache_delete }}"
+    use_ssh_args: "{{ gentoo_pkgcache_use_ssh_args }}"
+  become: false
+  loop: "{{ gentoo_pkgcache_pairs }}"
+  failed_when: false

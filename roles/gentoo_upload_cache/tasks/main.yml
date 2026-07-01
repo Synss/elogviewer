@@ -12,13 +12,12 @@
   changed_when: false
 
 - name: Upload cache
-  ansible.posix.synchronize:
-    mode: push
-    src: "{{ item.src }}/"
-    dest: "{{ item.dest }}/"
-    use_ssh_args: true
-  loop:
-    - { src: "{{ gentoo_cache_binpkgs }}", dest: /var/cache/binpkgs }
-    - { src: "{{ gentoo_cache_distfiles }}", dest: /var/cache/distfiles }
-  failed_when: false
-  changed_when: false
+  ansible.builtin.include_role:
+    name: gentoo_pkgcache
+    tasks_from: sync.yml
+  vars:
+    gentoo_pkgcache_direction: push
+    gentoo_pkgcache_use_ssh_args: true
+    gentoo_pkgcache_pairs:
+      - { src: "{{ gentoo_cache_binpkgs }}", dest: /var/cache/binpkgs }
+      - { src: "{{ gentoo_cache_distfiles }}", dest: /var/cache/distfiles }
