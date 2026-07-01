@@ -1,0 +1,3 @@
+---
+gentoo_pkgcache_delete: false
+gentoo_pkgcache_use_ssh_args: false
