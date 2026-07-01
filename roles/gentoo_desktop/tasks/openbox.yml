@@ -1,15 +1,10 @@
 ---
-- name: Check for existing OpenBox menu
-  ansible.builtin.stat:
-    path: /home/{{ gentoo_user_name }}/.config/openbox/menu.xml
-  register: gentoo_desktop_openbox_menu
-
 - name: Create OpenBox menu
   ansible.builtin.command: /usr/bin/mmaker OpenBox3
+  args:
+    creates: /home/{{ gentoo_user_name }}/.config/openbox/menu.xml
   become_user: "{{ gentoo_user_name }}"
   become: true
-  when: not gentoo_desktop_openbox_menu.stat.exists
-  changed_when: true
 
 - name: Remove VBoxClient --display from OpenBox autostart
   ansible.builtin.lineinfile:
