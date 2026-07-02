@@ -25,6 +25,8 @@
     - name: Check elogviewer is available in portage
       ansible.builtin.command: emerge --pretend --ask=n app-portage/elogviewer
       changed_when: false
+      ignore_errors: true
+      register: gentoo_portage_elogviewer_check
 
     - name: Check uv is available
       ansible.builtin.command: uv --version
@@ -87,3 +89,12 @@
       environment:
         QT_QPA_PLATFORM: offscreen
       changed_when: false
+
+    - name: Fail if elogviewer is not installable via the official ebuild
+      ansible.builtin.fail:
+        msg: >-
+          app-portage/elogviewer could not be resolved by portage (see the
+          "Check elogviewer is available in portage" task above) — the
+          published ebuild likely needs a PYTHON_COMPAT or dependency bump to
+          track Gentoo's current defaults.
+      when: gentoo_portage_elogviewer_check is failed
