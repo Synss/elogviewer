@@ -189,8 +189,8 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         return False
 
 
-class ElogviewerUi(QtWidgets.QMainWindow):
-    def __init__(self) -> None:
+class Elogviewer(QtWidgets.QMainWindow):
+    def __init__(self, config: Config) -> None:
         super().__init__()
         centralWidget = QtWidgets.QWidget(self)
         centralLayout = QtWidgets.QVBoxLayout()
@@ -228,10 +228,6 @@ class ElogviewerUi(QtWidgets.QMainWindow):
         self.unreadLabel = QtWidgets.QLabel(statusBar)
         statusBar.addWidget(self.unreadLabel)
 
-
-class Elogviewer(ElogviewerUi):
-    def __init__(self, config: Config) -> None:
-        super().__init__()
         self.controller = ElogviewerController(self, config)
         settings = self.controller.settings
         if settings.contains("windowWidth") and settings.contains("windowHeight"):
@@ -253,8 +249,6 @@ class Elogviewer(ElogviewerUi):
         self.proxyModel.setSourceModel(self.model)
         self.tableView.setModel(self.proxyModel)
 
-        horizontalHeader = self.tableView.horizontalHeader()
-        assert horizontalHeader is not None
         horizontalHeader.sortIndicatorChanged.connect(self.proxyModel.sort)
 
         for column, delegate in (
