@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from contextlib import AbstractContextManager
 from functools import partial
 from typing import IO, override
@@ -300,73 +301,50 @@ class Elogviewer(QtWidgets.QMainWindow):
             )
         )
 
-        iconFromTheme = QtGui.QIcon.fromTheme
-        self.refreshAction = QtGui.QAction(
-            iconFromTheme("view-refresh"),
+        self.refreshAction = self._addToolBarAction(
+            "view-refresh",
             "Refresh",
-            self.toolBar,
+            self.controller.populate,
+            shortcut=QtGui.QKeySequence.StandardKey.Refresh,
         )
-        self.refreshAction.setShortcut(QtGui.QKeySequence.StandardKey.Refresh)
-        self.refreshAction.triggered.connect(self.controller.populate)
-        self.markReadAction = QtGui.QAction(
-            iconFromTheme("mail-mark-read"),
+        self.markReadAction = self._addToolBarAction(
+            "mail-mark-read",
             "Mark read",
-            self.toolBar,
+            partial(self.controller.setSelectedReadState, Qt.CheckState.Checked),
         )
-        self.markReadAction.triggered.connect(
-            partial(self.controller.setSelectedReadState, Qt.CheckState.Checked)
-        )
-        self.markUnreadAction = QtGui.QAction(
-            iconFromTheme("mail-mark-unread"),
+        self.markUnreadAction = self._addToolBarAction(
+            "mail-mark-unread",
             "Mark unread",
-            self.toolBar,
+            partial(self.controller.setSelectedReadState, Qt.CheckState.Unchecked),
         )
-        self.markUnreadAction.triggered.connect(
-            partial(self.controller.setSelectedReadState, Qt.CheckState.Unchecked)
-        )
-        self.toggleImportantAction = QtGui.QAction(
-            iconFromTheme("mail-mark-important"),
+        self.toggleImportantAction = self._addToolBarAction(
+            "mail-mark-important",
             "Important",
-            self.toolBar,
+            self.controller.toggleSelectedImportantState,
         )
-        self.toggleImportantAction.triggered.connect(
-            self.controller.toggleSelectedImportantState
-        )
-        self.deleteAction = QtGui.QAction(
-            iconFromTheme("edit-delete"),
+        self.deleteAction = self._addToolBarAction(
+            "edit-delete",
             "Delete",
-            self.toolBar,
+            self.controller.deleteSelected,
+            shortcut=QtGui.QKeySequence.StandardKey.Delete,
         )
-        self.deleteAction.setShortcut(QtGui.QKeySequence.StandardKey.Delete)
-        self.deleteAction.triggered.connect(self.controller.deleteSelected)
-        self.aboutAction = QtGui.QAction(
-            iconFromTheme("help-about"),
+        self.aboutAction = self._addToolBarAction(
+            "help-about",
             "About",
-            self.toolBar,
-        )
-        self.aboutAction.setShortcut(QtGui.QKeySequence.StandardKey.HelpContents)
-        self.aboutAction.triggered.connect(
             partial(
                 QtWidgets.QMessageBox.about,
                 self,
                 "About (k)elogviewer",
                 _ABOUT_HTML,
             ),
+            shortcut=QtGui.QKeySequence.StandardKey.HelpContents,
         )
-        self.exitAction = QtGui.QAction(
-            iconFromTheme("application-exit"),
+        self.exitAction = self._addToolBarAction(
+            "application-exit",
             "Quit",
-            self.toolBar,
+            self.close,
+            shortcut=QtGui.QKeySequence.StandardKey.Quit,
         )
-        self.exitAction.setShortcut(QtGui.QKeySequence.StandardKey.Quit)
-        self.exitAction.triggered.connect(self.close)
-        self.toolBar.addAction(self.refreshAction)
-        self.toolBar.addAction(self.markReadAction)
-        self.toolBar.addAction(self.markUnreadAction)
-        self.toolBar.addAction(self.toggleImportantAction)
-        self.toolBar.addAction(self.deleteAction)
-        self.toolBar.addAction(self.aboutAction)
-        self.toolBar.addAction(self.exitAction)
 
         def fromToolBar(name: str) -> QtWidgets.QWidget | None:
             action = getattr(self, "%sAction" % name)
@@ -403,3 +381,18 @@ class Elogviewer(QtWidgets.QMainWindow):
         else:
             self.tableView.sortByColumn(Column.Date, Qt.SortOrder.DescendingOrder)
         self.tableView.selectRow(0)
+
+    def _addToolBarAction(
+        self,
+        iconName: str,
+        text: str,
+        slot: Callable[[], object],
+        *,
+        shortcut: QtGui.QKeySequence.StandardKey | None = None,
+    ) -> QtGui.QAction:
+        action = QtGui.QAction(QtGui.QIcon.fromTheme(iconName), text, self.toolBar)
+        if shortcut is not None:
+            action.setShortcut(shortcut)
+        action.triggered.connect(slot)
+        self.toolBar.addAction(action)
+        return action
