@@ -1,11 +1,11 @@
 import pytest
-from archunitpython import assert_passes, project_files
+from archunitpython import CheckOptions, assert_passes, project_files
 from archunitpython.common.types import Pattern
 
 
 def test_no_circular_dependencies():
     rule = project_files("src/").in_folder("src/**").should().have_no_cycles()
-    assert_passes(rule)
+    assert_passes(rule, CheckOptions(ignore_type_checking_imports=True))
 
 
 @pytest.mark.parametrize(

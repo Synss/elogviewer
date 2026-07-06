@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import glob
-import itertools
 from contextlib import AbstractContextManager
 from functools import partial
-from pathlib import Path
-from typing import IO, Final, Protocol, override
+from typing import IO, override
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
@@ -15,24 +12,18 @@ from .__version__ import __version__
 from .eclass import EClass
 from .model import Column, ElogModelItem
 from .parser import ColorStrategy, ParserFSM
-from .uimodel import Model, Role
+from .uicontroller import Config, ElogviewerController
+from .uimodel import Model, Role, sourceIndex
 
 Qt = QtCore.Qt
 
 
-def _sourceIndex(index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-    model = index.model()
-    if not model:
-        return index
-    return model.mapToSource(index)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
-
-
 def _itemFromIndex(index: QtCore.QModelIndex) -> ElogModelItem:
     assert index.isValid()
-    sourceIndex = _sourceIndex(index)
-    model = sourceIndex.model()
+    srcIndex = sourceIndex(index)
+    model = srcIndex.model()
     assert isinstance(model, Model)
-    return model.itemFromIndex(sourceIndex)
+    return model.itemFromIndex(srcIndex)
 
 
 def makeHtml(
@@ -198,23 +189,6 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         return False
 
 
-class StateStore:
-    def __init__(self, settings: QtCore.QSettings) -> None:
-        self.settings: Final = settings
-
-    def loadRead(self) -> frozenset[Path]:
-        return frozenset(Path(p) for p in self.settings.value("readFlag"))
-
-    def loadImportant(self) -> frozenset[Path]:
-        return frozenset(Path(p) for p in self.settings.value("importantFlag"))
-
-    def saveRead(self, names: frozenset[Path]) -> None:
-        self.settings.setValue("readFlag", frozenset(str(p) for p in names))
-
-    def saveImportant(self, names: frozenset[Path]) -> None:
-        self.settings.setValue("importantFlag", frozenset(str(p) for p in names))
-
-
 class ElogviewerUi(QtWidgets.QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -255,26 +229,15 @@ class ElogviewerUi(QtWidgets.QMainWindow):
         statusBar.addWidget(self.unreadLabel)
 
 
-class _Config(Protocol):
-    @property
-    def elogpath(self) -> Path: ...
-
-
 class Elogviewer(ElogviewerUi):
-    def __init__(self, config: _Config) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.config = config
-        self.settings = QtCore.QSettings("elogviewer", "elogviewer")
-        if not self.settings.contains("readFlag"):
-            self.settings.setValue("readFlag", set())
-        if not self.settings.contains("importantFlag"):
-            self.settings.setValue("importantFlag", set())
-        if self.settings.contains("windowWidth") and self.settings.contains(
-            "windowHeight",
-        ):
+        self.controller = ElogviewerController(self, config)
+        settings = self.controller.settings
+        if settings.contains("windowWidth") and settings.contains("windowHeight"):
             self.resize(
-                int(self.settings.value("windowWidth")),
-                int(self.settings.value("windowHeight")),
+                int(settings.value("windowWidth")),
+                int(settings.value("windowHeight")),
             )
         else:
             primaryScreen = QtWidgets.QApplication.primaryScreen()
@@ -283,7 +246,7 @@ class Elogviewer(ElogviewerUi):
             self.resize(screenSize.width() // 2, screenSize.height() // 2)
 
         self.model = Model(self.tableView)
-        self.model.dataChanged.connect(self.saveSettings)
+        self.model.dataChanged.connect(self.controller.saveSettings)
         self.proxyModel = QtCore.QSortFilterProxyModel(self.tableView)
         self.proxyModel.setFilterKeyColumn(Column.Package)
         self.proxyModel.setSortRole(Role.SortRole)
@@ -311,7 +274,7 @@ class Elogviewer(ElogviewerUi):
         assert selectionModel is not None
         selectionModel.currentRowChanged.connect(
             lambda curr, prev: self.textEditMapper.setCurrentModelIndex(  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
-                _sourceIndex(curr),  # pyright: ignore[reportUnknownArgumentType]
+                sourceIndex(curr),  # pyright: ignore[reportUnknownArgumentType]
             )
         )
 
@@ -322,14 +285,14 @@ class Elogviewer(ElogviewerUi):
             self.toolBar,
         )
         self.refreshAction.setShortcut(QtGui.QKeySequence.StandardKey.Refresh)
-        self.refreshAction.triggered.connect(self.populate)
+        self.refreshAction.triggered.connect(self.controller.populate)
         self.markReadAction = QtGui.QAction(
             iconFromTheme("mail-mark-read"),
             "Mark read",
             self.toolBar,
         )
         self.markReadAction.triggered.connect(
-            partial(self.setSelectedReadState, Qt.CheckState.Checked)
+            partial(self.controller.setSelectedReadState, Qt.CheckState.Checked)
         )
         self.markUnreadAction = QtGui.QAction(
             iconFromTheme("mail-mark-unread"),
@@ -337,21 +300,23 @@ class Elogviewer(ElogviewerUi):
             self.toolBar,
         )
         self.markUnreadAction.triggered.connect(
-            partial(self.setSelectedReadState, Qt.CheckState.Unchecked)
+            partial(self.controller.setSelectedReadState, Qt.CheckState.Unchecked)
         )
         self.toggleImportantAction = QtGui.QAction(
             iconFromTheme("mail-mark-important"),
             "Important",
             self.toolBar,
         )
-        self.toggleImportantAction.triggered.connect(self.toggleSelectedImportantState)
+        self.toggleImportantAction.triggered.connect(
+            self.controller.toggleSelectedImportantState
+        )
         self.deleteAction = QtGui.QAction(
             iconFromTheme("edit-delete"),
             "Delete",
             self.toolBar,
         )
         self.deleteAction.setShortcut(QtGui.QKeySequence.StandardKey.Delete)
-        self.deleteAction.triggered.connect(self.deleteSelected)
+        self.deleteAction.triggered.connect(self.controller.deleteSelected)
         self.aboutAction = QtGui.QAction(
             iconFromTheme("help-about"),
             "About",
@@ -420,7 +385,7 @@ class Elogviewer(ElogviewerUi):
 
         selectionModel2 = self.tableView.selectionModel()
         assert selectionModel2 is not None
-        selectionModel2.currentRowChanged.connect(self.onCurrentRowChanged)
+        selectionModel2.currentRowChanged.connect(self.controller.onCurrentRowChanged)
 
         self.searchLineEdit = QtWidgets.QLineEdit(self.toolBar)
         self.searchLineEdit.setPlaceholderText("search")
@@ -429,142 +394,16 @@ class Elogviewer(ElogviewerUi):
         )
         self.toolBar.addWidget(self.searchLineEdit)
 
-        QtCore.QTimer.singleShot(100, self.populate)
-        if self.settings.contains("sortColumn") and self.settings.contains("sortOrder"):
+        QtCore.QTimer.singleShot(100, self.controller.populate)
+        if settings.contains("sortColumn") and settings.contains("sortOrder"):
             self.tableView.sortByColumn(
-                int(self.settings.value("sortColumn")),
+                int(settings.value("sortColumn")),
                 (
                     Qt.SortOrder.DescendingOrder
-                    if self.settings.value("sortOrder") == 1
+                    if settings.value("sortOrder") == 1
                     else Qt.SortOrder.AscendingOrder
                 ),
             )
         else:
             self.tableView.sortByColumn(Column.Date, Qt.SortOrder.DescendingOrder)
         self.tableView.selectRow(0)
-
-    def saveSettings(self) -> None:
-        self.model.save(StateStore(self.settings))
-        hdr = self.tableView.horizontalHeader()
-        assert hdr is not None
-        self.settings.setValue("sortColumn", hdr.sortIndicatorSection())
-        self.settings.setValue("sortOrder", hdr.sortIndicatorOrder())
-        self.settings.setValue("windowWidth", self.width())
-        self.settings.setValue("windowHeight", self.height())
-
-    def onCurrentRowChanged(
-        self,
-        current: QtCore.QModelIndex,
-        previous: QtCore.QModelIndex,
-    ) -> None:
-        if previous.row() != -1:
-            index = self.model.index(
-                _sourceIndex(current).row(),
-                Column.ReadState,
-                current.parent(),
-            )
-            self.model.setReadState(index, Qt.CheckState.Checked)
-        self.updateStatus()
-        self.updateUnreadCount()
-
-    def updateStatus(self) -> None:
-        text = "%i of %i elogs" % (self.currentRow() + 1, self.model.elogCount())
-        self.statusLabel.setText(text)
-
-    def updateUnreadCount(self) -> None:
-        text = "%i unread" % self.model.unreadCount()
-        self.unreadLabel.setText(text)
-        self.setWindowTitle("Elogviewer (%s)" % text)
-
-    def currentRow(self) -> int:
-        sm = self.tableView.selectionModel()
-        assert sm is not None
-        return sm.currentIndex().row()
-
-    def rowCount(self) -> int:
-        return self.proxyModel.rowCount()
-
-    def setSelectedReadState(self, state: Qt.CheckState) -> None:
-        sm = self.tableView.selectionModel()
-        assert sm is not None
-        rows = sm.selectedRows(Column.ReadState)
-        if not rows:
-            return
-        self.model.blockSignals(True)
-        try:
-            for index in rows:
-                self.model.setReadState(_sourceIndex(index), state)
-        finally:
-            self.model.blockSignals(False)
-        self.model.dataChanged.emit(
-            self.model.index(0, 0),
-            self.model.index(self.model.rowCount() - 1, self.model.columnCount() - 1),
-        )
-        self.updateUnreadCount()
-
-    def toggleSelectedImportantState(self) -> None:
-        sm = self.tableView.selectionModel()
-        assert sm is not None
-        rows = sm.selectedRows(Column.ImportantState)
-        if not rows:
-            return
-        firstSourceIndex = _sourceIndex(rows[0])
-        state = (
-            Qt.CheckState.Unchecked
-            if self.model.importantState(firstSourceIndex) is Qt.CheckState.Checked
-            else Qt.CheckState.Checked
-        )
-        self.model.blockSignals(True)
-        try:
-            for index in rows:
-                self.model.setImportantState(_sourceIndex(index), state)
-        finally:
-            self.model.blockSignals(False)
-        self.model.dataChanged.emit(
-            self.model.index(0, Column.ImportantState),
-            self.model.index(self.model.rowCount() - 1, Column.ImportantState),
-        )
-
-    def deleteSelected(self) -> None:
-        sm = self.tableView.selectionModel()
-        assert sm is not None
-        selection = [self.proxyModel.mapToSource(idx) for idx in sm.selectedRows()]
-        selection.sort(key=lambda idx: idx.row())
-        # Avoid call to onCurrentRowChanged() by clearing
-        # selection with reset().
-        currentRow = self.currentRow()
-        sm.reset()
-
-        filename: Path | None = None
-        try:
-            for index in reversed(selection):
-                filename = self.model.itemFromIndex(index).filename()
-                if filename.exists():
-                    filename.unlink()
-                self.model.removeRow(index.row())
-        except OSError as exc:
-            QtWidgets.QMessageBox.critical(
-                self,
-                "Error",
-                f"Error while trying to delete '{filename}':<br><b>{exc.strerror}</b>",
-            )
-
-        self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
-        self.updateStatus()
-
-    def populate(self) -> None:
-        currentRow = self.currentRow()
-        sm = self.tableView.selectionModel()
-        assert sm is not None
-        sm.reset()
-        self.model.populate(
-            (
-                Path(f)
-                for f in itertools.chain(
-                    glob.iglob(str(self.config.elogpath / "*:*:*.log*")),
-                    glob.iglob(str(self.config.elogpath / "*" / "*:*.log*")),
-                )
-            ),
-            settings=StateStore(self.settings),
-        )
-        self.tableView.selectRow(min(currentRow, self.rowCount() - 1))
