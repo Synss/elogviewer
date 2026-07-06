@@ -17,6 +17,34 @@ from .uimodel import Model, Role, sourceIndex
 
 Qt = QtCore.Qt
 
+_ABOUT_HTML = (
+    f"<h1>(k)elogviewer {__version__}</h1>"
+    + "<br>".join(
+        [
+            "(k)elogviewer, copyright (c) 2007-2016 Mathias Laurin",
+            "kelogviewer, copyright (c) 2007 Jeremy Wickersheimer",
+            "GNU General Public License (GPL) version 2"
+            + "<a href=http://sourceforge.net/projects/elogviewer>"
+            + "http://sourceforge.net/projects/elogviewer</a>",
+        ]
+    )
+    + "<h2>Written by</h2>"
+    + "<br>".join(
+        [
+            "Mathias Laurin (current maintainer)",
+            "Timothy Kilbourn (initial author)",
+            "Jeremy Wickersheimer (qt3/KDE port)",
+            "David Radice, gentoo bug #187595",
+            "Christian Faulhammer, gentoo bug #192701",
+            "Fonic (<a href=https://github.com/fonic>github.com/fonic</a>),"
+            + "github issues 2-3, 6-8",
+        ]
+    )
+    + "<h2>Documented by</h2>"
+    + "Christian Faulhammer"
+    + '<a href="mailto:opfer@gentoo.org">&lt;opfer@gentoo.org&gt;</a>'
+)
+
 
 def _itemFromIndex(index: QtCore.QModelIndex) -> ElogModelItem:
     assert index.isValid()
@@ -322,33 +350,7 @@ class Elogviewer(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.about,
                 self,
                 "About (k)elogviewer",
-                (
-                    f"<h1>(k)elogviewer {__version__}</h1>"
-                    + "<br>".join(
-                        [
-                            "(k)elogviewer, copyright (c) 2007-2016 Mathias Laurin",
-                            "kelogviewer, copyright (c) 2007 Jeremy Wickersheimer",
-                            "GNU General Public License (GPL) version 2"
-                            + "<a href=http://sourceforge.net/projects/elogviewer>"
-                            + "http://sourceforge.net/projects/elogviewer</a>",
-                        ]
-                    )
-                    + "<h2>Written by</h2>"
-                    + "<br>".join(
-                        [
-                            "Mathias Laurin (current maintainer)",
-                            "Timothy Kilbourn (initial author)",
-                            "Jeremy Wickersheimer (qt3/KDE port)",
-                            "David Radice, gentoo bug #187595",
-                            "Christian Faulhammer, gentoo bug #192701",
-                            "Fonic (<a href=https://github.com/fonic>github.com/fonic</a>),"
-                            + "github issues 2-3, 6-8",
-                        ]
-                    )
-                    + "<h2>Documented by</h2>"
-                    + "Christian Faulhammer"
-                    + '<a href="mailto:opfer@gentoo.org">&lt;opfer@gentoo.org&gt;</a>'
-                ),
+                _ABOUT_HTML,
             ),
         )
         self.exitAction = QtGui.QAction(
