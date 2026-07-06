@@ -92,6 +92,15 @@ wheels = [
 ]
 
 [[package]]
+name = "archunitpython"
+version = "1.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/75/cc/939d8ebe28cc8c931e121fd2b4f92cf4b8df83dd3e87c813124be56c6b98/archunitpython-1.3.0.tar.gz", hash = "sha256:ae6473502ddbe6928f28a79f806aee9e15e274c54886b2d25648fb9d3df8d2ec", size = 389707, upload-time = "2026-07-05T18:31:31.371Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f5/39/f77035787c677e60cff92b39f8ca8b1bf4158ca7fbb78030bd45c3de8235/archunitpython-1.3.0-py3-none-any.whl", hash = "sha256:1e2fce0eac59a41945c962cdb392274d4edeaa33f3d09ba224b48035a98321c5", size = 76023, upload-time = "2026-07-05T18:31:30.314Z" },
+]
+
+[[package]]
 name = "attrs"
 version = "26.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -433,6 +442,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "archunitpython" },
     { name = "basedpyright" },
     { name = "check-wheel-contents" },
     { name = "pre-commit" },
@@ -461,6 +471,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "archunitpython" },
     { name = "basedpyright" },
     { name = "check-wheel-contents" },
     { name = "pre-commit" },

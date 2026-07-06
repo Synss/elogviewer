@@ -24,6 +24,7 @@ classifiers = [
 
 [dependency-groups]
 dev = [
+    "archunitpython",
     "check-wheel-contents",
     "pyfakefs",
     "pre-commit",
