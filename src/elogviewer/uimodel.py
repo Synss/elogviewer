@@ -24,6 +24,13 @@ Qt = QtCore.Qt
 _MODEL_INDEX: Final = QtCore.QModelIndex()
 
 
+def sourceIndex(index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+    model = index.model()
+    if not model:
+        return index
+    return model.mapToSource(index)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
+
+
 class Role(enum.IntEnum):
     SortRole = Qt.ItemDataRole.UserRole + 1
 
