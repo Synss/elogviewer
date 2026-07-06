@@ -300,6 +300,7 @@ class Elogviewer(QtWidgets.QMainWindow):
                 sourceIndex(curr),  # pyright: ignore[reportUnknownArgumentType]
             )
         )
+        selectionModel.currentRowChanged.connect(self.controller.onCurrentRowChanged)
 
         self.refreshAction = self._addToolBarAction(
             "view-refresh",
@@ -354,10 +355,6 @@ class Elogviewer(QtWidgets.QMainWindow):
         )
         self.deleteButton = self.toolBar.widgetForAction(self.deleteAction)
         self.aboutButton = self.toolBar.widgetForAction(self.aboutAction)
-
-        selectionModel2 = self.tableView.selectionModel()
-        assert selectionModel2 is not None
-        selectionModel2.currentRowChanged.connect(self.controller.onCurrentRowChanged)
 
         self.searchLineEdit = QtWidgets.QLineEdit(self.toolBar)
         self.searchLineEdit.setPlaceholderText("search")
