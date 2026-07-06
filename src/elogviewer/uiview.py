@@ -346,16 +346,14 @@ class Elogviewer(QtWidgets.QMainWindow):
             shortcut=QtGui.QKeySequence.StandardKey.Quit,
         )
 
-        def fromToolBar(name: str) -> QtWidgets.QWidget | None:
-            action = getattr(self, "%sAction" % name)
-            return self.toolBar.widgetForAction(action)
-
-        self.refreshButton = fromToolBar("refresh")
-        self.markReadButton = fromToolBar("markRead")
-        self.markUnreadButton = fromToolBar("markUnread")
-        self.toggleImportantButton = fromToolBar("toggleImportant")
-        self.deleteButton = fromToolBar("delete")
-        self.aboutButton = fromToolBar("about")
+        self.refreshButton = self.toolBar.widgetForAction(self.refreshAction)
+        self.markReadButton = self.toolBar.widgetForAction(self.markReadAction)
+        self.markUnreadButton = self.toolBar.widgetForAction(self.markUnreadAction)
+        self.toggleImportantButton = self.toolBar.widgetForAction(
+            self.toggleImportantAction
+        )
+        self.deleteButton = self.toolBar.widgetForAction(self.deleteAction)
+        self.aboutButton = self.toolBar.widgetForAction(self.aboutAction)
 
         selectionModel2 = self.tableView.selectionModel()
         assert selectionModel2 is not None
