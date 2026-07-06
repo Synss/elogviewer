@@ -269,7 +269,7 @@ class TestUI:
         qtmodeltester: QtModelTester,
     ) -> Iterator[Elogviewer]:
         elogviewer = Elogviewer(Config(elogpath=elogPath))
-        elogviewer.populate()
+        elogviewer.controller.populate()
         qtbot.addWidget(elogviewer)
         qtbot.wait(150)  # consume QTimer.singleShot(100) while pyfakefs is active
         yield elogviewer
