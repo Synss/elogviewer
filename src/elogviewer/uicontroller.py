@@ -65,14 +65,7 @@ class ElogviewerController:
         return view
 
     def saveSettings(self) -> None:
-        view = self._view
-        view.model.save(StateStore(self.settings))
-        hdr = view.tableView.horizontalHeader()
-        assert hdr is not None
-        self.settings.setValue("sortColumn", hdr.sortIndicatorSection())
-        self.settings.setValue("sortOrder", hdr.sortIndicatorOrder())
-        self.settings.setValue("windowWidth", view.width())
-        self.settings.setValue("windowHeight", view.height())
+        self._view.model.save(StateStore(self.settings))
 
     def onCurrentRowChanged(
         self,
