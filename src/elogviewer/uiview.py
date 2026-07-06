@@ -221,6 +221,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
 class Elogviewer(QtWidgets.QMainWindow):
     def __init__(self, config: Config) -> None:
         super().__init__()
+        self._settings = QtCore.QSettings("elogviewer", "elogviewer")
         centralWidget = QtWidgets.QWidget(self)
         centralLayout = QtWidgets.QVBoxLayout()
         centralWidget.setLayout(centralLayout)
@@ -258,17 +259,6 @@ class Elogviewer(QtWidgets.QMainWindow):
         statusBar.addWidget(self.unreadLabel)
 
         self.controller = ElogviewerController(self, config)
-        settings = self.controller.settings
-        if settings.contains("windowWidth") and settings.contains("windowHeight"):
-            self.resize(
-                int(settings.value("windowWidth")),
-                int(settings.value("windowHeight")),
-            )
-        else:
-            primaryScreen = QtWidgets.QApplication.primaryScreen()
-            assert primaryScreen is not None  # FIXME properly
-            screenSize = primaryScreen.availableGeometry()
-            self.resize(screenSize.width() // 2, screenSize.height() // 2)
 
         self.model = Model(self.tableView)
         self.model.dataChanged.connect(self.controller.saveSettings)
@@ -364,17 +354,7 @@ class Elogviewer(QtWidgets.QMainWindow):
         self.toolBar.addWidget(self.searchLineEdit)
 
         QtCore.QTimer.singleShot(100, self.controller.populate)
-        if settings.contains("sortColumn") and settings.contains("sortOrder"):
-            self.tableView.sortByColumn(
-                int(settings.value("sortColumn")),
-                (
-                    Qt.SortOrder.DescendingOrder
-                    if settings.value("sortOrder") == 1
-                    else Qt.SortOrder.AscendingOrder
-                ),
-            )
-        else:
-            self.tableView.sortByColumn(Column.Date, Qt.SortOrder.DescendingOrder)
+        self._restoreWindowState()
         self.tableView.selectRow(0)
 
     def _addToolBarAction(
@@ -391,3 +371,43 @@ class Elogviewer(QtWidgets.QMainWindow):
         action.triggered.connect(slot)
         self.toolBar.addAction(action)
         return action
+
+    def _restoreWindowState(self) -> None:
+        if self._settings.contains("windowWidth") and self._settings.contains(
+            "windowHeight",
+        ):
+            self.resize(
+                int(self._settings.value("windowWidth")),
+                int(self._settings.value("windowHeight")),
+            )
+        else:
+            primaryScreen = QtWidgets.QApplication.primaryScreen()
+            assert primaryScreen is not None  # FIXME properly
+            screenSize = primaryScreen.availableGeometry()
+            self.resize(screenSize.width() // 2, screenSize.height() // 2)
+        if self._settings.contains("sortColumn") and self._settings.contains(
+            "sortOrder",
+        ):
+            self.tableView.sortByColumn(
+                int(self._settings.value("sortColumn")),
+                (
+                    Qt.SortOrder.DescendingOrder
+                    if self._settings.value("sortOrder") == 1
+                    else Qt.SortOrder.AscendingOrder
+                ),
+            )
+        else:
+            self.tableView.sortByColumn(Column.Date, Qt.SortOrder.DescendingOrder)
+
+    def _saveWindowState(self) -> None:
+        horizontalHeader = self.tableView.horizontalHeader()
+        assert horizontalHeader is not None
+        self._settings.setValue("sortColumn", horizontalHeader.sortIndicatorSection())
+        self._settings.setValue("sortOrder", horizontalHeader.sortIndicatorOrder())
+        self._settings.setValue("windowWidth", self.width())
+        self._settings.setValue("windowHeight", self.height())
+
+    @override
+    def closeEvent(self, a0: QtGui.QCloseEvent | None) -> None:
+        self._saveWindowState()
+        super().closeEvent(a0)
