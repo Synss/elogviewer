@@ -38,7 +38,7 @@ jobs:
           | ./scripts/check-artefacts --format github
           --config ./pyproject.toml -
 
-  all-checks:
+  check-artefacts-all:
     if: ${{ !cancelled() }}
     needs: [check-artefacts]
     runs-on: ubuntu-latest

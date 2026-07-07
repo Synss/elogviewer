@@ -36,7 +36,7 @@ jobs:
         with:
           report_paths: pytest.xml
 
-  all-checks:
+  python-test-all:
     if: ${{ !cancelled() }}
     needs: [pytest]
     runs-on: ubuntu-latest
