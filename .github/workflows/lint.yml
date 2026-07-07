@@ -42,7 +42,7 @@ jobs:
           uv build --wheel
           && uv run --group dev check-wheel-contents dist/
 
-  all-checks:
+  lint-all:
     if: ${{ !cancelled() }}
     needs:
       - pre-commit

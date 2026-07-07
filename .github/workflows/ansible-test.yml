@@ -46,7 +46,7 @@ jobs:
           || steps.test_system.outcome == 'failure'
         run: exit 1
 
-  all-checks:
+  ansible-test-all:
     if: ${{ !cancelled() }}
     needs: [ansible-test]
     runs-on: ubuntu-latest
