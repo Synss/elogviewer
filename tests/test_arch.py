@@ -1,7 +1,6 @@
-from archunitpython import project_files, assert_passes
-from archunitpython.common.types import Pattern
-
 import pytest
+from archunitpython import assert_passes, project_files
+from archunitpython.common.types import Pattern
 
 
 def test_no_circular_dependencies():
