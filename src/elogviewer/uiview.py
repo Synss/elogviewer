@@ -258,15 +258,17 @@ class Elogviewer(QtWidgets.QMainWindow):
         self.unreadLabel = QtWidgets.QLabel(statusBar)
         statusBar.addWidget(self.unreadLabel)
 
-        self.controller = ElogviewerController(self, config)
-
         self.model = Model(self.tableView)
-        self.model.dataChanged.connect(self.controller.saveSettings)
         self.proxyModel = QtCore.QSortFilterProxyModel(self.tableView)
         self.proxyModel.setFilterKeyColumn(Column.Package)
         self.proxyModel.setSortRole(Role.SortRole)
         self.proxyModel.setSourceModel(self.model)
         self.tableView.setModel(self.proxyModel)
+        selectionModel = self.tableView.selectionModel()
+        assert selectionModel is not None
+
+        self.controller = ElogviewerController(self, config)
+        self.model.dataChanged.connect(self.controller.saveSettings)
 
         horizontalHeader.sortIndicatorChanged.connect(self.proxyModel.sort)
 
@@ -283,8 +285,6 @@ class Elogviewer(QtWidgets.QMainWindow):
         self.textEditMapper.setItemDelegate(TextToHtmlDelegate(self.textEditMapper))
         self.textEditMapper.setModel(self.model)
         self.textEditMapper.addMapping(self.textEdit, 0)
-        selectionModel = self.tableView.selectionModel()
-        assert selectionModel is not None
         selectionModel.currentRowChanged.connect(
             lambda curr, prev: self.textEditMapper.setCurrentModelIndex(  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
                 sourceIndex(curr),  # pyright: ignore[reportUnknownArgumentType]
