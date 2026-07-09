@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Final, Protocol
 from PyQt6 import QtCore, QtWidgets
 
 from .model import Column
-from .uimodel import sourceIndex
+from .uimodel import Model, sourceIndex
 
 if TYPE_CHECKING:
     from .uiview import Elogviewer
@@ -46,10 +46,20 @@ class StateStore:
 
 
 class ElogviewerController:
-    def __init__(self, view: Elogviewer, config: Config) -> None:
+    def __init__(
+        self,
+        view: Elogviewer,
+        model: Model,
+        proxyModel: QtCore.QSortFilterProxyModel,
+        selectionModel: QtCore.QItemSelectionModel,
+        config: Config,
+    ) -> None:
         # The view holds the controller; keep the back-reference weak so the
         # pair does not form a strong reference cycle.
         self._viewRef = weakref.ref(view)
+        self._model = model
+        self._proxyModel = proxyModel
+        self._selectionModel = selectionModel
         self.config = config
         self.settings = QtCore.QSettings("elogviewer", "elogviewer")
         if not self.settings.contains("readFlag"):
@@ -65,7 +75,7 @@ class ElogviewerController:
         return view
 
     def saveSettings(self) -> None:
-        self._view.model.save(StateStore(self.settings))
+        self._model.save(StateStore(self.settings))
 
     def onCurrentRowChanged(
         self,
@@ -73,7 +83,7 @@ class ElogviewerController:
         previous: QtCore.QModelIndex,
     ) -> None:
         if previous.row() != -1:
-            model = self._view.model
+            model = self._model
             index = model.index(
                 sourceIndex(current).row(),
                 Column.ReadState,
@@ -84,31 +94,26 @@ class ElogviewerController:
         self.updateUnreadCount()
 
     def updateStatus(self) -> None:
-        view = self._view
-        text = "%i of %i elogs" % (self.currentRow() + 1, view.model.elogCount())
-        view.statusLabel.setText(text)
+        text = "%i of %i elogs" % (self.currentRow() + 1, self._model.elogCount())
+        self._view.statusLabel.setText(text)
 
     def updateUnreadCount(self) -> None:
         view = self._view
-        text = "%i unread" % view.model.unreadCount()
+        text = "%i unread" % self._model.unreadCount()
         view.unreadLabel.setText(text)
         view.setWindowTitle("Elogviewer (%s)" % text)
 
     def currentRow(self) -> int:
-        sm = self._view.tableView.selectionModel()
-        assert sm is not None
-        return sm.currentIndex().row()
+        return self._selectionModel.currentIndex().row()
 
     def rowCount(self) -> int:
-        return self._view.proxyModel.rowCount()
+        return self._proxyModel.rowCount()
 
     def setSelectedReadState(self, state: Qt.CheckState) -> None:
-        sm = self._view.tableView.selectionModel()
-        assert sm is not None
-        rows = sm.selectedRows(Column.ReadState)
+        rows = self._selectionModel.selectedRows(Column.ReadState)
         if not rows:
             return
-        model = self._view.model
+        model = self._model
         model.blockSignals(True)
         try:
             for index in rows:
@@ -122,12 +127,10 @@ class ElogviewerController:
         self.updateUnreadCount()
 
     def toggleSelectedImportantState(self) -> None:
-        sm = self._view.tableView.selectionModel()
-        assert sm is not None
-        rows = sm.selectedRows(Column.ImportantState)
+        rows = self._selectionModel.selectedRows(Column.ImportantState)
         if not rows:
             return
-        model = self._view.model
+        model = self._model
         firstSourceIndex = sourceIndex(rows[0])
         state = (
             Qt.CheckState.Unchecked
@@ -146,40 +149,37 @@ class ElogviewerController:
         )
 
     def deleteSelected(self) -> None:
-        view = self._view
-        sm = view.tableView.selectionModel()
-        assert sm is not None
-        selection = [view.proxyModel.mapToSource(idx) for idx in sm.selectedRows()]
+        selection = [
+            self._proxyModel.mapToSource(idx)
+            for idx in self._selectionModel.selectedRows()
+        ]
         selection.sort(key=lambda idx: idx.row())
         # Avoid call to onCurrentRowChanged() by clearing
         # selection with reset().
         currentRow = self.currentRow()
-        sm.reset()
+        self._selectionModel.reset()
 
         filename: Path | None = None
         try:
             for index in reversed(selection):
-                filename = view.model.itemFromIndex(index).filename()
+                filename = self._model.itemFromIndex(index).filename()
                 if filename.exists():
                     filename.unlink()
-                view.model.removeRow(index.row())
+                self._model.removeRow(index.row())
         except OSError as exc:
             QtWidgets.QMessageBox.critical(
-                view,
+                self._view,
                 "Error",
                 f"Error while trying to delete '{filename}':<br><b>{exc.strerror}</b>",
             )
 
-        view.tableView.selectRow(min(currentRow, self.rowCount() - 1))
+        self._view.tableView.selectRow(min(currentRow, self.rowCount() - 1))
         self.updateStatus()
 
     def populate(self) -> None:
-        view = self._view
         currentRow = self.currentRow()
-        sm = view.tableView.selectionModel()
-        assert sm is not None
-        sm.reset()
-        view.model.populate(
+        self._selectionModel.reset()
+        self._model.populate(
             (
                 Path(f)
                 for f in itertools.chain(
@@ -189,4 +189,4 @@ class ElogviewerController:
             ),
             settings=StateStore(self.settings),
         )
-        view.tableView.selectRow(min(currentRow, self.rowCount() - 1))
+        self._view.tableView.selectRow(min(currentRow, self.rowCount() - 1))

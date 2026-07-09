@@ -267,7 +267,13 @@ class Elogviewer(QtWidgets.QMainWindow):
         selectionModel = self.tableView.selectionModel()
         assert selectionModel is not None
 
-        self.controller = ElogviewerController(self, config)
+        self.controller = ElogviewerController(
+            self,
+            self.model,
+            self.proxyModel,
+            selectionModel,
+            config,
+        )
         self.model.dataChanged.connect(self.controller.saveSettings)
 
         horizontalHeader.sortIndicatorChanged.connect(self.proxyModel.sort)
