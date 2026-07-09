@@ -1,24 +1,16 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-# The TYPE_CHECKING import of the view is annotation-only: there is no cycle
-# at runtime (uiview -> uicontroller is the only executed direction).
-# pyright: reportImportCycles=false
-
 from __future__ import annotations
 
 import glob
 import itertools
-import weakref
 from pathlib import Path
-from typing import TYPE_CHECKING, Final, Protocol
+from typing import Final, Protocol
 
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore
 
 from .model import Column
 from .uimodel import Model, sourceIndex
-
-if TYPE_CHECKING:
-    from .uiview import Elogviewer
 
 Qt = QtCore.Qt
 
@@ -45,18 +37,20 @@ class StateStore:
         self.settings.setValue("importantFlag", frozenset(str(p) for p in names))
 
 
-class ElogviewerController:
+class ElogviewerController(QtCore.QObject):
+    statusTextChanged = QtCore.pyqtSignal(str)
+    unreadTextChanged = QtCore.pyqtSignal(str)
+    errorOccurred = QtCore.pyqtSignal(str)
+    rowSelectRequested = QtCore.pyqtSignal(int)
+
     def __init__(
         self,
-        view: Elogviewer,
         model: Model,
         proxyModel: QtCore.QSortFilterProxyModel,
         selectionModel: QtCore.QItemSelectionModel,
         config: Config,
     ) -> None:
-        # The view holds the controller; keep the back-reference weak so the
-        # pair does not form a strong reference cycle.
-        self._viewRef = weakref.ref(view)
+        super().__init__()
         self._model = model
         self._proxyModel = proxyModel
         self._selectionModel = selectionModel
@@ -66,13 +60,6 @@ class ElogviewerController:
             self.settings.setValue("readFlag", set())
         if not self.settings.contains("importantFlag"):
             self.settings.setValue("importantFlag", set())
-
-    @property
-    def _view(self) -> Elogviewer:
-        # Dereference: sip rejects weakref proxies where a QWidget is expected.
-        view = self._viewRef()
-        assert view is not None
-        return view
 
     def saveSettings(self) -> None:
         self._model.save(StateStore(self.settings))
@@ -95,13 +82,10 @@ class ElogviewerController:
 
     def updateStatus(self) -> None:
         text = "%i of %i elogs" % (self.currentRow() + 1, self._model.elogCount())
-        self._view.statusLabel.setText(text)
+        self.statusTextChanged.emit(text)
 
     def updateUnreadCount(self) -> None:
-        view = self._view
-        text = "%i unread" % self._model.unreadCount()
-        view.unreadLabel.setText(text)
-        view.setWindowTitle("Elogviewer (%s)" % text)
+        self.unreadTextChanged.emit("%i unread" % self._model.unreadCount())
 
     def currentRow(self) -> int:
         return self._selectionModel.currentIndex().row()
@@ -167,13 +151,11 @@ class ElogviewerController:
                     filename.unlink()
                 self._model.removeRow(index.row())
         except OSError as exc:
-            QtWidgets.QMessageBox.critical(
-                self._view,
-                "Error",
+            self.errorOccurred.emit(
                 f"Error while trying to delete '{filename}':<br><b>{exc.strerror}</b>",
             )
 
-        self._view.tableView.selectRow(min(currentRow, self.rowCount() - 1))
+        self.rowSelectRequested.emit(min(currentRow, self.rowCount() - 1))
         self.updateStatus()
 
     def populate(self) -> None:
@@ -189,4 +171,4 @@ class ElogviewerController:
             ),
             settings=StateStore(self.settings),
         )
-        self._view.tableView.selectRow(min(currentRow, self.rowCount() - 1))
+        self.rowSelectRequested.emit(min(currentRow, self.rowCount() - 1))

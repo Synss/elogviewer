@@ -268,12 +268,15 @@ class Elogviewer(QtWidgets.QMainWindow):
         assert selectionModel is not None
 
         self.controller = ElogviewerController(
-            self,
             self.model,
             self.proxyModel,
             selectionModel,
             config,
         )
+        self.controller.statusTextChanged.connect(self.statusLabel.setText)
+        self.controller.unreadTextChanged.connect(self._setUnreadText)
+        self.controller.errorOccurred.connect(self._showError)
+        self.controller.rowSelectRequested.connect(self.tableView.selectRow)
         self.model.dataChanged.connect(self.controller.saveSettings)
 
         horizontalHeader.sortIndicatorChanged.connect(self.proxyModel.sort)
@@ -377,6 +380,13 @@ class Elogviewer(QtWidgets.QMainWindow):
         action.triggered.connect(slot)
         self.toolBar.addAction(action)
         return action
+
+    def _setUnreadText(self, text: str) -> None:
+        self.unreadLabel.setText(text)
+        self.setWindowTitle("Elogviewer (%s)" % text)
+
+    def _showError(self, message: str) -> None:
+        QtWidgets.QMessageBox.critical(self, "Error", message)
 
     def _restoreWindowState(self) -> None:
         if self._settings.contains("windowWidth") and self._settings.contains(
