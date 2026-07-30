@@ -6,6 +6,12 @@
     dest: "{{ item.dest }}/"
     delete: "{{ gentoo_pkgcache_delete }}"
     use_ssh_args: "{{ gentoo_pkgcache_use_ssh_args }}"
+    # Ownership is meaningless across the control-node/target uid boundary: the
+    # unprivileged pull cannot preserve it, so the next push would chown every
+    # file the previous run built.
+    owner: false
+    group: false
   become: false
   loop: "{{ gentoo_pkgcache_pairs }}"
+  changed_when: false
   failed_when: false
