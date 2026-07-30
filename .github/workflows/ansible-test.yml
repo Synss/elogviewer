@@ -13,6 +13,7 @@ on:  # yamllint disable-line rule:truthy
 
 env:
   PYTHON_VERSION: '3.13'
+  ANSIBLE_STDOUT_CALLBACK: community.general.unixy
 
 jobs:
   ansible-test:
