@@ -2,6 +2,13 @@
 - name: Main
   hosts: all
   become: true
+  # gentoo_system, and its own health check, is skipped under --tags deploy.
+  pre_tasks:
+    - name: "Check machine health"
+      ansible.builtin.include_role:
+        name: gentoo_system
+        tasks_from: health_check.yml
+      tags: always
   roles:
     - role: gentoo_base
     - role: gentoo_upload_cache

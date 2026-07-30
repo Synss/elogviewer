@@ -1,0 +1,17 @@
+---
+# Checks the VM is usable — deliberately not whether @world resolves cleanly,
+# which is a warning in update_world_pass.yml, not a failure here.
+
+- name: "Check portage is functional"
+  ansible.builtin.command: /usr/bin/emerge --info
+  changed_when: false
+
+- name: "Check the default Python interpreter resolves"
+  ansible.builtin.command: python3 --version
+  changed_when: false
+
+- name: "Check the pinned interpreter's portage bindings"
+  ansible.builtin.command: >-
+    {{ ansible_python_interpreter | default('/usr/bin/python3') }}
+    -c "import portage"
+  changed_when: false

@@ -50,12 +50,16 @@
     mode: "0644"
   when: gentoo_system_profile_packages | default([]) | length > 0
 
-- name: "Flush handlers"
-  ansible.builtin.meta: flush_handlers
-
 # Python targets are configured per pass inside update_world.yml.
 - name: "Update world"
   ansible.builtin.import_tasks: "update_world.yml"
+
+# After the update, so a reboot lands before the health check runs.
+- name: "Flush handlers"
+  ansible.builtin.meta: flush_handlers
+
+- name: "Check machine health"
+  ansible.builtin.import_tasks: "health_check.yml"
 
 - name: "Install required packages"
   ansible.builtin.import_tasks: "install.yml"
