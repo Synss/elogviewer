@@ -359,9 +359,7 @@ class Elogviewer(QtWidgets.QMainWindow):
 
         self.searchLineEdit = QtWidgets.QLineEdit(self.toolBar)
         self.searchLineEdit.setPlaceholderText("search")
-        self.searchLineEdit.textEdited.connect(
-            self.proxyModel.setFilterRegularExpression,
-        )
+        self.searchLineEdit.textEdited.connect(self.controller.setFilterPattern)
         self.toolBar.addWidget(self.searchLineEdit)
 
         QtCore.QTimer.singleShot(100, self.controller.populate)
