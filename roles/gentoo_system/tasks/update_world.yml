@@ -19,13 +19,6 @@
           manual intervention may be needed
       when: not gentoo_system_update_settled | default(false)
 
-    - name: Rebuild packages broken by slot changes
-      community.general.portage:
-        package: "@preserved-rebuild"
-        state: present
-      changed_when: false
-      failed_when: false
-
   rescue:
     - name: Warn on world update failure
       ansible.builtin.debug:

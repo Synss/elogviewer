@@ -65,6 +65,14 @@
   failed_when: false
   when: not gentoo_system_update_settled
 
+- name: "Rebuild packages broken by slot changes [pass {{ gentoo_system_update_pass }}]"
+  community.general.portage:
+    package: "@preserved-rebuild"
+    state: present
+  changed_when: false
+  failed_when: false
+  when: not gentoo_system_update_settled
+
 - name: "Track whether this pass touched the kernel [pass {{ gentoo_system_update_pass }}]"
   ansible.builtin.set_fact:
     gentoo_system_update_kernel_bumped: >-
