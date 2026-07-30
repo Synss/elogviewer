@@ -31,6 +31,9 @@
       ansible.builtin.debug:
         msg: "World update failed — manual intervention may be needed"
 
+- name: "Report pending news"
+  ansible.builtin.import_tasks: "report_pending_news.yml"
+
 - name: "Request reboot after kernel update"
   ansible.builtin.debug:
     msg: "Kernel update detected, requesting reboot"
