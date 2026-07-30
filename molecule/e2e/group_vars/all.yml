@@ -1,7 +1,8 @@
 ---
 gentoo_run_sync: true
-gentoo_cache_binpkgs: .cache/docker/binpkgs
-gentoo_cache_distfiles: .cache/distfiles
+# Absolute, and matching the volumes in molecule.yml.
+gentoo_cache_binpkgs: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/.cache/docker/binpkgs"
+gentoo_cache_distfiles: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/.cache/distfiles"
 gentoo_base_qt_use_flag: qt6
 gentoo_user_name: gentoo
 gentoo_user_password: gentoo
