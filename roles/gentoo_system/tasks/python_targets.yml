@@ -1,0 +1,36 @@
+---
+- name: Detect system Python version
+  ansible.builtin.command:
+    cmd: >-
+      {{ ansible_python_interpreter | default('/usr/bin/python3') }}
+      -c "import sys; print('python{}_{}'.format(*sys.version_info[:2]))"
+  register: _gentoo_system_python_detected
+  changed_when: false
+  when: gentoo_manage_python_targets | default(true)
+
+- name: Configure make.conf/10_python_targets
+  ansible.builtin.template:
+    src: make_conf_python_targets.j2
+    dest: /etc/portage/make.conf/10_python_targets
+    mode: "0644"
+  vars:
+    _detected: "{{ _gentoo_system_python_detected.stdout | default('') }}"
+    _python_targets: "{{ python_targets | default(_detected) }}"
+    # yamllint disable rule:line-length
+    _python_single_target: "{{ python_single_target | default(python_targets | default(_detected)) }}"
+    # yamllint enable rule:line-length
+  changed_when: false
+  when: gentoo_manage_python_targets | default(true)
+
+- name: Remove make.conf/10_python_targets
+  ansible.builtin.file:
+    path: /etc/portage/make.conf/10_python_targets
+    state: absent
+  when: not gentoo_manage_python_targets | default(true)
+
+- name: Rebuild python-exec with updated PYTHON_TARGETS
+  community.general.portage:
+    package: dev-lang/python-exec
+    oneshot: true
+    newuse: true
+  changed_when: false

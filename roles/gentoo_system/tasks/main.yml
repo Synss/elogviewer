@@ -50,8 +50,8 @@
     mode: "0644"
   when: gentoo_system_profile_packages | default([]) | length > 0
 
-- name: "Update system"
-  ansible.builtin.import_tasks: "update_system.yml"
+- name: "Configure Python targets"
+  ansible.builtin.import_tasks: "python_targets.yml"
 
 - name: "Flush handlers"
   ansible.builtin.meta: flush_handlers
