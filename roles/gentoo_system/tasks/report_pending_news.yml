@@ -1,0 +1,17 @@
+---
+- name: Count unread Gentoo news items
+  ansible.builtin.command: /usr/bin/eselect news count new
+  register: gentoo_system_pending_news_count
+  changed_when: false
+
+- name: List unread Gentoo news items
+  ansible.builtin.command: /usr/bin/eselect news list new --raw
+  register: gentoo_system_pending_news
+  changed_when: false
+  failed_when: false
+  when: gentoo_system_pending_news_count.stdout | int > 0
+
+- name: Warn about unread Gentoo news items
+  ansible.builtin.debug:
+    msg: "{{ gentoo_system_pending_news.stdout_lines }}"
+  when: gentoo_system_pending_news_count.stdout | int > 0
