@@ -1,4 +1,9 @@
 ---
+- name: "Re-detect Python targets [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.include_tasks: python_targets.yml
+  # A prior pass may have moved the default Python; re-run in full (not just
+  # detect+template) so python-exec gets rebuilt for it too.
+
 - name: "Probe @world [pass {{ gentoo_system_update_pass }}]"
   community.general.portage:
     package: "@world"
