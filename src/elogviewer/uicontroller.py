@@ -53,6 +53,7 @@ class ElogviewerController(QtCore.QObject):
         super().__init__()
         self._model = model
         self._proxyModel = proxyModel
+        self._proxyModel.setDynamicSortFilter(False)
         self._selectionModel = selectionModel
         self.config = config
         self.settings = QtCore.QSettings("elogviewer", "elogviewer")
@@ -63,6 +64,14 @@ class ElogviewerController(QtCore.QObject):
 
     def saveSettings(self) -> None:
         self._model.save(StateStore(self.settings))
+
+    def setFilterPattern(self, pattern: str) -> None:
+        self._proxyModel.setFilterRegularExpression(pattern)
+        if self._proxyModel.sortColumn() != -1:
+            self._proxyModel.sort(
+                self._proxyModel.sortColumn(),
+                self._proxyModel.sortOrder(),
+            )
 
     def onCurrentRowChanged(
         self,

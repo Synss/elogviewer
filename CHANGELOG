@@ -1,3 +1,9 @@
+Next
+----
+
+- Fix an issue where marking an elog as read while sorted by
+  read state would move it out of view.
+
 Version 3.4
 -----------
 

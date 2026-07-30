@@ -4,7 +4,7 @@ import io
 import os
 import random
 import time
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
@@ -74,6 +74,22 @@ class FakeElog:
 
 def _count(iterable: Iterable[object]) -> int:
     return sum(1 for _ in iterable)
+
+
+def _visibleOrder(elogviewer: Elogviewer) -> Sequence[int]:
+    proxyModel = elogviewer.proxyModel
+    return [
+        proxyModel.mapToSource(proxyModel.index(row, 0)).row()
+        for row in range(proxyModel.rowCount())
+    ]
+
+
+def _visiblePackages(elogviewer: Elogviewer) -> Sequence[str]:
+    proxyModel = elogviewer.proxyModel
+    return [
+        str(proxyModel.index(row, Column.Package).data())
+        for row in range(proxyModel.rowCount())
+    ]
 
 
 @pytest.fixture
@@ -491,3 +507,85 @@ class TestUI:
         qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Down)
 
         assert elogviewer.model.readCount() == readCount + 1
+
+    def testSelectingKeepsOrder(self, elogviewer: Elogviewer, qtbot: QtBot) -> None:
+        elogviewer.tableView.sortByColumn(
+            Column.ReadState,
+            Qt.SortOrder.AscendingOrder,
+        )
+        order = _visibleOrder(elogviewer)
+
+        qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
+        qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Down)
+
+        assert elogviewer.model.readCount() == 1
+        assert _visibleOrder(elogviewer) == order
+
+    def testMarkReadKeepsOrder(self, elogviewer: Elogviewer, qtbot: QtBot) -> None:
+        elogviewer.tableView.sortByColumn(
+            Column.ReadState,
+            Qt.SortOrder.AscendingOrder,
+        )
+        order = _visibleOrder(elogviewer)
+
+        qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
+        qtbot.mouseClick(elogviewer.markReadButton, Qt.MouseButton.LeftButton)
+
+        assert elogviewer.model.readCount() == 1
+        assert _visibleOrder(elogviewer) == order
+
+    def testToggleImportantKeepsOrder(
+        self,
+        elogviewer: Elogviewer,
+        qtbot: QtBot,
+    ) -> None:
+        elogviewer.tableView.sortByColumn(
+            Column.ImportantState,
+            Qt.SortOrder.AscendingOrder,
+        )
+        order = _visibleOrder(elogviewer)
+
+        qtbot.keyClick(elogviewer.tableView, Qt.Key.Key_Up)
+        qtbot.mouseClick(elogviewer.toggleImportantButton, Qt.MouseButton.LeftButton)
+
+        assert elogviewer.model.importantCount() == 1
+        assert _visibleOrder(elogviewer) == order
+
+    def testExplicitSortStillReorders(
+        self,
+        elogviewer: Elogviewer,
+        qtbot: QtBot,
+    ) -> None:
+        elogviewer.tableView.sortByColumn(
+            Column.ReadState,
+            Qt.SortOrder.AscendingOrder,
+        )
+        order = _visibleOrder(elogviewer)
+        middle = len(order) // 2
+        elogviewer.tableView.selectRow(middle)
+        qtbot.mouseClick(elogviewer.markReadButton, Qt.MouseButton.LeftButton)
+
+        elogviewer.tableView.sortByColumn(
+            Column.ReadState,
+            Qt.SortOrder.DescendingOrder,
+        )
+
+        assert _visibleOrder(elogviewer)[0] == order[middle]
+
+    def testFilteringKeepsSortOrder(
+        self,
+        elogviewer: Elogviewer,
+        qtbot: QtBot,
+    ) -> None:
+        elogviewer.tableView.sortByColumn(Column.Package, Qt.SortOrder.AscendingOrder)
+        packages = _visiblePackages(elogviewer)
+        selection = {packages[0], packages[len(packages) // 2], packages[-1]}
+
+        qtbot.keyClicks(elogviewer.searchLineEdit, "|".join(selection))
+
+        assert _visiblePackages(elogviewer) == sorted(selection)
+
+        elogviewer.searchLineEdit.selectAll()
+        qtbot.keyClick(elogviewer.searchLineEdit, Qt.Key.Key_Backspace)
+
+        assert _visiblePackages(elogviewer) == packages
