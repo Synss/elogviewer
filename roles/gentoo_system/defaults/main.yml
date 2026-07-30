@@ -13,3 +13,5 @@ gentoo_system_masked_packages:
 gentoo_system_profile_packages:
   # sys-devel/make was moved to dev-build/make; drop the old atom from @system.
   - "-*sys-devel/make"
+
+gentoo_system_update_max_passes: 6

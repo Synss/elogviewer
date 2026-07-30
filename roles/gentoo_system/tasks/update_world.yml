@@ -7,16 +7,17 @@
 
 - name: Update @world
   block:
-    - name: Update world
-      community.general.portage:
-        package: "@world"
-        update: true
-        deep: true
-        changed_use: true
-        withbdeps: true
-      register: gentoo_system_update_world
-      changed_when: false
-      failed_when: gentoo_system_update_world.rc != 0
+    - name: Update @world until it converges
+      ansible.builtin.include_tasks: update_world_pass.yml
+      vars:
+        gentoo_system_update_pass: 1
+
+    - name: Warn if @world did not converge
+      ansible.builtin.debug:
+        msg: >-
+          @world did not converge after {{ gentoo_system_update_max_passes }} passes —
+          manual intervention may be needed
+      when: not gentoo_system_update_settled | default(false)
 
     - name: Rebuild packages broken by slot changes
       community.general.portage:
@@ -24,23 +25,6 @@
         state: present
       changed_when: false
       failed_when: false
-
-    - name: Report cache hits [world]
-      ansible.builtin.include_tasks: report_cache_hits.yml
-      vars:
-        _output: "{{ gentoo_system_update_world.stdout }}{{ gentoo_system_update_world.stderr }}"
-
-    - name: Update cache [world]
-      ansible.builtin.include_role:
-        name: gentoo_pkgcache
-        tasks_from: sync.yml
-      vars:
-        gentoo_pkgcache_direction: pull
-        gentoo_pkgcache_pairs:
-          - src: /var/cache/binpkgs
-            dest: "{{ gentoo_cache_binpkgs }}"
-          - src: /var/cache/distfiles
-            dest: "{{ gentoo_cache_distfiles }}"
 
   rescue:
     - name: Warn on world update failure
@@ -51,6 +35,5 @@
   ansible.builtin.debug:
     msg: "Kernel update detected, requesting reboot"
   when:
-    - gentoo_system_update_world is defined
-    - gentoo_system_update_world.stdout is search('sys-kernel/')
+    - gentoo_system_update_kernel_bumped | default(false)
   notify: Reboot system
