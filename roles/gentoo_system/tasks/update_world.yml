@@ -24,6 +24,18 @@
       ansible.builtin.debug:
         msg: "World update failed — manual intervention may be needed"
 
+    - name: Update cache after failure
+      ansible.builtin.include_role:
+        name: gentoo_pkgcache
+        tasks_from: sync.yml
+      vars:
+        gentoo_pkgcache_direction: pull
+        gentoo_pkgcache_pairs:
+          - src: /var/cache/binpkgs
+            dest: "{{ gentoo_cache_binpkgs }}"
+          - src: /var/cache/distfiles
+            dest: "{{ gentoo_cache_distfiles }}"
+
 - name: "Report pending news"
   ansible.builtin.import_tasks: "report_pending_news.yml"
 
