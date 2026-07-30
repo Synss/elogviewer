@@ -157,7 +157,7 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         )
         option.text = (
             self._checked
-            if bool(index.data(role=Qt.ItemDataRole.CheckStateRole))
+            if index.data(role=Qt.ItemDataRole.CheckStateRole) is Qt.CheckState.Checked
             else self._unchecked
         )
         option.displayAlignment = Qt.AlignmentFlag.AlignCenter
@@ -211,7 +211,9 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
         ):
             current = index.data(role=Qt.ItemDataRole.CheckStateRole)
             new_state = (
-                Qt.CheckState.Unchecked if bool(current) else Qt.CheckState.Checked
+                Qt.CheckState.Unchecked
+                if current is Qt.CheckState.Checked
+                else Qt.CheckState.Checked
             )
             model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
             return True

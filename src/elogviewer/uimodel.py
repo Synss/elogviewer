@@ -211,10 +211,11 @@ class Model(QtCore.QAbstractTableModel):
                 Column.Date: item.localeTime(),
             }.get(col, "")
         if role == Qt.ItemDataRole.CheckStateRole:
-            return {
-                Column.ImportantState: item.importantState(),
-                Column.ReadState: item.readState(),
+            checkState = {
+                Column.ImportantState: self.importantState,
+                Column.ReadState: self.readState,
             }.get(col)
+            return checkState(index) if checkState else None
         if role == Role.SortRole:
             key = {
                 Column.ImportantState: item.importantState,
