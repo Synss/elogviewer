@@ -234,13 +234,14 @@ class Model(QtCore.QAbstractTableModel):
         value: object,
         role: int = Qt.ItemDataRole.EditRole,
     ) -> bool:
+        if role != Qt.ItemDataRole.CheckStateRole:
+            return super().setData(index, value, role)
         try:
             col = Column(index.column())
-            {
-                Column.ImportantState: self.toggleImportantState,
-                Column.ReadState: self.toggleReadState,
-            }[col](index)
+            state = Qt.CheckState(value)
+            return {
+                Column.ImportantState: self.setImportantState,
+                Column.ReadState: self.setReadState,
+            }[col](index, state)
         except (KeyError, ValueError):
-            return super().setData(index, value, role)
-        else:
-            return True
+            return False
