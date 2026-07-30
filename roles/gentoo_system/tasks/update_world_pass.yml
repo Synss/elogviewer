@@ -1,0 +1,105 @@
+---
+- name: "Probe @world [pass {{ gentoo_system_update_pass }}]"
+  community.general.portage:
+    package: "@world"
+    update: true
+    deep: true
+    changed_use: true
+    withbdeps: true
+  check_mode: true
+  register: gentoo_system_update_probe
+  changed_when: false
+  failed_when: false
+
+- name: "Extract pending atoms [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.set_fact:
+    gentoo_system_update_current_atoms: >-
+      {{ (gentoo_system_update_probe.stdout | default('')
+          | regex_findall('(?m)^\[(?:ebuild|binary)[^\]]*\]\s+(\S+)')) | sort }}
+
+- name: "Determine whether @world converged [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.set_fact:
+    gentoo_system_update_converged: "{{ gentoo_system_update_current_atoms | length == 0 }}"
+
+- name: "Determine whether @world stalled [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.set_fact:
+    gentoo_system_update_stalled: >-
+      {{ not gentoo_system_update_converged
+         and ((gentoo_system_update_current_atoms == gentoo_system_update_previous_atoms | default([]))
+              or (gentoo_system_update_probe.stdout | default('') is search('\[blocks B'))) }}
+  # A block already resolved within this pass's plan is reported lowercase,
+  # not a reason to stop.
+
+- name: "Settle @world [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.set_fact:
+    gentoo_system_update_settled: >-
+      {{ gentoo_system_update_converged or gentoo_system_update_stalled }}
+
+- name: "Warn that @world stalled [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.debug:
+    msg: >-
+      @world stalled at pass {{ gentoo_system_update_pass }} — the pending set
+      stopped shrinking or an unresolved block was reported; stopping rather
+      than retrying an unchanged plan.
+  when: gentoo_system_update_stalled
+
+- name: "Remember this pass's pending atoms [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.set_fact:
+    gentoo_system_update_previous_atoms: "{{ gentoo_system_update_current_atoms }}"
+
+- name: "Merge @world [pass {{ gentoo_system_update_pass }}]"
+  community.general.portage:
+    package: "@world"
+    update: true
+    deep: true
+    changed_use: true
+    withbdeps: true
+    keepgoing: true
+  register: gentoo_system_update_world
+  changed_when: false
+  failed_when: false
+  when: not gentoo_system_update_settled
+
+- name: "Track whether this pass touched the kernel [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.set_fact:
+    gentoo_system_update_kernel_bumped: >-
+      {{ gentoo_system_update_kernel_bumped | default(false)
+         or (gentoo_system_update_world.stdout | default('')) is search('sys-kernel/') }}
+  when: not gentoo_system_update_settled
+
+- name: "Report cache hits [world pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.include_tasks: report_cache_hits.yml
+  vars:
+    _output: >-
+      {{ gentoo_system_update_world.stdout | default('') }}{{ gentoo_system_update_world.stderr | default('') }}
+  when: not gentoo_system_update_settled
+
+- name: "Update cache [world pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.include_role:
+    name: gentoo_pkgcache
+    tasks_from: sync.yml
+  vars:
+    gentoo_pkgcache_direction: pull
+    gentoo_pkgcache_pairs:
+      - src: /var/cache/binpkgs
+        dest: "{{ gentoo_cache_binpkgs }}"
+      - src: /var/cache/distfiles
+        dest: "{{ gentoo_cache_distfiles }}"
+  when: not gentoo_system_update_settled
+
+- name: "Compute the next pass number [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.set_fact:
+    gentoo_system_update_next_pass: "{{ gentoo_system_update_pass | int + 1 }}"
+  when: not gentoo_system_update_settled
+
+# Recursion, not `loop`: a loop's `when` is only evaluated once, before the
+# first iteration, so it would never stop early (confirmed on a real run).
+# Comparing gentoo_system_update_next_pass, not gentoo_system_update_pass:
+# this task's own `vars:` already shadows the latter by the time `when` runs.
+- name: "Continue converging @world [pass {{ gentoo_system_update_pass }}]"
+  ansible.builtin.include_tasks: update_world_pass.yml
+  vars:
+    gentoo_system_update_pass: "{{ gentoo_system_update_next_pass }}"
+  when:
+    - not gentoo_system_update_settled
+    - gentoo_system_update_next_pass | int <= gentoo_system_update_max_passes
