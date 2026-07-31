@@ -2,6 +2,11 @@
 - name: E2E verify
   hosts: all
   gather_facts: false
+  vars:
+    _project_dir: "{{ playbook_dir | dirname | dirname }}"
+    _tarball: /tmp/elogviewer.tar.gz
+    _src_dir: /tmp/elogviewer-src
+    _venv_dir: /tmp/elogviewer-venv
   tasks:
     - name: Check gentoo user exists with expected groups
       ansible.builtin.command: id gentoo
@@ -44,13 +49,13 @@
     - name: Build sdist
       ansible.builtin.command:
         cmd: uv build --sdist
-        chdir: "{{ playbook_dir | dirname | dirname }}"
+        chdir: "{{ _project_dir }}"
       delegate_to: localhost
       changed_when: true
 
     - name: Find sdist
       ansible.builtin.find:
-        paths: "{{ playbook_dir | dirname | dirname }}/dist"
+        paths: "{{ _project_dir }}/dist"
         patterns: "elogviewer-*.tar.gz"
       delegate_to: localhost
       register: _sdist
@@ -58,37 +63,37 @@
     - name: Copy sdist to container
       ansible.builtin.copy:
         src: "{{ (_sdist.files | sort(attribute='mtime') | last).path }}"
-        dest: /tmp/elogviewer.tar.gz
+        dest: "{{ _tarball }}"
         mode: "0644"
 
     - name: Create extraction directory
       ansible.builtin.file:
-        path: /tmp/elogviewer-src
+        path: "{{ _src_dir }}"
         state: directory
         mode: "0755"
 
     - name: Extract sdist
       ansible.builtin.unarchive:
-        src: /tmp/elogviewer.tar.gz
-        dest: /tmp/elogviewer-src
+        src: "{{ _tarball }}"
+        dest: "{{ _src_dir }}"
         remote_src: true
         extra_opts: ["--strip-components=1"]
 
     - name: Create venv
-      ansible.builtin.command: python3 -m venv --system-site-packages /tmp/elogviewer-venv
+      ansible.builtin.command: python3 -m venv --system-site-packages {{ _venv_dir }}
       changed_when: true
 
     - name: Install elogviewer and test dependencies into venv
       ansible.builtin.command: >-
-        uv pip install --python /tmp/elogviewer-venv/bin/python
-        /tmp/elogviewer-src
-        --group /tmp/elogviewer-src/pyproject.toml:dev
+        uv pip install --python {{ _venv_dir }}/bin/python
+        {{ _src_dir }}
+        --group {{ _src_dir }}/pyproject.toml:dev
       changed_when: true
 
     - name: Run pytest suite
       ansible.builtin.command:
-        cmd: /tmp/elogviewer-venv/bin/python -m pytest tests/
-        chdir: /tmp/elogviewer-src
+        cmd: "{{ _venv_dir }}/bin/python -m pytest tests/"
+        chdir: "{{ _src_dir }}"
       environment:
         QT_QPA_PLATFORM: offscreen
       changed_when: false
