@@ -86,7 +86,9 @@
       changed_when: true
 
     - name: Run pytest suite
-      ansible.builtin.command: /tmp/elogviewer-venv/bin/python -m pytest /tmp/elogviewer-src/tests/
+      ansible.builtin.command:
+        cmd: /tmp/elogviewer-venv/bin/python -m pytest tests/
+        chdir: /tmp/elogviewer-src
       environment:
         QT_QPA_PLATFORM: offscreen
       changed_when: false
