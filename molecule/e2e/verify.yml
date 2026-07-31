@@ -81,7 +81,8 @@
     - name: Install elogviewer and test dependencies into venv
       ansible.builtin.command: >-
         uv pip install --python /tmp/elogviewer-venv/bin/python
-        /tmp/elogviewer-src pytest pytest-qt pyfakefs
+        /tmp/elogviewer-src
+        --group /tmp/elogviewer-src/pyproject.toml:dev
       changed_when: true
 
     - name: Run pytest suite
