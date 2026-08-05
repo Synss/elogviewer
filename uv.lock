@@ -778,11 +778,11 @@ wheels = [
 
 [[package]]
 name = "portage"
-version = "3.0.81"
+version = "3.0.81.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f2/79/9dd56256d0e5fd9cdb1bd7a0a571b3a79a06f1c039e152dc937b8bb50fd7/portage-3.0.81.tar.gz", hash = "sha256:22c581e956ed851fc4557c17e96d947be00e25b4882c26be4a58c253d60af29f", size = 1636238, upload-time = "2026-06-23T16:18:30.369Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/15/be/876819696088c82687f42d8e6ddef6d2e8a53ba3bdd042f67cf317ec221c/portage-3.0.81.2.tar.gz", hash = "sha256:f9a5e17dc367db5161f7654e42b5c99dcbe124b1155b7d601de82971cd737b39", size = 1637697, upload-time = "2026-07-10T19:34:36.262Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/be/a0dd287e3b10aef2b5d1901efd97cf9a21c4225982530d83b35687f389d2/portage-3.0.81-py3-none-any.whl", hash = "sha256:d5c3bda7d72946cddf8e7f3348f04991dfd012012ca8befc564564cd809ef9d1", size = 1810808, upload-time = "2026-06-23T16:18:28.703Z" },
+    { url = "https://files.pythonhosted.org/packages/e4/bb/1a6f5f7c10002a6bb725d2dc546ecf75dafe88af2c5e7df409503b78c650/portage-3.0.81.2-py3-none-any.whl", hash = "sha256:645ab5536ed01c053cdffd57cd5ada3682b115c0c9ff14ef786eb0d1b16872f7", size = 1812730, upload-time = "2026-07-10T19:34:34.341Z" },
 ]
 
 [[package]]
