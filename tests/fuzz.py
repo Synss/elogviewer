@@ -25,7 +25,7 @@ def randomText(length: int, paragraphLength: int, stringLength: int) -> str:
 
 
 def randomSection(header: str, content: str) -> str:
-    return "\n".join([header, content])
+    return f"{header}\n{content}"
 
 
 def randomTime(

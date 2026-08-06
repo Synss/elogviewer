@@ -408,7 +408,7 @@ class Elogviewer(ElogviewerUi):
         self.toolBar.addAction(self.exitAction)
 
         def fromToolBar(name: str) -> QtWidgets.QWidget | None:
-            action = getattr(self, "%sAction" % name)
+            action = getattr(self, f"{name}Action")
             return self.toolBar.widgetForAction(action)
 
         self.refreshButton = fromToolBar("refresh")
@@ -468,13 +468,13 @@ class Elogviewer(ElogviewerUi):
         self.updateUnreadCount()
 
     def updateStatus(self) -> None:
-        text = "%i of %i elogs" % (self.currentRow() + 1, self.model.elogCount())
+        text = f"{self.currentRow() + 1} of {self.model.elogCount()} elogs"
         self.statusLabel.setText(text)
 
     def updateUnreadCount(self) -> None:
-        text = "%i unread" % self.model.unreadCount()
+        text = f"{self.model.unreadCount()} unread"
         self.unreadLabel.setText(text)
-        self.setWindowTitle("Elogviewer (%s)" % text)
+        self.setWindowTitle(f"Elogviewer ({text})")
 
     def currentRow(self) -> int:
         sm = self.tableView.selectionModel()
