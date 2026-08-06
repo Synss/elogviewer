@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import abc
 import weakref
-from typing import Protocol, TypeAlias, override
+from typing import Protocol, Self, override
 
 from .eclass import EClass
 from .elog import Elog
 
-RGB: TypeAlias = tuple[int, int, int]
+type RGB = tuple[int, int, int]
 
 
 class ColorStrategy(Protocol):
@@ -152,7 +152,7 @@ class ParserFSM:
     def __str__(self) -> str:
         return f"{type(self).__name__}: {self.state}"
 
-    def __enter__(self) -> ParserFSM:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *exc_info: object) -> bool:

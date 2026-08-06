@@ -184,68 +184,57 @@ class TestElogClass:
             # Regular logs
             (
                 "ERROR: error_stage\ntext",
-                "\n".join(
-                    [
-                        "<h3>",
-                        "Error:  error_stage\n",  # "\n\n"
-                        "</h3>",
-                        '<p style="color: #ff0000">',
-                        "text <br />",
-                        "</p>",
-                    ]
+                (
+                    "<h3>\n"
+                    "Error:  error_stage\n\n"
+                    "</h3>\n"
+                    '<p style="color: #ff0000">\n'
+                    "text <br />\n"
+                    "</p>"
                 ),
             ),
             # Bugs
             (
                 "bug #42",
-                "\n".join(
-                    [
-                        '<p style="color: #008000">',
-                        '<a href="https://bugs.gentoo.org/42">bug #42</a> <br />',
-                        "</p>",
-                    ]
+                (
+                    '<p style="color: #008000">\n'
+                    '<a href="https://bugs.gentoo.org/42">bug #42</a> <br />\n'
+                    "</p>"
                 ),
             ),
             (
                 "Bug #42",
-                "\n".join(
-                    [
-                        '<p style="color: #008000">',
-                        '<a href="https://bugs.gentoo.org/42">Bug #42</a> <br />',
-                        "</p>",
-                    ]
+                (
+                    '<p style="color: #008000">\n'
+                    '<a href="https://bugs.gentoo.org/42">Bug #42</a> <br />\n'
+                    "</p>"
                 ),
             ),
             (
                 "text bug #42 text",
-                "\n".join(
-                    [
-                        '<p style="color: #008000">',
-                        'text <a href="https://bugs.gentoo.org/42">bug #42</a> text <br />',
-                        "</p>",
-                    ]
+                (
+                    '<p style="color: #008000">\n'
+                    'text <a href="https://bugs.gentoo.org/42">bug #42</a> text <br />\n'
+                    "</p>"
                 ),
             ),
             # Hyperlinks
             (
                 "text http://example.com/url text",
-                "\n".join(
-                    [
-                        '<p style="color: #008000">',
-                        'text <a href="http://example.com/url">http://example.com/url</a> text <br />',
-                        "</p>",
-                    ]
+                (
+                    '<p style="color: #008000">\n'
+                    'text <a href="http://example.com/url">http://example.com/url</a> text <br />\n'
+                    "</p>"
                 ),
             ),
             # Packages
             (
                 "text dev-portage/elogviewer-3.0 text",
-                "\n".join(
-                    [
-                        '<p style="color: #008000">',
-                        'text <a href="http://packages.gentoo.org/packages/dev-portage/elogviewer">dev-portage/elogviewer-3.0</a> text <br />',
-                        "</p>",
-                    ]
+                (
+                    '<p style="color: #008000">\n'
+                    'text <a href="http://packages.gentoo.org/packages/dev-portage/elogviewer">'
+                    "dev-portage/elogviewer-3.0</a> text <br />\n"
+                    "</p>"
                 ),
             ),
         ],
