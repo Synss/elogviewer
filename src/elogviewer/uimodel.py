@@ -15,8 +15,6 @@ from .model import (
     UNREAD,
     Column,
     ElogModelItem,
-    ImportantState,
-    ReadState,
     StateStore,
 )
 
@@ -43,7 +41,7 @@ class Model(QtCore.QAbstractTableModel):
     def importantState(self, index: QtCore.QModelIndex) -> Qt.CheckState:
         return (
             Qt.CheckState.Checked
-            if self.itemFromIndex(index).importantState()
+            if self.itemFromIndex(index).isImportantState()
             else Qt.CheckState.Unchecked
         )
 
@@ -60,20 +58,10 @@ class Model(QtCore.QAbstractTableModel):
         self.dataChanged.emit(index, index)
         return True
 
-    def toggleImportantState(self, index: QtCore.QModelIndex) -> bool:
-        return self.setImportantState(
-            index,
-            (
-                Qt.CheckState.Unchecked
-                if self.importantState(index) is Qt.CheckState.Checked
-                else Qt.CheckState.Checked
-            ),
-        )
-
     def readState(self, index: QtCore.QModelIndex) -> Qt.CheckState:
         return (
             Qt.CheckState.Checked
-            if self.itemFromIndex(index).readState()
+            if self.itemFromIndex(index).isReadState()
             else Qt.CheckState.Unchecked
         )
 
@@ -88,15 +76,6 @@ class Model(QtCore.QAbstractTableModel):
             self.index(index.row(), self.columnCount() - 1, index.parent()),
         )
         return True
-
-    def toggleReadState(self, index: QtCore.QModelIndex) -> bool:
-        current = self.readState(index)
-        return self.setReadState(
-            index,
-            Qt.CheckState.Unchecked
-            if current == Qt.CheckState.Checked
-            else Qt.CheckState.Checked,
-        )
 
     def itemFromIndex(self, index: QtCore.QModelIndex) -> ElogModelItem:
         return self._data[index.row()]
@@ -190,8 +169,10 @@ class Model(QtCore.QAbstractTableModel):
         importantNames = settings.loadImportant()
         for filename in filenames:
             item = ElogModelItem(Elog.fromFilename(filename))
-            item.setReadState(ReadState(filename in readNames))
-            item.setImportantState(ImportantState(filename in importantNames))
+            item.setReadState(READ if filename in readNames else UNREAD)
+            item.setImportantState(
+                IMPORTANT if filename in importantNames else UNIMPORTANT
+            )
             self.appendItem(item)
         self.endResetModel()
 
@@ -218,8 +199,8 @@ class Model(QtCore.QAbstractTableModel):
             return checkState(index) if checkState else None
         if role == Role.SortRole:
             key = {
-                Column.ImportantState: item.importantState,
-                Column.ReadState: item.readState,
+                Column.ImportantState: item.isImportantState,
+                Column.ReadState: item.isReadState,
                 Column.Date: item.isoTime,
                 Column.Eclass: lambda: item.eclass().value,
                 Column.Category: item.category().lower,
