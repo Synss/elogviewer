@@ -5,18 +5,28 @@ import io
 import time
 from contextlib import AbstractContextManager, closing
 from pathlib import Path
-from typing import IO, Final, NewType, Protocol, final
+from typing import IO, Final, Protocol, final
 
 from .eclass import EClass
 from .elog import Elog
 
-ReadState = NewType("ReadState", bool)
-READ: Final = ReadState(True)
-UNREAD: Final = ReadState(False)
 
-ImportantState = NewType("ImportantState", bool)
-IMPORTANT: Final = ImportantState(True)
-UNIMPORTANT: Final = ImportantState(False)
+class _ReadState(enum.Enum):
+    READ = enum.auto()
+    UNREAD = enum.auto()
+
+
+READ: Final = _ReadState.READ
+UNREAD: Final = _ReadState.UNREAD
+
+
+class _ImportantState(enum.Enum):
+    IMPORTANT = enum.auto()
+    UNIMPORTANT = enum.auto()
+
+
+IMPORTANT: Final = _ImportantState.IMPORTANT
+UNIMPORTANT: Final = _ImportantState.UNIMPORTANT
 
 
 class Column(enum.IntEnum):
@@ -33,8 +43,8 @@ class ElogModelItem:
     def __init__(
         self,
         elog: Elog,
-        readState: ReadState = UNREAD,
-        importantState: ImportantState = UNIMPORTANT,
+        readState: _ReadState = UNREAD,
+        importantState: _ImportantState = UNIMPORTANT,
     ) -> None:
         self._elog = elog
         self._readState = readState
@@ -58,29 +68,23 @@ class ElogModelItem:
     def eclass(self) -> EClass:
         return self._elog.eclass
 
-    def readState(self) -> ReadState:
+    def readState(self) -> _ReadState:
         return self._readState
 
-    def setReadState(self, state: ReadState) -> None:
+    def setReadState(self, state: _ReadState) -> None:
         self._readState = state
 
     def isReadState(self) -> bool:
-        return self.readState() == READ
+        return self.readState() is READ
 
-    def toggleReadState(self) -> None:
-        self.setReadState(UNREAD if self.isReadState() else READ)
-
-    def importantState(self) -> ImportantState:
+    def importantState(self) -> _ImportantState:
         return self._importantState
 
-    def setImportantState(self, state: ImportantState) -> None:
+    def setImportantState(self, state: _ImportantState) -> None:
         self._importantState = state
 
     def isImportantState(self) -> bool:
-        return self.importantState() == IMPORTANT
-
-    def toggleImportantState(self) -> None:
-        self.setImportantState(UNIMPORTANT if self.isImportantState() else IMPORTANT)
+        return self.importantState() is IMPORTANT
 
     def file(self) -> AbstractContextManager[IO[str]]:
         return closing(io.StringIO(self._elog.contents))
