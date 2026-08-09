@@ -75,6 +75,7 @@ def main() -> None:
 
     elogviewer = Elogviewer(config)
     elogviewer.show()
+    elogviewer.start()
 
     sys.exit(app.exec())
 
