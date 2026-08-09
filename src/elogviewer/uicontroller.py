@@ -14,6 +14,10 @@ from .uimodel import Model, sourceIndex
 
 Qt = QtCore.Qt
 
+# Let the UI show up and paint before the first (blocking) scan of the
+# elog directory.
+_INITIAL_POPULATE_DELAY_MS: Final = 100
+
 
 class Config(Protocol):
     @property
@@ -61,6 +65,12 @@ class ElogviewerController(QtCore.QObject):
             self.settings.setValue("readFlag", set())
         if not self.settings.contains("importantFlag"):
             self.settings.setValue("importantFlag", set())
+
+    def start(self) -> None:
+        timer = QtCore.QTimer(self)
+        timer.setSingleShot(True)
+        timer.timeout.connect(self.populate)
+        timer.start(_INITIAL_POPULATE_DELAY_MS)
 
     def saveSettings(self) -> None:
         self._model.save(StateStore(self.settings))

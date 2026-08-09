@@ -362,9 +362,11 @@ class Elogviewer(QtWidgets.QMainWindow):
         self.searchLineEdit.textEdited.connect(self.controller.setFilterPattern)
         self.toolBar.addWidget(self.searchLineEdit)
 
-        QtCore.QTimer.singleShot(100, self.controller.populate)
         self._restoreWindowState()
         self.tableView.selectRow(0)
+
+    def start(self) -> None:
+        self.controller.start()
 
     def _addToolBarAction(
         self,
