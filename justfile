@@ -47,7 +47,7 @@ e2e:
     uv run --group vm molecule test --scenario-name e2e
 
 vm-start:
-    uv run --group vm vagrant --provision up
+    uv run --group vm vagrant up
 
 vm-stop:
     uv run --group vm vagrant halt
