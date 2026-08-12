@@ -47,6 +47,7 @@ e2e:
     uv run --group vm molecule test --scenario-name e2e
 
 vm-start:
+    @uv run --group vm vagrant status --machine-readable | grep -q ',state,running' ||\
     uv run --group vm vagrant up
 
 vm-stop:
