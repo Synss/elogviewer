@@ -9,7 +9,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: ./.github/actions/setup-python
+    - uses: $/.github/actions/setup-python
       with:
         python-version: ${{ inputs.python-version }}
     - name: Cache ansible collections
