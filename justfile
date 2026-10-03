@@ -43,6 +43,30 @@ lint-yaml:
     #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
     yamllint .
 
+fix: fix-ansible fix-github-actions fix-justfile fix-python lint
+
+[private]
+fix-ansible:
+    #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
+    ansible-lint --fix .
+
+[private]
+fix-github-actions:
+    #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
+    zizmor --fix=all .github
+
+[private]
+fix-justfile:
+    #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
+    just --fmt --unstable
+
+[private]
+fix-python:
+    #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
+    ruff format
+    ruff check --fix --select I
+    ruff check --fix
+
 update-dependencies:
     uv sync
 
