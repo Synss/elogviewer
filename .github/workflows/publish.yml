@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Install uv
-        uses: ./.github/actions/setup-python
+        uses: $/.github/actions/setup-python
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Build
