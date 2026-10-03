@@ -57,7 +57,7 @@ repos:
 
       - id: zizmor
         name: zizmor
-        entry: "true"
+        entry: uv run --group dev zizmor .github
         language: unsupported
         types: [yaml]
         files: ^.github/
