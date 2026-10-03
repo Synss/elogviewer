@@ -23,9 +23,8 @@ jobs:
       - uses: $/.github/actions/setup-ansible
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - uses: $/.github/actions/setup-just
       - name: Run linters
-        run: just lint
+        run: uv run --group dev just lint
 
   check-wheel-contents:
     runs-on: ubuntu-latest
