@@ -27,7 +27,6 @@ dev = [
     "archunitpython",
     "check-wheel-contents",
     "pyfakefs",
-    "pre-commit",
     "pytest",
     "pytest-qt",
     "pyqt6-stubs>=20250824",
