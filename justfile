@@ -2,7 +2,7 @@
 _just := just_executable()
 
 default:
-    @just --list
+    @{{ _just }} --list
 
 doc:
     mkdir -p html
