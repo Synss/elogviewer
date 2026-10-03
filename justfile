@@ -11,19 +11,42 @@ doc:
 upload-doc: doc
     rsync -avzP -e ssh html/ mathias_laurin@web.sourceforge.net:/home/project-web/elogviewer/htdocs/
 
-lint:
-    uv run pre-commit run
+lint: lint-ansible lint-github-actions lint-justfile lint-python lint-yaml
 
-lint-all:
-    uv run pre-commit run --all-files
+[private]
+lint-ansible:
+    #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
+    ansible-lint .
 
-update-linters:
-    uv run pre-commit autoupdate
+[private]
+lint-github-actions:
+    #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
+    zizmor .github
+
+[private]
+lint-justfile:
+    #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
+    just --fmt --check --unstable
+
+[private]
+lint-python:
+    #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
+    rc=0
+    ruff format --check || rc=$?
+    ruff check --select I || rc=$?
+    ruff check || rc=$?
+    basedpyright || rc=$?
+    exit $rc
+
+[private]
+lint-yaml:
+    #!/usr/bin/env -S uv run --group dev bash -euxo pipefail
+    yamllint .
 
 update-dependencies:
     uv sync
 
-update: update-linters update-dependencies
+update: update-dependencies
 
 test:
     uv run pytest

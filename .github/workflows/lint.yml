@@ -11,7 +11,7 @@ env:
   PYTHON_VERSION: '3.13'
 
 jobs:
-  pre-commit:
+  lint:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,8 +23,11 @@ jobs:
       - uses: $/.github/actions/setup-ansible
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - name: Run pre-commit
-        run: uv run --all-groups pre-commit run --all-files
+      - uses: extractions/setup-just@v4
+        with:
+          just-version: '1.58.0'
+      - name: Run linters
+        run: just lint
 
   check-wheel-contents:
     runs-on: ubuntu-latest
@@ -45,7 +48,7 @@ jobs:
   lint-all:
     if: ${{ !cancelled() }}
     needs:
-      - pre-commit
+      - lint
       - check-wheel-contents
     runs-on: ubuntu-latest
     permissions: {}
