@@ -1,0 +1,10 @@
+---
+name: Setup just
+description: Install just
+
+runs:
+  using: composite
+  steps:
+    - uses: extractions/setup-just@v4
+      with:
+        just-version: '1.58.0'
