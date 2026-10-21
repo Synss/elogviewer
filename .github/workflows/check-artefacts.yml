@@ -29,8 +29,9 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - uses: shogo82148/actions-setup-perl@v1.44.0
         with:
-          install-modules-with: cpm
-          install-modules: TOML::Tiny
+          perl-version: '5.34'
+          install-modules-with: carton
+          install-modules-args: --deployment
       - name: Run check-artefacts for ${{ matrix.artefact }}
         run: >-
           uv run --group dev just list-${{ matrix.artefact }}
