@@ -7,3 +7,4 @@ build/
 roles/gentoo_base/junit/
 junit/
 *.egg-info
+local/

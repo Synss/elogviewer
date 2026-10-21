@@ -70,6 +70,17 @@ fix-python:
 update-dependencies:
     uv sync
 
+update-perl-deps:
+    docker run --rm \
+        --volume "$PWD":/app \
+        --workdir /app \
+        --user "$(id -u):$(id -g)" \
+        --env HOME=/tmp \
+        --env PERL_CARTON_PATH=/tmp/local \
+        perl:5.34 \
+        sh -c 'cpanm -nq -L /tmp/carton Carton && rm -f cpanfile.snapshot \
+               && PERL5LIB=/tmp/carton/lib/perl5 /tmp/carton/bin/carton install'
+
 update: update-dependencies
 
 test:
